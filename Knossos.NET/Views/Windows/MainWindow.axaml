@@ -9,6 +9,7 @@
         x:Class="Knossos.NET.Views.MainWindow"
         Icon="/Assets/knossos-icon.ico"
 		WindowStartupLocation="CenterScreen"
+		Name="Main"
         Title="{Binding AppTitle}">
 
     <Design.DataContext>
@@ -17,7 +18,8 @@
 	
 
 	<!-- Main View -->
-	<Grid Background="{StaticResource BackgroundColorPrimary}">
+	<Viewbox Stretch="Fill" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="{Binding Width, ElementName=Main}" Height="{Binding Height, ElementName=Main}">
+	<Grid Background="{StaticResource BackgroundColorPrimary}" MinWidth="800" MinHeight="600"  Width="{Binding Width, ElementName=Main}" Height="{Binding Height, ElementName=Main}">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*"></RowDefinition>
 			<RowDefinition Height="4"></RowDefinition>
@@ -66,4 +68,5 @@
 		<GridSplitter Grid.Row="1" Background="Black" ResizeDirection="Rows"/>
 		<v:TaskView Grid.Row="2" Content="{Binding TaskView}" VerticalAlignment="Top"/>
 	</Grid>
+	</Viewbox>
 </Window>
