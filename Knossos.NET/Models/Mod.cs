@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using IniParser;
 using System.Linq;
+using System.Collections;
 
 namespace Knossos.NET.Models
 {
@@ -349,123 +350,156 @@ namespace Knossos.NET.Models
 
         /// <summary>
         /// Filter the dependencies
-        /// Only pass each mod ID one time
-        /// if an ID repeats multiple times it must be resolved into one, except in case of conflict
-        /// in case of conflict both are passed as this is not a critical stop in knet
+        /// Pre-Process the mod dependency list removing irrelevant or duplicated dependency entries    
+        /// In case of conflict both are passed as this is not a critical stop in knet
         /// Version=null means "any" so others must decide if a version is specified
         /// </summary>
         /// <param name="unFilteredDepList"></param>
         /// <returns>List<ModDependency></returns>
-        /// TODO: Can can be done a lot better and clearer using LINQ groups.
         private List<ModDependency> FilterDependencies(List<ModDependency> unFilteredDepList)
         {
             try
             {
-                List<ModDependency> temp = new List<ModDependency>();
-                //Stage 1 Eliminate duplicates
+                //Stage 1 Copy list eliminating duplicates
+                List<ModDependency> filtered = new List<ModDependency>();
+                
                 foreach (var dep in unFilteredDepList)
                 {
-                    if (temp.FirstOrDefault(d => d.id == dep.id && d.version == dep.version) == null)
+                    if (filtered.FirstOrDefault(d => d.id == dep.id && d.version == dep.version) == null)
                     {
-                        temp.Add(dep);
+                        filtered.Add(dep);
                     }
                 }
+
                 //Stage 2 
-                //if multiple ids remains resolve them into one, in case of conflict pass both
-                var processedIds = new List<string>();
-                foreach (var dep in temp.ToList())
+                //Remove irrelevants
+                //If an ID repeats more than one time we need to remove the ones that arent needed
+                //For example:
+                //Any (null) is irrelevant if anything else is present
+                //Equal (==) have the higher priority here, if an equal is set, higher, lower and revisions are irrelevant
+                //Revisions (~), have the 2nd highest priority, if a revision is present higher and lower are irrelevant
+                //Additionally, if multiple cases are present for ~, >= and <= we should only pass the one that includes all others
+                //In case of conflict pass all.
+                //Version posibilities are:
+                //  null      -> any is fine, this does not decides anything
+                //  "4.6.7"   -> equal to version
+                //  ">=4.6.7" -> all versions over this are fine, meaning we should keep the lower one
+                //  "<=4.6.7" -> all versions below this are fine, meaning we should keep the higher one
+                //  "~4.6.1"  -> A revision equal or higher inside this minor version, we should keep the higher one
+
+                var idGroup = filtered.GroupBy(d => d.id);
+
+                foreach (var group in idGroup)
                 {
-                    if (processedIds.IndexOf(dep.id) == -1)
+                    if (group.Count() > 1)
                     {
-                        processedIds.Add(dep.id);
-                        var sameid = temp.Where(d => d.id == dep.id);
-                        if (sameid != null && sameid.Count() > 1)
+                        filtered.Clear();
+                        List<ModDependency> any = new List<ModDependency>();
+                        List<ModDependency> equal = new List<ModDependency>();
+                        List<ModDependency> higher = new List<ModDependency>();
+                        List<ModDependency> lower = new List<ModDependency>();
+                        List<ModDependency> rev = new List<ModDependency>();
+
+                        foreach (var dep in group)
                         {
-                            List<ModDependency> equal = new List<ModDependency>();
-                            List<ModDependency> equalOrHigher = new List<ModDependency>();
-                            List<ModDependency> revisions = new List<ModDependency>();
-                            //Version posibilities are:
-                            //  null      -> any is fine, this does not decides anything
-                            //  "4.6.7"   -> equal to version, they must be compared to the other two types
-                            //  ">=4.6.7" -> all versions over this are fine
-                            //  "~4.6.1"  -> A revision equal or higher inside this minor version
-                            foreach (var d in sameid.ToList())
+                            if (dep.version == null)
                             {
-                                //Null dosent matter and we have one that is not null so remove it
-                                if (d.version == null)
+                                any.Add(dep);
+                            }
+                            else if (dep.version.Contains(">="))
+                            {
+                                higher.Add(dep);
+                            }
+                            else if (dep.version.Contains("<="))
+                            {
+                                lower.Add(dep);
+                            }
+                            else if (dep.version.Contains("~"))
+                            {
+                                rev.Add(dep);
+                            }
+                            else
+                            {
+                                equal.Add(dep);
+                            }
+                        }
+
+                        //PROCESS
+                        if(!equal.Any())
+                        {
+                            if (rev.Any())
+                            {
+                                if (rev.Count() > 1)
                                 {
-                                    temp.Remove(d);
-                                }
-                                else
-                                {
-                                    if (d.version.Contains(">="))
+                                    //Check each one (r1) and remove any other (r2) that sastifies r1 from the original list (rev)
+                                    //As a result we should only have the ones that cant sastify each other, hopefully only one, otherwise its a conflict
+                                    rev.ToList().ForEach(r1 =>
                                     {
-                                        equalOrHigher.Add(d);
-                                    }
-                                    else
-                                    {
-                                        if (d.version.Contains("~"))
+                                        rev.ToList().ForEach(r2 =>
                                         {
-                                            revisions.Add(d);
-                                        }
-                                        else
-                                        {
-                                            equal.Add(d);
-                                        }
+                                            if (r1 != r2 && SemanticVersion.SastifiesDependency(r1.version, r2.version!.Replace("~", "")))
+                                            {
+                                                rev.Remove(r2);
+                                            }
+                                        });
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                if(higher.Count() > 1)
+                                {
+                                    //Lets get the lower version in ">="
+                                    var min = higher.MinBy(h => new SemanticVersion(h.version!.Replace(">=", "")));
+                                    if (min != null)
+                                    {
+                                        higher.Clear();
+                                        higher.Add(min);
+                                    }
+                                }
+
+                                if (lower.Count() > 1)
+                                {
+                                    //Lets get the higher version in "<="
+                                    var max = lower.MaxBy(h => new SemanticVersion(h.version!.Replace("<=", "")));
+                                    if (max != null)
+                                    {
+                                        lower.Clear();
+                                        lower.Add(max);
                                     }
                                 }
                             }
-                            //Equal determine if equalOrhigher or revisions are included here, if so remove them
-                            foreach (var eq in equal)
-                            {
-                                equalOrHigher.ForEach(eqOrHigh =>
-                                {
-                                    if (SemanticVersion.SastifiesDependency(eqOrHigh.version, eq.version))
-                                    {
-                                        temp.Remove(eqOrHigh);
-                                    }
-                                });
-                                revisions.ForEach(revs =>
-                                {
-                                    if (SemanticVersion.SastifiesDependency(revs.version, eq.version))
-                                    {
-                                        temp.Remove(revs);
-                                    }
-                                });
-                            }
-                            //Revisions determine if >= or other revisions are included in them, if so remove them
-                            foreach (var revs in revisions)
-                            {
-                                equalOrHigher.ForEach(eqOrHigh =>
-                                {
-                                    if (SemanticVersion.SastifiesDependency(eqOrHigh.version, revs.version!.Replace("~", "")))
-                                    {
-                                        temp.Remove(eqOrHigh);
-                                    }
-                                });
-                                revisions.ForEach(otherrev =>
-                                {
-                                    if (otherrev != revs && SemanticVersion.SastifiesDependency(revs.version, otherrev.version!.Replace("~", "")))
-                                    {
-                                        temp.Remove(otherrev);
-                                    }
-                                });
-                            }
-                            //Equal or Higher at this point if anything left it can only be other equal or higher, remove the ones that are not incluided on others
-                            foreach (var eqOrHigher in equalOrHigher)
-                            {
-                                equalOrHigher.ForEach(otherEqOrHigher =>
-                                {
-                                    if (otherEqOrHigher != eqOrHigher && SemanticVersion.SastifiesDependency(eqOrHigher.version, otherEqOrHigher.version!.Replace(">=", "")))
-                                    {
-                                        temp.Remove(eqOrHigher);
-                                    }
-                                });
-                            }
+                        }
+
+
+                        //FINISH
+                        if (any.Any() && !equal.Any() && !higher.Any() && !lower.Any() && !rev.Any())
+                        {
+                            filtered.Add(any.First());
+                        }
+                        if (equal.Any())
+                        {
+                            foreach (var d in equal)
+                                filtered.Add(d);
+                        }
+                        if (rev.Any() && !equal.Any())
+                        {
+                            foreach (var d in rev)
+                                filtered.Add(d);
+                        }
+                        if (higher.Any() && !equal.Any() && !rev.Any())
+                        {
+                            foreach (var d in higher)
+                                filtered.Add(d);
+                        }
+                        if (lower.Any() && !equal.Any() && !rev.Any())
+                        {
+                            foreach (var d in lower)
+                                filtered.Add(d);
                         }
                     }
                 }
-                return temp;
+                return filtered;
             }catch(Exception ex)
             {
                 Log.Add(Log.LogSeverity.Error,"Mod.FilterDependencies()",ex);
