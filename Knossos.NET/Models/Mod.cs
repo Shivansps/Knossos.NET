@@ -348,8 +348,56 @@ namespace Knossos.NET.Models
             return null;
         }
 
+        public (List<Mod>?, List<FsoBuild>?)?  ResolveModDependencies(bool overrideSettings = false)
+        {
+            //First lets get all dependencies
+            var depList = GetModDependencyList(overrideSettings, false);
+
+            if (depList == null)
+            {
+                return null;
+            }
+
+            var modList = new List<Mod>();
+            var buildList = new List<FsoBuild>();
+
+            //Second, resolve each one of them individually, fso builds will be ignored
+            depList.ForEach(dep =>
+            {
+                if (dep != null)
+                {
+                    var mod = dep.SelectMod();
+                    if (mod != null)
+                    {
+                        modList.Add(mod);
+                    }
+                    else
+                    {
+                        var build = dep.SelectBuild();
+                        if (build != null)
+                        {
+                            buildList.Add(build);
+                        }
+                        else
+                        {
+                            Log.Add(Log.LogSeverity.Warning, "Mod.ResolveModDependencies()", "Unresolved dependency: " + dep + " for mod: " + this);
+                        }
+                    }
+                }
+            });
+
+            //Lets group each mod by id
+            if (modList.Count() > 0)
+            {
+                foreach (var group in modList.GroupBy(d => d.id))
+                {
+
+                }
+            }
+            return (modList, buildList);
+        }
+
         /// <summary>
-        /// Filter the dependencies
         /// Pre-Process the mod dependency list removing irrelevant or duplicated dependency entries    
         /// In case of conflict both are passed as this is not a critical stop in knet
         /// Version=null means "any" so others must decide if a version is specified
@@ -378,6 +426,7 @@ namespace Knossos.NET.Models
                 //Any (null) is irrelevant if anything else is present
                 //Equal (==) have the higher priority here, if an equal is set, higher, lower and revisions are irrelevant
                 //Revisions (~), have the 2nd highest priority, if a revision is present higher and lower are irrelevant
+                //Minor or equal (<=), have the 3nd highest priority
                 //Additionally, if multiple cases are present for ~, >= and <= we should only pass the one that includes all others
                 //In case of conflict pass all.
                 //Version posibilities are:
@@ -424,55 +473,106 @@ namespace Knossos.NET.Models
                             }
                         }
 
-                        //PROCESS
-                        if(!equal.Any())
-                        {
-                            if (rev.Any())
-                            {
-                                if (rev.Count() > 1)
-                                {
-                                    //Check each one (r1) and remove any other (r2) that sastifies r1 from the original list (rev)
-                                    //As a result we should only have the ones that cant sastify each other, hopefully only one, otherwise its a conflict
-                                    rev.ToList().ForEach(r1 =>
-                                    {
-                                        rev.ToList().ForEach(r2 =>
-                                        {
-                                            if (r1 != r2 && SemanticVersion.SastifiesDependency(r1.version, r2.version!.Replace("~", "")))
-                                            {
-                                                rev.Remove(r2);
-                                            }
-                                        });
-                                    });
-                                }
-                            }
-                            else
-                            {
-                                if(higher.Count() > 1)
-                                {
-                                    //Lets get the lower version in ">="
-                                    var min = higher.MinBy(h => new SemanticVersion(h.version!.Replace(">=", "")));
-                                    if (min != null)
-                                    {
-                                        higher.Clear();
-                                        higher.Add(min);
-                                    }
-                                }
 
-                                if (lower.Count() > 1)
+                        //Process the dependencies by priority order 
+                        // ==  /  ~  /  <=  /  >=
+
+                        //==
+                        //Note: There is no need to compare equals to other equals
+                        equal.ForEach(eq => {
+                            //Remove any "rev" that can be sastified by this equal
+                            rev.ToList().ForEach(r =>
+                            {
+                                if (SemanticVersion.SastifiesDependency(r.version, eq.version))
                                 {
-                                    //Lets get the higher version in "<="
-                                    var max = lower.MaxBy(h => new SemanticVersion(h.version!.Replace("<=", "")));
-                                    if (max != null)
-                                    {
-                                        lower.Clear();
-                                        lower.Add(max);
-                                    }
+                                    rev.Remove(r);
                                 }
-                            }
-                        }
+                            });
+                            //Remove any "lower" that can be sastified by this equal
+                            lower.ToList().ForEach(l =>
+                            {
+                                if (SemanticVersion.SastifiesDependency(l.version, eq.version))
+                                {
+                                    lower.Remove(l);
+                                }
+                            });
+                            //Remove any "higher" that can be sastified by this equal
+                            higher.ToList().ForEach(h =>
+                            {
+                                if (SemanticVersion.SastifiesDependency(h.version, eq.version))
+                                {
+                                    higher.Remove(h);
+                                }
+                            });
+                        });
+
+                        //~
+                        rev.ToList().ForEach(re => {
+                            //Remove any "rev" that can be sastified by this other rev
+                            rev.ToList().ForEach(r =>
+                            {
+                                if (re != r && SemanticVersion.SastifiesDependency(r.version, re.version!.Replace("~", "")))
+                                {
+                                    rev.Remove(r);
+                                }
+                            });
+                        });
+                        rev.ForEach(re => {
+                            //Remove any "lower" that can be sastified by this rev
+                            lower.ToList().ForEach(l =>
+                            {
+                                if (SemanticVersion.SastifiesDependency(l.version, re.version!.Replace("~", "")))
+                                {
+                                    lower.Remove(l);
+                                }
+                            });
+                            //Remove any "higher" that can be sastified by this rev
+                            higher.ToList().ForEach(h =>
+                            {
+                                if (SemanticVersion.SastifiesDependency(h.version, re.version!.Replace("~", "")))
+                                {
+                                    higher.Remove(h);
+                                }
+                            });
+                        });
+
+                        //<=
+                        lower.ToList().ForEach(lo => {
+                            //Remove any "lower" that can be sastified by this other lower
+                            lower.ToList().ForEach(l =>
+                            {
+                                if (lo != l && SemanticVersion.SastifiesDependency(l.version, lo.version!.Replace("<=", "")))
+                                {
+                                    lower.Remove(l);
+                                }
+                            });
+                        });
+                        lower.ForEach(lo => {
+                            //Remove any "higher" that can be sastified by this lower
+                            higher.ToList().ForEach(h =>
+                            {
+                                if (SemanticVersion.SastifiesDependency(h.version, lo.version!.Replace("<=", "")))
+                                {
+                                    higher.Remove(h);
+                                }
+                            });
+                        });
+
+                        //>=
+                        higher.ToList().ForEach(hi => {
+                            //Remove any "higher" that can be sastified by this higher
+                            higher.ToList().ForEach(h =>
+                            {
+                                if (hi != h && SemanticVersion.SastifiesDependency(h.version, hi.version!.Replace(">=", "")))
+                                {
+                                    higher.Remove(h);
+                                }
+                            });
+                        });
 
 
                         //FINISH
+                        //Dump everything into filtered deps
                         if (any.Any() && !equal.Any() && !higher.Any() && !lower.Any() && !rev.Any())
                         {
                             filtered.Add(any.First());
@@ -482,17 +582,17 @@ namespace Knossos.NET.Models
                             foreach (var d in equal)
                                 filtered.Add(d);
                         }
-                        if (rev.Any() && !equal.Any())
+                        if (rev.Any())
                         {
                             foreach (var d in rev)
                                 filtered.Add(d);
                         }
-                        if (higher.Any() && !equal.Any() && !rev.Any())
+                        if (higher.Any())
                         {
                             foreach (var d in higher)
                                 filtered.Add(d);
                         }
-                        if (lower.Any() && !equal.Any() && !rev.Any())
+                        if (lower.Any())
                         {
                             foreach (var d in lower)
                                 filtered.Add(d);
@@ -502,7 +602,7 @@ namespace Knossos.NET.Models
                 return filtered;
             }catch(Exception ex)
             {
-                Log.Add(Log.LogSeverity.Error,"Mod.FilterDependencies()",ex);
+                Log.Add(Log.LogSeverity.Error, "Mod.FilterDependencies()", ex);
                 return unFilteredDepList;
             }
         }
