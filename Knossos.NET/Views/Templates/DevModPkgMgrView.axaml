@@ -78,6 +78,7 @@
 											<ComboBoxItem ToolTip.Tip="Only the selected version">==</ComboBoxItem>
 											<ComboBoxItem ToolTip.Tip="Higher or equal than the selected version">>=</ComboBoxItem>
 											<ComboBoxItem ToolTip.Tip="Same minor version, revision equal or better:&#x0a;Dependency: ~1.5.2&#x0a;1.5.1 ->Not Valid&#x0a;1.5.6 -> Valid&#x0a;1.6.0 -> Not valid">~</ComboBoxItem>
+											<ComboBoxItem ToolTip.Tip="Lower or equal than the selected version">&#x003c;=</ComboBoxItem>
 										</ComboBox>
 										<ComboBox SelectedIndex="{Binding VersionSelectedIndex}" ItemsSource="{Binding VersionItems}" Grid.Column="3" MinWidth="75" Margin="2" FontWeight="Bold" FontSize="14" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Background="White" Foreground="Black"></ComboBox>
 										<!--Packages-->

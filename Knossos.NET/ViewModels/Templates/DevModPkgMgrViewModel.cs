@@ -90,7 +90,7 @@ namespace Knossos.NET.ViewModels
 
                     FillAllVersions();
 
-                    var currentVersion = VersionItems.FirstOrDefault(x => x.Content != null && dep.version != null && x.Content.ToString() == dep.version.Trim().Replace(">=", "").Replace("~", ""));
+                    var currentVersion = VersionItems.FirstOrDefault(x => x.Content != null && dep.version != null && x.Content.ToString() == dep.version.Trim().Replace(">=", "").Replace("~", "").Replace("<=", ""));
                     if (currentVersion != null)
                     {
                         versionSelectedIndex = VersionItems.IndexOf(currentVersion);
@@ -106,7 +106,14 @@ namespace Knossos.NET.ViewModels
                             }
                             else
                             {
-                                versionTypeIndex = 0;
+                                if (dep.version!.Contains("<="))
+                                {
+                                    versionTypeIndex = 3;
+                                }
+                                else
+                                {
+                                    versionTypeIndex = 0;
+                                }
                             }
                         }
                     }
@@ -140,14 +147,21 @@ namespace Knossos.NET.ViewModels
                             }
                             else
                             {
-                                VersionTypeIndex = 0;
+                                if (dep.version!.Contains("<="))
+                                {
+                                    VersionTypeIndex = 3;
+                                }
+                                else
+                                {
+                                    VersionTypeIndex = 0;
+                                }
                             }
                         }
                     } else {
                         VersionTypeIndex = 0;
                     }
                     var itemVer = new ComboBoxItem();
-                    itemVer.Content = dep.version != null ? dep.version.Replace(">=","").Replace("~", "") : "Any";
+                    itemVer.Content = dep.version != null ? dep.version.Replace(">=","").Replace("~", "").Replace("<=", "") : "Any";
                     VersionItems.Add(itemVer);
                 }
             }
@@ -296,7 +310,7 @@ namespace Knossos.NET.ViewModels
                     if(depId != "-1" && depId != null)
                     {
                         Dependency.id = depId;
-                        var versionType = VersionTypeIndex == 0 ? string.Empty : VersionTypeIndex == 1 ? ">=" : "~";
+                        var versionType = VersionTypeIndex == 0 ? string.Empty : VersionTypeIndex == 1 ? ">=" : VersionTypeIndex == 3 ? "<=" : "~";
                         Dependency.version = depVersion != "Any" ? versionType+depVersion : null;
                         var newPkgs = new List<string>();
                         foreach (var pkg in Packages)
