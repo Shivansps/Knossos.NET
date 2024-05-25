@@ -409,13 +409,13 @@ namespace Knossos.NET.Models
             try
             {
                 //Stage 1 Copy list eliminating duplicates
-                List<ModDependency> filtered = new List<ModDependency>();
+                List<ModDependency> noDuplicates = new List<ModDependency>();
                 
                 foreach (var dep in unFilteredDepList)
                 {
-                    if (filtered.FirstOrDefault(d => d.id == dep.id && d.version == dep.version) == null)
+                    if (noDuplicates.FirstOrDefault(d => d.id == dep.id && d.version == dep.version) == null)
                     {
-                        filtered.Add(dep);
+                        noDuplicates.Add(dep);
                     }
                 }
 
@@ -436,13 +436,14 @@ namespace Knossos.NET.Models
                 //  "<=4.6.7" -> all versions below this are fine, meaning we should keep the higher one
                 //  "~4.6.1"  -> A revision equal or higher inside this minor version, we should keep the higher one
 
-                var idGroup = filtered.GroupBy(d => d.id);
+                var idGroup = noDuplicates.GroupBy(d => d.id);
+                List<ModDependency> filtered = new List<ModDependency>();
 
                 foreach (var group in idGroup)
                 {
                     if (group.Count() > 1)
                     {
-                        filtered.Clear();
+                        //More than one per ID
                         List<ModDependency> any = new List<ModDependency>();
                         List<ModDependency> equal = new List<ModDependency>();
                         List<ModDependency> higher = new List<ModDependency>();
@@ -596,6 +597,15 @@ namespace Knossos.NET.Models
                         {
                             foreach (var d in lower)
                                 filtered.Add(d);
+                        }
+                    }
+                    else
+                    {
+                        //Only one per ID
+                        var onlyOne = group.FirstOrDefault();
+                        if(onlyOne != null)
+                        {
+                            filtered.Add(onlyOne);
                         }
                     }
                 }
