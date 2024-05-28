@@ -348,55 +348,6 @@ namespace Knossos.NET.Models
             return null;
         }
 
-        public (List<Mod>?, List<FsoBuild>?)?  ResolveModDependencies(bool overrideSettings = false)
-        {
-            //First lets get all dependencies
-            var depList = GetModDependencyList(overrideSettings, false);
-
-            if (depList == null)
-            {
-                return null;
-            }
-
-            var modList = new List<Mod>();
-            var buildList = new List<FsoBuild>();
-
-            //Second, resolve each one of them individually, fso builds will be ignored
-            depList.ForEach(dep =>
-            {
-                if (dep != null)
-                {
-                    var mod = dep.SelectMod();
-                    if (mod != null)
-                    {
-                        modList.Add(mod);
-                    }
-                    else
-                    {
-                        var build = dep.SelectBuild();
-                        if (build != null)
-                        {
-                            buildList.Add(build);
-                        }
-                        else
-                        {
-                            Log.Add(Log.LogSeverity.Warning, "Mod.ResolveModDependencies()", "Unresolved dependency: " + dep + " for mod: " + this);
-                        }
-                    }
-                }
-            });
-
-            //Lets group each mod by id
-            if (modList.Count() > 0)
-            {
-                foreach (var group in modList.GroupBy(d => d.id))
-                {
-
-                }
-            }
-            return (modList, buildList);
-        }
-
         /// <summary>
         /// Pre-Process the mod dependency list removing irrelevant or duplicated dependency entries    
         /// In case of conflict both are passed as this is not a critical stop in knet
@@ -410,7 +361,7 @@ namespace Knossos.NET.Models
             {
                 //Stage 1 Copy list eliminating duplicates
                 List<ModDependency> noDuplicates = new List<ModDependency>();
-                
+
                 foreach (var dep in unFilteredDepList)
                 {
                     if (noDuplicates.FirstOrDefault(d => d.id == dep.id && d.version == dep.version) == null)
@@ -603,14 +554,15 @@ namespace Knossos.NET.Models
                     {
                         //Only one per ID
                         var onlyOne = group.FirstOrDefault();
-                        if(onlyOne != null)
+                        if (onlyOne != null)
                         {
                             filtered.Add(onlyOne);
                         }
                     }
                 }
                 return filtered;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Log.Add(Log.LogSeverity.Error, "Mod.FilterDependencies()", ex);
                 return unFilteredDepList;
