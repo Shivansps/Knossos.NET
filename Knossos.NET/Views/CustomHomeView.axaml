@@ -76,10 +76,10 @@
 											<StackPanel>
 												<Button Name="ButtonPlayVR" Command="{Binding HardcodedButtonCommand}" CommandParameter="playvr" Content="Play in VR" HorizontalAlignment="Center" Margin="0,2,0,0" Width="115" ></Button>
 												<Button Name="ButtonFred2" Command="{Binding HardcodedButtonCommand}" CommandParameter="fred2" Content="Fred2" HorizontalAlignment="Center" Margin="0,2,0,0" Width="115" ></Button>
-												<Button Name="ButtonQtFred" Command="{Binding HardcodedButtonCommand}" CommandParameter="qtfred" Content="QtFred" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" ></Button>
+												<Button Name="ButtonQtFred" Command="{Binding HardcodedButtonCommand}" CommandParameter="qtfred" Content="QtFred" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" IsVisible="{Binding IsQtFredAvailable}" ></Button>
 												<Button Name="ButtonDebug" Command="{Binding HardcodedButtonCommand}" CommandParameter="debug" Content="FSO Debug" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" ></Button>
 												<Button Name="ButtonFred2Debug" Command="{Binding HardcodedButtonCommand}" CommandParameter="fred2debug" Content="Fred2 Debug" HorizontalAlignment="Center" Margin="0,2,0,0" Width="115" ></Button>
-												<Button Name="ButtonQtFredDebug" Command="{Binding HardcodedButtonCommand}" CommandParameter="qtfreddebug" Content="QtFred Debug" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" ></Button>
+												<Button Name="ButtonQtFredDebug" Command="{Binding HardcodedButtonCommand}" CommandParameter="qtfreddebug" Content="QtFred Debug" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" IsVisible="{Binding IsQtFredDebugAvailable}" ></Button>
 												<Button Name="ButtonLogFile" Command="{Binding HardcodedButtonCommand}" CommandParameter="logfile" Content="Open Logfile" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" ></Button>
 											</StackPanel>
 										</Flyout>

@@ -80,6 +80,10 @@ namespace Knossos.NET.ViewModels
         internal bool isCustomConfig = false;
         [ObservableProperty]
         internal bool cardVisible = true;
+        [ObservableProperty]
+        internal bool isQtFredAvailable = false;
+        [ObservableProperty]
+        internal bool isQtFredDebugAvailable = false;
         private Bitmap? tileModBitmap;
 
         /* Should only be used by the editor preview */
@@ -176,6 +180,8 @@ namespace Knossos.NET.ViewModels
                         });
                     }
                 }
+
+                RefreshQtFredAvailability();
             });
         }
 
@@ -201,6 +207,7 @@ namespace Knossos.NET.ViewModels
                 LoadImage();
                 CheckDependencyActiveVersion();
                 RefreshSpecialIcons();
+                RefreshQtFredAvailability();
             }
         }
 
@@ -251,6 +258,20 @@ namespace Knossos.NET.ViewModels
         public void RefreshSpecialIcons()
         {
             IsCustomConfig = !modVersions[activeVersionIndex].modSettings.IsDefaultConfig();
+        }
+
+        public void RefreshQtFredAvailability()
+        {
+            var bools = modVersions[activeVersionIndex].IsQtFredAvailable();
+
+            if (bools == null || bools.Length < 2){
+                IsQtFredAvailable = false;
+                IsQtFredDebugAvailable = false;
+                return;
+            }
+
+            IsQtFredAvailable = bools[0];
+            IsQtFredDebugAvailable = bools[1];
         }
 
         /* Button Commands */

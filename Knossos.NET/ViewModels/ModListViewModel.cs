@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -41,6 +42,15 @@ namespace Knossos.NET.ViewModels
             }
         }
 
+        [ObservableProperty]
+        internal String sortString = String.Empty;
+        
+        [ObservableProperty]
+        internal String filterString = String.Empty;
+
+        [ObservableProperty]
+        internal bool filtersEnabled = false;
+
         //The actual collection were the mods are
         private ObservableList<ModCardViewModel> Mods = new ObservableList<ModCardViewModel>();
         //A hook for the UI, do not access directly
@@ -74,12 +84,19 @@ namespace Knossos.NET.ViewModels
                 {
                     MainWindowViewModel.Instance.tagFilter.Remove(tags[tagIndex]);
                 }
+
+                if (MainWindowViewModel.Instance.tagFilter.Count < 1) {
+                    FiltersEnabled = false;
+                }
+
                 ApplyFilters();
             }
         }
 
         private void ApplyFilters()
         {
+            BuildFilterString();
+
             Parallel.ForEach(Mods, new ParallelOptions { MaxDegreeOfParallelism = 4 }, card =>
             {
                 bool visibility = true;
@@ -109,6 +126,54 @@ namespace Knossos.NET.ViewModels
             });
         }
 
+        private void BuildFilterString(){
+            if (MainWindowViewModel.Instance == null){
+                FilterString = "";
+                FiltersEnabled = false;
+                return;
+            }
+            
+            int externalCount = MainWindowViewModel.Instance.tagFilter.Count;
+
+            if (externalCount == 0 ){
+                FilterString = "";
+                FiltersEnabled = false;
+                return;
+            }
+
+            int count = 0;
+            FilterString = "Filtering for ";
+            TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
+
+            foreach (var filter in MainWindowViewModel.Instance.tagFilter) {
+                if (count > 3){ 
+                    FilterString += " and ...";
+                    break;
+                // easiest case, this handles a filter list of one and the start of all other cases
+                } else if (count == 0){
+                    if (Knossos.filterDisplayStrings.ContainsKey(filter.ToLower()))
+                        FilterString += Knossos.filterDisplayStrings[filter.ToLower()];
+                    else 
+                        FilterString += myTI.ToTitleCase(filter.Replace("_", " "));
+                // Last case except for 0 will always have an and
+                } else if (count == externalCount - 1){
+                    if (Knossos.filterDisplayStrings.ContainsKey(filter.ToLower()))
+                        FilterString += " and " + Knossos.filterDisplayStrings[filter.ToLower()];
+                    else 
+                        FilterString += " and " + myTI.ToTitleCase(filter.Replace("_", " "));; // No Oxford commas here!
+                // Other cases will always have a comma
+                } else {
+                    if (Knossos.filterDisplayStrings.ContainsKey(filter.ToLower()))
+                        FilterString += ", " + Knossos.filterDisplayStrings[filter.ToLower()];
+                    else 
+                        FilterString += ", " + myTI.ToTitleCase(filter.Replace("_", " "));
+                }
+
+                FiltersEnabled = true;
+                count++;
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -125,6 +190,9 @@ namespace Knossos.NET.ViewModels
                     ApplyFilters();
                 }
             }
+
+            SortString = "Sorted by " + Search;
+            BuildFilterString();
         }
 
         public void CloseTab()
@@ -206,6 +274,7 @@ namespace Knossos.NET.ViewModels
                 Knossos.globalSettings.sortType = newSort;
                 Mods.Sort(); //It will use ModCardViewModel.CompareTo()
             }
+            SortString = "Sorted by " + newSort;
             LoadingAnimation.Animate = 0;
             Sorting = false;
         }

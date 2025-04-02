@@ -86,6 +86,11 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         [ObservableProperty]
         public ViewModelBase? taskVM;
+        [ObservableProperty]
+        internal bool isQtFredAvailable = false;
+        [ObservableProperty]
+        internal bool isQtFredDebugAvailable = false;
+
 
         public CustomHomeViewModel()
         {
@@ -522,6 +527,20 @@ namespace Knossos.NET.ViewModels
                 Knossos.ResetBasePath();
                 ShowBasePathSelector = false;
             }
+        }
+
+        public void RefreshQtFredAvailability()
+        {
+            var bools = modVersions[ActiveVersionIndex].IsQtFredAvailable();
+
+            if (bools == null || bools.Length < 2){
+                IsQtFredAvailable = false;
+                IsQtFredDebugAvailable = false;
+                return;
+            }
+
+            IsQtFredAvailable = bools[0];
+            IsQtFredDebugAvailable = bools[1];
         }
     }
 }

@@ -57,19 +57,19 @@
 					</TabItem.Header>
 					<StackPanel Margin="5">
 						<Button Command="{Binding ButtonCommand}" CommandParameter="playvr" Content="Play in VR" Classes="Accept Rounded" HorizontalAlignment="Center" Margin="0,2,0,0" Width="100" ></Button>
-						<Button Command="{Binding ButtonCommand}" CommandParameter="fred2" Content="Fred2" Classes="Secondary Rounded" HorizontalAlignment="Center" Margin="0,2,0,0" Width="100" ></Button>
-						<Button Command="{Binding ButtonCommand}" CommandParameter="qtfred" Content="QtFred" Classes="Settings Rounded" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="100" ></Button>
+						<Button Command="{Binding ButtonCommand}" CommandParameter="fred2" Content="Fred2" Classes="Secondary Rounded" HorizontalAlignment="Center" Margin="0,2,0,0" Width="100" ></Button>						
+						<Button Command="{Binding ButtonCommand}" CommandParameter="qtfred" Content="QtFred" Classes="Settings Rounded" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="100" IsVisible="{Binding IsQtFredAvailable}"></Button>
 						<Button Command="{Binding ButtonCommand}" CommandParameter="delete" Content="Delete" Classes="Cancel Rounded" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="100" ></Button>
 					</StackPanel>
 				</TabItem>
-				<TabItem Margin="-15, 0, 0, 0" >
+				<TabItem Margin="-18, 0, 0, 0" >
 					<TabItem.Header>
 						<Label FontWeight="Bold" FontSize="11" Foreground="White">Debug</Label>
 					</TabItem.Header>
 					<StackPanel Margin="5">
 						<Button Command="{Binding ButtonCommand}" CommandParameter="debug" Content="FSO Debug" Classes="Primary Rounded" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" ></Button>
 						<Button Command="{Binding ButtonCommand}" CommandParameter="fred2debug" Content="Fred2 Debug" Classes="Secondary Rounded" HorizontalAlignment="Center" Margin="0,2,0,0" Width="115" ></Button>
-						<Button Command="{Binding ButtonCommand}" CommandParameter="qtfreddebug" Content="QtFred Debug" Classes="Settings Rounded" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" ></Button>
+						<Button Command="{Binding ButtonCommand}" CommandParameter="qtfreddebug" Content="QtFred Debug" Classes="Settings Rounded" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" IsVisible="{Binding IsQtFredDebugAvailable}"></Button>
 						<Button Command="{Binding ButtonCommand}" CommandParameter="logfile" Content="Open Logfile" Classes="Quaternary Rounded" HorizontalAlignment="Center"  Margin="0,2,0,0" Width="115" ></Button>
 					</StackPanel>
 				</TabItem>

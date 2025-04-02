@@ -15,7 +15,7 @@
 	<ScrollViewer HorizontalScrollBarVisibility="Visible">
 		<TabControl Margin="10" SelectedIndex="{Binding TabIndex}">
 		  <TabItem Header="Mods">
-					<SplitView MinWidth="1000" Margin="0,0,0,5" IsPaneOpen="True" DisplayMode="Inline" OpenPaneLength="350">
+					<SplitView MinWidth="1000" Margin="0,0,0,5" IsPaneOpen="True" DisplayMode="CompactInline" CompactPaneLength="100" OpenPaneLength="300">
 						<SplitView.Pane>
 							<Grid RowDefinitions="Auto,*,Auto,Auto,Auto">
 							
@@ -35,14 +35,15 @@
 									</ListBox.ItemTemplate>
 								</ListBox>
 							
-								<Button Command="{Binding InstallLatestStable}" Grid.Row="3" Margin="0,10,0,10" HorizontalAlignment="Center" IsEnabled="{Binding !StableInstalled}" IsVisible="{Binding !StableInstalled}" >Get Latest Stable Build</Button>
-								<Button Command="{Binding InstallLatestNightly}" Grid.Row="4" Margin="0,0,0,10" HorizontalAlignment="Center" IsEnabled="{Binding !NightlyInstalled}" IsVisible="{Binding !NightlyInstalled}" >Get Latest Nightly Build</Button>
+								<Button Command="{Binding InstallLatestStable}" Grid.Row="3" Margin="0,20,0,10" HorizontalAlignment="Center" IsEnabled="{Binding !StableInstalled}" IsVisible="{Binding !StableInstalled}" >Get Latest Stable Build</Button>
+								<Button Command="{Binding InstallLatestNightly}" Grid.Row="4" Margin="0,10,0,10" HorizontalAlignment="Center" IsEnabled="{Binding !NightlyInstalled}" IsVisible="{Binding !NightlyInstalled}" >Get Latest Nightly Build</Button>
 							
 							</Grid>
 						</SplitView.Pane>
 
-					<v:DevModEditorView Content="{Binding ModEditor}"/>
-					
+						<SplitView.Content>
+							<v:DevModEditorView Content="{Binding ModEditor}"/>
+						</SplitView.Content>	
 				</SplitView>
 			</TabItem>
 

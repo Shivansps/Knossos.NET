@@ -34,6 +34,17 @@
 						<Label Foreground="White">Available exec type options: </Label>
 						<Label Foreground="Orange">Default, Release, Debug, Fred2, Fred2Debug, QtFred, QtFredDebug</Label>
 					</WrapPanel>
+					<!--Mod Engine Settings-->
+					<Label Margin="0,20,0,0" FontWeight="Black" FontSize="20">ENGINE SETTINGS</Label>
+					<CheckBox IsChecked="{Binding NoIngameOptions}" Margin="5" ToolTip.Tip="By disabling in-game options, launcher engine settings will be used instead. Only valid if the mod uses a FSO engine build equal or higher than version 24.2.0">
+						Disable in-game options
+					</CheckBox>
+					<WrapPanel IsVisible="{Binding !NoIngameOptions}">
+						<Label VerticalAlignment="Center" Margin="5" FontWeight="Bold" IsVisible="{Binding IngameOptionsFileExist}" Foreground="Yellow" ToolTip.Tip="This file is used to save in-game FSO engine settings not managed by Knossos.NET">In-game options file detected</Label>
+						<Button Command="{Binding ViewIngameOptions}" IsVisible="{Binding IngameOptionsFileExist}" Margin="5" Classes="Option" ToolTip.Tip="Open the file in a text editor.">View</Button>
+						<Button Command="{Binding DeleteIngameOptions}" IsVisible="{Binding IngameOptionsFileExist}" Margin="5" Classes="Cancel" ToolTip.Tip="By deleting the FSO in-game options file all values will be reseted back to default the next time you launch this mod">Delete</Button>
+					</WrapPanel>
+					<!--Mod Engine Settings END-->
 					<!--FSO Build Settings -->
 					<Label Margin="0,20,0,0" FontWeight="Black" FontSize="20">FSO BUILD</Label>
 					<v:FsoBuildPickerView Content="{Binding FsoPicker}"/>
@@ -42,7 +53,6 @@
 					<v:FsoFlagsView Content="{Binding FsoFlags}"/>
 					<CheckBox IsChecked="{Binding IgnoreGlobalCmd}" Margin="5,5,0,0" ToolTip.Tip="This means that global settings and global Command Line is not applied to the mod.">Do not apply global settings or global Command Line on this mod</CheckBox>
 					<!--FSO Build END -->
-						
 					<!--Dependencies Settings-->
 					<StackPanel>
 						<Label Margin="0,20,0,0" FontWeight="Black" FontSize="20">MOD DEPENDENCIES</Label>

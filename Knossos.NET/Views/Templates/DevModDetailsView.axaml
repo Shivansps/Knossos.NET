@@ -15,12 +15,12 @@
 	<ScrollViewer>
 		<StackPanel Margin="10,5,0,0">
 			<!--Convenience Save button-->
-			<Button Command="{Binding Save}" Classes="Accept" HorizontalAlignment="Center" Margin="5">Save Changes</Button>
+			<Button Command="{Binding Save}" Classes="Accept" HorizontalAlignment="Center" Width="160" Margin="5">Save Changes</Button>
 
 			<!--NAME-->
 			<WrapPanel HorizontalAlignment="Left">
 				<Label Width="150" Margin="5" FontWeight="Bold" HorizontalContentAlignment="Right" FontSize="18">Name</Label>
-				<TextBox MinWidth="280" Text="{Binding ModName}" Margin="5"></TextBox>
+				<TextBox MinWidth="480" Text="{Binding ModName}" Margin="5"></TextBox>
 			</WrapPanel>
 			<!--ID-->
 			<WrapPanel HorizontalAlignment="Left">
@@ -41,57 +41,57 @@
 			<WrapPanel HorizontalAlignment="Left">
 				<Label Width="150" HorizontalContentAlignment="Right" Margin="5" FontWeight="Bold" FontSize="18">Description</Label>
 				<StackPanel MinWidth="280" MaxWidth="600">
-					<TextBox TextWrapping="Wrap" Height="200" Text="{Binding ModDescription}" Margin="5"></TextBox>
-					<Button Command="{Binding OpenDescriptionEditor}" Classes="Quaternary" Margin="5">Open Editor</Button>
+					<TextBox TextWrapping="Wrap" Width="480" Height="200" Text="{Binding ModDescription}" Margin="5"></TextBox>
 				</StackPanel>
 			</WrapPanel>
+			<Button HorizontalAlignment="Center" Command="{Binding OpenDescriptionEditor}" Classes="Quaternary" Margin="5,5,5,20">Open Editor</Button>
 			<!--FORUM-->
-			<WrapPanel HorizontalAlignment="Left">
+			<WrapPanel HorizontalAlignment="Left" Margin="0,0,0,20">
 				<Label Width="150" HorizontalContentAlignment="Right" Margin="5" FontWeight="Bold" FontSize="18">Release Thread</Label>
-				<TextBox MinWidth="280" Text="{Binding ModForumLink}" Margin="5"></TextBox>
+				<TextBox Width="480" Text="{Binding ModForumLink}" Margin="5"></TextBox>
 			</WrapPanel>
 			<!--Videos-->
-			<WrapPanel HorizontalAlignment="Left">
-				<Label Width="150" HorizontalContentAlignment="Right" Margin="5" FontWeight="Bold" FontSize="18">Youtube Videos</Label>
-				<StackPanel MinWidth="280">
-					<TextBox Height="125" Text="{Binding ModVideos}" Margin="5"></TextBox>
-					<Label Margin="5" Foreground="Yellow" FontSize="12">One link per line</Label>
+			<WrapPanel HorizontalAlignment="Left" Margin="0,0,0,20">
+				<StackPanel>
+					<Label Width="150" HorizontalContentAlignment="Right" Margin="5" FontWeight="Bold" FontSize="18">Youtube Videos</Label>
+					<TextBlock HorizontalAlignment="Right" Margin="20,10,0,5" Foreground="Gray" FontSize="12" TextWrapping="Wrap">One video link per line</TextBlock>
+				</StackPanel>
+				<StackPanel>
+					<TextBox Height="400" Width="480" Text="{Binding ModVideos}" Margin="5"></TextBox>
 				</StackPanel>
 			</WrapPanel>
 			<!--Tile Image-->
-			<WrapPanel HorizontalAlignment="Left" Margin="20,0,0,0">
-				<Label HorizontalContentAlignment="Right" FontWeight="Bold" FontSize="18">Title Image</Label>
-				<StackPanel MinWidth="225">
-					<Border Width="152" Height="227" BorderBrush="Gray" CornerRadius="2" BorderThickness="1">
-						<Image Width="150" Height="225" Source="{Binding TileImage}"></Image>
-					</Border>
-					<Label Margin="5,5,0,0" HorizontalAlignment="Center" Foreground="Yellow" FontSize="12">This image should be 150×225 pixels large, 300KB max.</Label>
+			<WrapPanel HorizontalAlignment="Left">
+				<StackPanel>
+					<Label  Width="150" HorizontalContentAlignment="Right" Margin="5" FontWeight="Bold" FontSize="18">Title Image</Label>
+					<TextBlock Margin="30,10,0,0" Width="150" HorizontalAlignment="Right" Foreground="Gray" FontSize="12" TextWrapping="Wrap">This image should be 150×225 pixels large, 300KB max.</TextBlock>
 				</StackPanel>
+				<Border Width="152" Height="227" HorizontalAlignment="Center" BorderBrush="Gray" CornerRadius="2" BorderThickness="1" Margin="140,0,0,0">
+					<Image Width="150" Height="225" HorizontalAlignment="Center" Source="{Binding TileImage}"></Image>
+				</Border>
 			</WrapPanel>
-			<WrapPanel Margin="160,0,0,0">
-				<Button Command="{Binding ChangeTileImage}" Width="100" Classes="Quaternary" Margin="5">Browse</Button>
-				<Button Command="{Binding RemoveTileImage}" Width="100" Classes="Cancel" Margin="5">Remove</Button>
-			</WrapPanel>
+			<Button HorizontalAlignment="Center" Command="{Binding ChangeTileImage}" Width="100" Classes="Quaternary" Margin="5">Browse</Button>
+			<Button HorizontalAlignment="Center" Command="{Binding RemoveTileImage}" Width="100" Classes="Cancel" Margin="5,5,5,20">Remove</Button>
 			<!--Banner Image-->
 			<WrapPanel HorizontalAlignment="Left">
-				<Label Width="150" HorizontalContentAlignment="Right" Margin="5" FontWeight="Bold" FontSize="18">Banner Image</Label>
+				<StackPanel Width="150">
+					<Label HorizontalContentAlignment="Right" Margin="5" FontWeight="Bold" FontSize="18">Banner Image</Label>
+					<TextBlock HorizontalAlignment="Center" Margin="30,10,0,0" Foreground="Gray" FontSize="12" TextWrapping="Wrap">This image should be 1070x300 pixels large. 10MB max, 1MB or less recommended. APNG is supported.</TextBlock>
+				</StackPanel>
 				<StackPanel HorizontalAlignment="Left" MinWidth="300">
-					<Border Margin="45,5,5,5" BorderBrush="Gray" CornerRadius="2" BorderThickness="1">
+					<Border Margin="5,5,5,5" BorderBrush="Gray" CornerRadius="2" BorderThickness="1">
 						<Image Width="535" Height="150" Source="{Binding BannerImage}"></Image>
 					</Border>
-					<Label HorizontalAlignment="Center" Margin="0,5,0,0" Foreground="Yellow" FontSize="12">This image should be 1070x300 pixels large. 10MB max, 1MB or less recommended. APNG is supported.</Label>
-					<WrapPanel HorizontalAlignment="Center">
-						<Button Command="{Binding ChangeBannerImage}" Width="100" Classes="Quaternary" Margin="5">Browse</Button>
-						<Button Command="{Binding RemoveBannerImage}" Width="100" Classes="Cancel" Margin="5">Remove</Button>
-					</WrapPanel>
 				</StackPanel>
 			</WrapPanel>
+			<Button HorizontalAlignment="Center" Command="{Binding ChangeBannerImage}" Width="100" Classes="Quaternary" Margin="5">Browse</Button>
+			<Button HorizontalAlignment="Center" Command="{Binding RemoveBannerImage}" Width="100" Classes="Cancel" Margin="5,5,5,20">Remove</Button>
 			<!--Screenshots-->
 			<WrapPanel Margin="0,15,0,0" HorizontalAlignment="Left">
 				<Label Width="150" VerticalAlignment="Center" Margin="5" FontWeight="Bold" FontSize="18">Screenshots</Label>
-				<Button Command="{Binding NewScreenShot}" Classes="Option" Margin="10">Add</Button>
+				<Label HorizontalAlignment="Left" Margin="5,0,0,0" FontSize="12">These images will be displayed at 640x360 (16:9). 10MB max, 1MB or less recommended. APNG is supported.</Label>
 			</WrapPanel>
-			<Label HorizontalAlignment="Left" Margin="5,0,0,0" Foreground="Yellow" FontSize="12">This images will be displayed at 640x360 (16:9). 10MB max, 1MB or less recommended. APNG is supported.</Label>
+			<Button HorizontalAlignment="Center" Command="{Binding NewScreenShot}" Classes="Option" Width="100" Margin="10">Add</Button>
 			<StackPanel>
 				<ListBox ItemsSource="{Binding Screenshots}" Margin="5,0,0,0">
 					<ListBox.ItemTemplate>
@@ -102,14 +102,13 @@
 								<Button Command="{Binding ScDel}" Classes="Cancel">
 									<Image Height="14" Width="14" Source="/Assets/general/x.png"></Image>								
 								</Button>
-								<Image Margin="5,0,0,0" Width="320" Height="180" Source="{Binding Bitmap}"></Image>
+								<Image Margin="5,0,0,0" Width="640" Height="360" Source="{Binding Bitmap}"></Image>
 							</WrapPanel>
 						</DataTemplate>
 					</ListBox.ItemTemplate>
 				</ListBox>
 			</StackPanel>
-			<Button Command="{Binding Save}" Classes="Accept" HorizontalAlignment="Center" Margin="5">Save Changes</Button>
+			<Button Width="150" Command="{Binding Save}" Classes="Accept" HorizontalAlignment="Center" Margin="5">Save Changes</Button>
 		</StackPanel>
 	</ScrollViewer>
-	
 </UserControl>

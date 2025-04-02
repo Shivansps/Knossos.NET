@@ -1024,5 +1024,68 @@ namespace Knossos.NET.Models
             }
             return null;
         }
+
+        /// <summary>
+        /// Check to see if a mod has a qtfred build
+        /// used mainly to see if we should create a qtfred button on the mod tiles
+        /// </summary>
+        public bool[] IsQtFredAvailable()
+        {
+            FsoBuild? fsoBuild = null;
+
+            /* Resolve Dependencies should be all valid at this point */
+            var dependencyList = GetModDependencyList(false,true);
+            if (dependencyList != null)
+            {
+                foreach (var dep in dependencyList)
+                {
+                    var selectedMod = dep.SelectMod();
+                    if (selectedMod == null)
+                    {
+                        /* 
+                            It has to be the engine dependency ... based on what shivanSPS commented elsewhere - Cyborg
+                        */
+                        if (fsoBuild == null && modSettings.customBuildId == null)
+                        {
+                            fsoBuild = dep.SelectBuild(true);
+                        }
+                    }
+                }
+            }
+
+            if (fsoBuild == null)
+            {
+                if (modSettings.customBuildExec == null)
+                {
+                    fsoBuild = Knossos.GetInstalledBuildsList().FirstOrDefault(builds => builds.id == modSettings.customBuildId && builds.version == modSettings.customBuildVersion);
+                }
+                else
+                {
+                    fsoBuild = new FsoBuild(modSettings.customBuildExec);
+                }            
+            }
+
+            bool[] result = { false, false };
+
+            if (fsoBuild == null)
+            {
+                return result;
+            }
+
+            var exe = fsoBuild.GetExecutable(FsoExecType.QtFred);
+            var exe2 = fsoBuild.GetExecutable(FsoExecType.QtFredDebug);
+            
+            if (exe != null)
+            {
+                result[0] = true;
+            }
+
+            if (exe != null)
+            {
+                result[1] = true;
+            }
+
+            return result;
+        }        
     }
 }

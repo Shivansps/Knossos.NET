@@ -3,6 +3,7 @@ using Knossos.NET.Classes;
 using Knossos.NET.Models;
 using Knossos.NET.ViewModels;
 using Knossos.NET.Views;
+using Microsoft.VisualBasic.FileIO;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -33,6 +34,21 @@ namespace Knossos.NET
         public static bool isKnDataFolderReadOnly { get; private set; } = false;
         public static bool inSingleTCMode { get; private set; } = false;
         public static bool initIsComplete {  get; private set; } = false;
+        public static IDictionary<string, string> filterDisplayStrings { get; private set;} = new Dictionary<string, string>
+        {
+                ["total_conversion"] = "Standalone Game",
+                ["retail_fs2"] = "Retail Freespace 2",
+                ["fs2_mod"] = "Freespace 2 Mod",
+                ["fs1_mod"] = "Freespace 1 Mod",
+                ["tc_mod"] = "Standalone Game Mod",
+                ["utility"] = "Utilities and Misc",
+                ["dependency"] = "Dependency",
+                ["asset_pack"] = "Asset Pack",
+                ["demo"] = "Demo Mod",
+                ["multiplayer"] = "Multiplayer Enabled",
+                ["vr_mod"] = "VR",
+                ["test"] = "For Testing",
+        };
 
         /// <summary>
         /// Static constructor
@@ -986,6 +1002,11 @@ namespace Knossos.NET
             var modList = new List<Mod>();
             FsoBuild? fsoBuild = specifiedBuild;
 
+            if(mod.modSettings.noIngameOptions)
+            {
+                cmdline += " -no_ingame_options";
+            }
+
             if(additionalCmd != null)
             {
                 cmdline += " " + additionalCmd;
@@ -1595,6 +1616,16 @@ namespace Knossos.NET
             {
                 /* Likely file/folder permission issues */
                 Log.Add(Log.LogSeverity.Error, "Knossos.ModSearchRecursive", ex);
+
+                if (folderLevel == 0 )
+                {
+                    if (MainWindow.instance != null)
+                    {
+                        Dispatcher.UIThread.Invoke(() => {
+                            MessageBox.Show(MainWindow.instance!, "KnossosNET either cannot find or does not have permission to read a previously selected library folder.\nEither select a new library folder in KnossosNET's settings, or check if the folder is now protected.", "Knossos.NET Library Folder Error" , MessageBox.MessageBoxButtons.OK);
+                        });
+                    }
+                }
             }
         }
 
@@ -1655,7 +1686,16 @@ namespace Knossos.NET
                     foreach (var mod in delete)
                     {
                         Log.Add(Log.LogSeverity.Information, "Knossos.RemoveMod()", "Deleting mod: "+mod.title + " " +mod.version);
-                        Directory.Delete(mod.fullPath, true); 
+                        try
+                        {
+                            // this might only work on Windows
+                            FileSystem.DeleteDirectory(mod.fullPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        }
+                        catch (PlatformNotSupportedException)
+                        {
+                            // this should work on all platforms but doesn't use the Recycle Bin / Trash
+                            Directory.Delete(mod.fullPath, true);
+                        }
                         installedMods.Remove(mod);
                     }
                 }
@@ -1677,7 +1717,16 @@ namespace Knossos.NET
             try
             {
                 Log.Add(Log.LogSeverity.Information, "Knossos.RemoveMod()", "Deleting mod: " + mod.title + " " + mod.version);
-                Directory.Delete(mod.fullPath, true);
+                try
+                {
+                    // this might only work on Windows
+                    FileSystem.DeleteDirectory(mod.fullPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // this should work on all platforms but doesn't use the Recycle Bin / Trash
+                    Directory.Delete(mod.fullPath, true);
+                }
                 installedMods.Remove(mod);
             }
             catch (Exception ex)

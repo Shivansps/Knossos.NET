@@ -15,7 +15,7 @@
 	<Grid RowDefinitions="Auto,*">
 		<Grid Grid.Row="0">
 			<WrapPanel Margin="10" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left">
-				<Button Name="FilterFlyout" ToolTip.Tip="Sort by" Margin="0,0,5,0" HorizontalAlignment="Right">
+				<Button Name="FilterFlyout" ToolTip.Tip="Sort by and filters" Margin="0,0,5,0" HorizontalAlignment="Right">
 					<PathIcon Height="30" Width="30" Data="{StaticResource FilterRegular}"/>
 					<Button.Flyout>
 						<Flyout Flyout.FlyoutPresenterClasses="filterFlyout" Placement="BottomEdgeAlignedLeft">
@@ -47,6 +47,12 @@
 					</Button.Flyout>
 				</Button>
 				<TextBox VerticalContentAlignment="Center" Text="{Binding Search}" FontSize="16" Width="300"></TextBox>
+				<StackPanel Margin="10,0,0,0">
+					<Label Content="{Binding SortString}" FontSize="12">
+					</Label>
+					<Label Content="{Binding FilterString}" IsEnabled="{Binding FiltersEnabled}" FontSize="12">
+					</Label>
+				</StackPanel>
 			</WrapPanel>
 			<WrapPanel Margin="10" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right">
 				<Button ToolTip.Tip="View Color Codes" HorizontalAlignment="Right">

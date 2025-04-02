@@ -87,6 +87,8 @@ namespace Knossos.NET.ViewModels
         internal bool buttonsEnabled = true;
         [ObservableProperty]
         internal bool loading = true;
+        [ObservableProperty]
+        internal bool showLoginError = false;
 
         public DevModMembersMgrViewModel() 
         { 
@@ -101,21 +103,28 @@ namespace Knossos.NET.ViewModels
         {
             if (editor != null && !MemberItems.Any())
             {
-                var members = await Nebula.GetTeamMembers(editor.ActiveVersion.id).ConfigureAwait(false);
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    if (members != null)
+                if (Nebula.userIsLoggedIn) {
+                    ButtonsEnabled = true;
+                    ShowLoginError = false;
+                    var members = await Nebula.GetTeamMembers(editor.ActiveVersion.id).ConfigureAwait(false);
+                    Dispatcher.UIThread.Invoke(() =>
                     {
-                        foreach (var member in members)
+                        if (members != null)
                         {
-                            MemberItems.Add(new MemberItem(member, this));
+                            foreach (var member in members)
+                            {
+                                MemberItems.Add(new MemberItem(member, this));
+                            }
                         }
-                    }
-                    else
-                    {
-                        _ = MessageBox.Show(MainWindow.instance!, "An error has ocurred while retrieving the mod member list. The log may provide more information.", "Error", MessageBox.MessageBoxButtons.OK);
-                    }
-                });
+                        else
+                        {
+                            _ = MessageBox.Show(MainWindow.instance!, "An error has ocurred while retrieving the mod member list. The log may provide more information.", "Error", MessageBox.MessageBoxButtons.OK);
+                        }
+                    });
+                } else {
+                    ButtonsEnabled = false;
+                    ShowLoginError = true;
+                }
             }
             Dispatcher.UIThread.Invoke(() =>
             {

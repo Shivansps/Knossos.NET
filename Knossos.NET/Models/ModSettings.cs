@@ -45,6 +45,9 @@ namespace Knossos.NET.Models
         [JsonIgnore]
         private string? filePath = null;
 
+        [JsonPropertyName("no_ingame_options")]
+        public bool noIngameOptions { get; set; } = false;
+
         public ModSettings()
         {
         }

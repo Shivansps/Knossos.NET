@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,6 +64,15 @@ namespace Knossos.NET.ViewModels
             }
         }
 
+        [ObservableProperty]
+        internal String sortString = String.Empty;
+        
+        [ObservableProperty]
+        internal String filterString = String.Empty;
+
+        [ObservableProperty]
+        internal bool filtersEnabled = false;
+
         private ModSortType localSort = ModSortType.name;
         //The actual collection were the mods are
         private ObservableList<NebulaModCardViewModel> Mods = new ObservableList<NebulaModCardViewModel>();
@@ -97,12 +107,19 @@ namespace Knossos.NET.ViewModels
                 {
                     MainWindowViewModel.Instance.tagFilter.Remove(tags[tagIndex]);
                 }
+
+                if (MainWindowViewModel.Instance.tagFilter.Count < 1) {
+                    FiltersEnabled = false;
+                }
+
                 ApplyFilters();
             }
         }
 
         private void ApplyFilters()
         {
+            BuildFilterString();
+
             Parallel.ForEach(Mods, new ParallelOptions { MaxDegreeOfParallelism = 4 }, card =>
             {
                 bool visibility = true;
@@ -132,6 +149,54 @@ namespace Knossos.NET.ViewModels
             });
         }
 
+        private void BuildFilterString(){
+            if (MainWindowViewModel.Instance == null){
+                FilterString = "";
+                FiltersEnabled = false;
+                return;
+            }
+            
+            int externalCount = MainWindowViewModel.Instance.tagFilter.Count;
+
+            if (externalCount == 0 ){
+                FilterString = "";
+                FiltersEnabled = false;
+                return;
+            }
+
+            int count = 0;
+            FilterString = "Filtering for ";
+            TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
+
+            foreach (var filter in MainWindowViewModel.Instance.tagFilter) {
+                if (count > 3){ 
+                    FilterString += " and ...";
+                    break;
+                // easiest case, this handles a filter list of one and the start of all other cases
+                } else if (count == 0){
+                    if (Knossos.filterDisplayStrings.ContainsKey(filter.ToLower()))
+                        FilterString += Knossos.filterDisplayStrings[filter.ToLower()];
+                    else 
+                        FilterString += myTI.ToTitleCase(filter.Replace("_", " "));
+                // Last case except for 0 will always have an and
+                } else if (count == externalCount - 1){
+                    if (Knossos.filterDisplayStrings.ContainsKey(filter.ToLower()))
+                        FilterString += " and " + Knossos.filterDisplayStrings[filter.ToLower()];
+                    else 
+                        FilterString += " and " + myTI.ToTitleCase(filter.Replace("_", " "));; // No Oxford commas here!
+                // Other cases will always have a comma
+                } else {
+                    if (Knossos.filterDisplayStrings.ContainsKey(filter.ToLower()))
+                        FilterString += ", " + Knossos.filterDisplayStrings[filter.ToLower()];
+                    else 
+                        FilterString += ", " + myTI.ToTitleCase(filter.Replace("_", " "));
+                }
+
+                FiltersEnabled = true;
+                count++;
+            }
+        }
+
         /// <summary>
         /// Open the tab code
         /// </summary>
@@ -157,6 +222,8 @@ namespace Knossos.NET.ViewModels
                     }
                     
                     ChangeSort(Knossos.globalSettings.sortType);
+                    BuildFilterString();
+
                     Parallel.ForEach(Mods, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async card =>
                     {
                         await card.LoadImage();
@@ -263,12 +330,15 @@ namespace Knossos.NET.ViewModels
             {
                 newSort = (ModSortType)Enum.Parse(typeof(ModSortType), (string)sort);
             }
+
             if (newSort != localSort)
             {
                 localSort = newSort;
                 Knossos.globalSettings.sortType = newSort;
                 Mods.Sort(); //It will use NebulaModCardViewModel.CompareTo()
             }
+            
+            SortString = "Sorted by " + newSort;
         }
 
         /// <summary>

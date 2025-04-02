@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using Knossos.NET.Classes;
 using System.Threading;
 using System.Security.Cryptography;
+using Knossos.NET.Views;
 
 namespace Knossos.NET.Models
 {
@@ -1315,6 +1316,11 @@ namespace Knossos.NET.Models
                     { new StringContent(modid), "mid" }
                 };
 
+                if (!userIsLoggedIn){
+                    
+                    return null;
+                }
+
                 var reply = await ApiCall("mod/team/fetch", data, true);
                 if (reply.HasValue)
                 {
@@ -1338,7 +1344,7 @@ namespace Knossos.NET.Models
                 }
                 else
                 {
-                    Log.Add(Log.LogSeverity.Error, "Nebula.GetTeamMembers", "Unable to check if mod team members.");
+                    Log.Add(Log.LogSeverity.Error, "Nebula.GetTeamMembers", "Unable to check if this mod has team members.");
                 }
             }
             catch (Exception ex)

@@ -9,19 +9,30 @@
 	
 	<Grid RowDefinitions="Auto,*">
 		<StackPanel>
-			<WrapPanel Grid.Row="0" Margin="5">
-				<Button Margin="5" Classes="Primary" Command="{Binding OpenFS2Log}">View fs2__open.log</Button>
-				<Button Margin="5" Classes="Primary" Command="{Binding UploadFS2Log}">Upload fs2__open.log</Button>
-				<Button Margin="5" Classes="Settings" Command="{Binding OpenDebugFilterView}">Adjust Debug Filters</Button>
-				<Button Margin="5" Classes="Settings" Command="{Binding OpenFS2Ini}">View fs2__open.ini</Button>
+			<Label FontSize="20" Margin="20,10,5,5">
+				Freespace Open Engine Debugging
+			</Label>
+			<WrapPanel Grid.Row="0" Margin="19,5,5,5">
+				<Button Margin="5" Width="165" Classes="Primary" Command="{Binding UploadFS2Log}">Upload fs2__open.log</Button>
+				<Button Margin="5" Width="165" Classes="Primary" Command="{Binding OpenFS2Log}" ToolTip.Tip="View the logfile output from Freespace Open's Debug Build">Open fs2__open.log</Button>
+				<Button Margin="5" Width="165" Classes="Settings" Command="{Binding OpenDebugFilterView}">Adjust Debug Filters</Button>
+				<Button Margin="5" Width="165" Classes="Settings" Command="{Binding OpenFS2Ini}">View fs2__open.ini</Button>
 			</WrapPanel>
-			<WrapPanel Grid.Row="0" Margin="5">
-				<Button Margin="5" Classes="Settings" Command="{Binding UploadKnossosConsole}">Upload KnossosNET Console</Button>
-				<Button Margin="5" Classes="Settings" Command="{Binding OpenLog}">View KnossosNET Logfile</Button>
-				<Button Margin="5" Classes="Settings" Command="{Binding OpenSettings}">View KnossosNET Settings File</Button>
+			<Label FontSize="20" Margin="20,30,5,5">
+				KnossosNET Debugging
+			</Label>
+			<WrapPanel Margin="19,5,5,0">
+				<Button Margin="5,5,5,5" Width="205" Classes="Settings" Command="{Binding OpenLog}">KnossosNET Extended Log</Button>
+				<Button Margin="5,5,5,5" Width="205" Classes="Settings" Command="{Binding OpenSettings}">KnossosNET Settings File</Button>
+			</WrapPanel>
+			<WrapPanel Margin="0,5,0,5">
+				<Label FontSize="16" Margin="20,8,5,5">
+				KnossosNET Session Log
+				</Label>
+				<Button Margin="5,5,0,5" Classes="Primary" Command="{Binding UploadKnossosConsole}">Upload</Button>
 			</WrapPanel>
 		</StackPanel>
-		<TextBox Grid.Row="1" Text="{Binding UiConsoleOutput}" IsReadOnly="True"></TextBox>
+		<TextBox Grid.Row="1" Margin="20,0,20,15" Text="{Binding UiConsoleOutput}" IsReadOnly="True" TextWrapping="Wrap"></TextBox>
 	</Grid>
 	
 </UserControl>

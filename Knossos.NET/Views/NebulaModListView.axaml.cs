@@ -144,7 +144,15 @@ namespace Knossos.NET.Views
                         foreach (var tag in tags.Select((x, i) => new { Value = x, Index = i }))
                         {
                             TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
-                            var displayName = myTI.ToTitleCase(tag.Value.Replace("_", " "));
+                            var displayName = String.Empty;
+
+                            if (Knossos.filterDisplayStrings.ContainsKey(tag.Value.ToLower()))
+                            {
+                                displayName = Knossos.filterDisplayStrings[tag.Value.ToLower()];
+                            } else {
+                                displayName = myTI.ToTitleCase(tag.Value.Replace("_", " "));
+                            }
+                            
                             var button = new Button { Content = displayName, Tag = tag.Index, Width = 150, Margin = new Thickness(2) };
                             button.Click += (_, __) =>
                             {

@@ -31,6 +31,9 @@
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
+			<TextBlock Margin="20" Width="400" TextWrapping="Wrap" IsEnabled="{Binding ShowLoginError}" FontSize="20" Foreground="Red">
+				You must be logged in to Nebula to manage your mod development team.
+			</TextBlock>
 		</StackPanel>
 	</ScrollViewer>
 	

@@ -13,10 +13,10 @@
 	</Design.DataContext>
 
 	<Grid ColumnDefinitions="Auto,*">
-		<ScrollViewer Width="190" Grid.Column="0">
+		<ScrollViewer Width="190" Margin="10,0,0,0" Grid.Column="0">
 			<StackPanel Width="190" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-				<TextBlock HorizontalAlignment="Center" Text="{Binding Name}" FontSize="14" FontWeight="Bold" TextWrapping="Wrap" Margin="0"></TextBlock>
-				<Image HorizontalAlignment="Center" Margin="10" Source="{Binding ModImage}" Width="150" Height="225"></Image>
+				<TextBlock HorizontalAlignment="Center" Text="{Binding Name}" TextAlignment="Center" FontSize="14" FontWeight="Bold" TextWrapping="Wrap" Margin="0"></TextBlock>
+				<Image HorizontalAlignment="Center" Margin="10,10,5,10" Source="{Binding ModImage}" Width="150" Height="225"></Image>
 				<TextBlock HorizontalAlignment="Center" Text="Active Version" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" Margin="0"></TextBlock>
 				<TextBlock HorizontalAlignment="Center" Text="{Binding Version}" FontSize="14" TextWrapping="Wrap" Margin="0"></TextBlock>
 				<!--MODS-->

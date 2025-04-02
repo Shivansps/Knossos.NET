@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using System;
 using System.IO;
 using VP.NET;
+using System.Diagnostics;
 
 namespace Knossos.NET.ViewModels
 {
@@ -50,6 +51,10 @@ namespace Knossos.NET.ViewModels
         internal bool ignoreGlobalCmd = false;
         [ObservableProperty]
         internal string buildMissingWarning = string.Empty;
+        [ObservableProperty]
+        internal bool noIngameOptions = false;
+        [ObservableProperty]
+        internal bool ingameOptionsFileExist = false;
 
         public ModSettingsViewModel()
         {
@@ -81,6 +86,7 @@ namespace Knossos.NET.ViewModels
             isDevMode = modJson.devMode;
             compressed = modJson.modSettings.isCompressed;
             ignoreGlobalCmd = modJson.modSettings.ignoreGlobalCmd;
+            noIngameOptions = modJson.modSettings.noIngameOptions;
             if (Knossos.globalSettings.modCompression != CompressionSettings.Disabled && !modJson.modSettings.isCompressed)
             {
                 compressionAvailable = true;
@@ -130,7 +136,7 @@ namespace Knossos.NET.ViewModels
                     }
                 }
             }
-
+            CheckIfOptionsFileExist();
             //Size
             Task.Factory.StartNew(() => UpdateModSize());
         }
@@ -331,6 +337,7 @@ namespace Knossos.NET.ViewModels
                 }
 
                 modJson.modSettings.ignoreGlobalCmd = IgnoreGlobalCmd;
+                modJson.modSettings.noIngameOptions = NoIngameOptions;
 
                 modJson.modSettings.Save();
                 if(modCardViewModel != null)
@@ -518,6 +525,53 @@ namespace Knossos.NET.ViewModels
                     Compressed = false;
                 }
                 await Task.Factory.StartNew(() => UpdateModSize());
+            }
+        }
+
+        internal void DeleteIngameOptions()
+        {
+            try
+            {
+                if (IngameOptionsFileExist)
+                {
+                    File.Delete(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", modJson!.id + "_settings.ini"));
+                }
+                CheckIfOptionsFileExist();
+            }
+            catch (Exception ex)
+            {
+                Log.Add(Log.LogSeverity.Error, "ModSettingsViewModel.DeleteIngameOptions()", ex);
+            }
+        }
+
+        internal void ViewIngameOptions()
+        {
+            if (File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", modJson!.id + "_settings.ini")))
+            {
+                try
+                {
+                    var cmd = new Process();
+                    cmd.StartInfo.FileName = Path.Combine(KnUtils.GetFSODataFolderPath(), "data", modJson!.id + "_settings.ini");
+                    cmd.StartInfo.UseShellExecute = true;
+                    cmd.Start();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Log.Add(Log.LogSeverity.Error, "MainWindowViewModel.ViewIngameOptions", ex);
+                }
+            }
+        }
+
+        private void CheckIfOptionsFileExist()
+        {
+            try
+            {
+                IngameOptionsFileExist = File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", modJson!.id + "_settings.ini"));
+            }
+            catch (Exception ex)
+            {
+                Log.Add(Log.LogSeverity.Error, "ModSettingsViewModel.CheckIfOptionsFileExist()", ex);
             }
         }
     }
