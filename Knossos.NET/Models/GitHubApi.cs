@@ -14,7 +14,7 @@ namespace Knossos.NET.Models
     {
         /// <summary>
         /// Gets the latest applicable release from GitHub.
-        /// - Modern platforms (Win10+ / macOS 12.2+): uses /releases/latest (current behaviour).
+        /// - Modern platforms (Win10+ / macOS 12.0+): uses /releases/latest (current behaviour).
         /// - Legacy platforms: scans /releases, keeps only v1.3.x tags, returns the newest one.
         /// </summary>
         /// <returns>GitHubRelease or null if the API call failed.</returns>
