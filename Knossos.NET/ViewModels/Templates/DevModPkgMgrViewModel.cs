@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Knossos.NET.Classes;
 using Knossos.NET.Models;
 using Knossos.NET.Views;
 using System;
@@ -26,6 +27,11 @@ namespace Knossos.NET.ViewModels
             [ObservableProperty]
             internal bool displayPackages = false;
 
+            //True when the dep was loaded with a range/complex constraint that the dropdowns can't represent.
+            //Cleared on any user interaction with the mod, version, or operator dropdowns. While set,
+            //GetDependency() returns the original Dependency unchanged so the constraint round-trips intact.
+            private bool preserveOriginalConstraint = false;
+
             internal int versionSelectedIndex = 0;
             internal int VersionSelectedIndex
             {
@@ -38,6 +44,7 @@ namespace Knossos.NET.ViewModels
                     if(versionSelectedIndex != value)
                     {
                         SetProperty(ref versionSelectedIndex, value);
+                        preserveOriginalConstraint = false;
                         FillPackages();
                     }
                 }
@@ -45,6 +52,19 @@ namespace Knossos.NET.ViewModels
 
             [ObservableProperty]
             internal int versionTypeIndex = 0;
+
+            partial void OnVersionTypeIndexChanged(int value)
+            {
+                if (preserveOriginalConstraint)
+                {
+                    //User edited the operator while a complex constraint was preserved — exit preserve mode
+                    //and rebuild the version dropdown so the placeholder is gone and a real version is selected.
+                    preserveOriginalConstraint = false;
+                    VersionItems.Clear();
+                    FillAllVersions();
+                    VersionSelectedIndex = 1;
+                }
+            }
 
             internal int modSelectedIndex = 0;
             internal int ModSelectedIndex
@@ -58,6 +78,7 @@ namespace Knossos.NET.ViewModels
                     if (modSelectedIndex != value)
                     {
                         SetProperty(ref modSelectedIndex, value);
+                        preserveOriginalConstraint = false;
                         VersionItems.Clear();
                         FillAllVersions();
                         VersionSelectedIndex = 1;
@@ -90,25 +111,39 @@ namespace Knossos.NET.ViewModels
 
                     FillAllVersions();
 
-                    versionTypeIndex = OperatorTypeIndexFromVersion(dep.version);
-
-                    var bareVersion = dep.version != null ? StripVersionOperators(dep.version) : null;
-                    var currentVersion = VersionItems.FirstOrDefault(x => x.Content != null && bareVersion != null && x.Content.ToString() == bareVersion);
-                    if (currentVersion != null)
+                    if (SemanticVersion.IsComplexConstraint(dep.version))
                     {
-                        versionSelectedIndex = VersionItems.IndexOf(currentVersion);
-                    }
-                    else if (!string.IsNullOrEmpty(bareVersion))
-                    {
-                        //Requested version isn't installed — surface it as its own entry so the UI matches the JSON.
-                        var itemVer = new ComboBoxItem();
-                        itemVer.Content = bareVersion;
-                        VersionItems.Add(itemVer);
+                        //Range syntax cannot be expressed via the operator+version dropdowns; show the original
+                        //string in a placeholder item and enter preserve mode so GetDependency() round-trips
+                        //the dep unchanged unless the user edits one of the dropdowns.
+                        preserveOriginalConstraint = true;
+                        var complexItem = new ComboBoxItem { Content = dep.version };
+                        VersionItems.Add(complexItem);
                         versionSelectedIndex = VersionItems.Count - 1;
+                        versionTypeIndex = 0;
                     }
                     else
                     {
-                        VersionSelectedIndex = 0;
+                        versionTypeIndex = OperatorTypeIndexFromVersion(dep.version);
+
+                        var bareVersion = dep.version != null ? StripVersionOperators(dep.version) : null;
+                        var currentVersion = VersionItems.FirstOrDefault(x => x.Content != null && bareVersion != null && x.Content.ToString() == bareVersion);
+                        if (currentVersion != null)
+                        {
+                            versionSelectedIndex = VersionItems.IndexOf(currentVersion);
+                        }
+                        else if (!string.IsNullOrEmpty(bareVersion))
+                        {
+                            //Requested version isn't installed — surface it as its own entry so the UI matches the JSON.
+                            var itemVer = new ComboBoxItem();
+                            itemVer.Content = bareVersion;
+                            VersionItems.Add(itemVer);
+                            versionSelectedIndex = VersionItems.Count - 1;
+                        }
+                        else
+                        {
+                            VersionSelectedIndex = 0;
+                        }
                     }
 
                     FillPackages();
@@ -287,6 +322,12 @@ namespace Knossos.NET.ViewModels
                 {
                     //If we are reading a missing dep, return original data
                     if (!ModItems[ModSelectedIndex].IsEnabled)
+                    {
+                        return Dependency;
+                    }
+
+                    //If the version is a preserved complex constraint and the user hasn't touched anything, round-trip it unchanged
+                    if (preserveOriginalConstraint)
                     {
                         return Dependency;
                     }

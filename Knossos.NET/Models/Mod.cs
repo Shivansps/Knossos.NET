@@ -415,6 +415,11 @@ namespace Knossos.NET.Models
                                 {
                                     temp.Remove(d);
                                 }
+                                else if (SemanticVersion.IsComplexConstraint(d.version))
+                                {
+                                    //Range syntax (e.g. "[1.0,2.0)" or ">=1.0 <2.0") cannot be safely stripped
+                                    //to a bare version for the dedup comparisons below; leave in temp as-is.
+                                }
                                 else
                                 {
                                     if (d.version.Contains(">="))
