@@ -73,6 +73,7 @@
 						<WrapPanel Margin="5,10,0,0">
 							<Label Margin="0,5,0,0" Width="205">Auto Update KnosssosNET</Label>
 							<ToggleSwitch IsVisible="{Binding CheckUpdates}" Margin="5,0,0,0" IsChecked="{Binding AutoUpdate}" ToolTip.Tip="The update will be automatically downloaded and installed. KnossosNET will be restarted without any user input."></ToggleSwitch>
+							<Label Margin="10,1,0,0" Content="{Binding KnossosUpdateChannelInfo}" VerticalAlignment="Center"/>
 						</WrapPanel>
 						<WrapPanel Margin="5,10,0,0">
 							<Label Margin="0,5,0,0" Width="205">Auto Update FSO Builds</Label>

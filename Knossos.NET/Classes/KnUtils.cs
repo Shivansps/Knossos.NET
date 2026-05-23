@@ -1391,5 +1391,28 @@ namespace Knossos.NET
                 Log.Add(Log.LogSeverity.Error, "KnUtils.CreateDesktopShortcut()", ex);
             }
         }
+
+        /// <summary>
+        /// Determines if the current OS meets the requirements for .NET 10 / "latest" channel updates.
+        /// Windows 10+ or macOS 12.2+ qualify.
+        /// </summary>
+        public static bool IsModernOS()
+        {
+            if (IsWindows)
+            {
+                // Windows build 10240 = Windows 10 RTM
+                return Environment.OSVersion.Version.Major >= 10;
+            }
+
+            if (IsMacOS)
+            {
+                var ver = Environment.OSVersion.Version;
+                // macOS 12.0
+                return ver.Major >= 12;
+            }
+
+            // Linux and anything else: treat as modern (no restriction planned)
+            return true;
+        }
     }
 }

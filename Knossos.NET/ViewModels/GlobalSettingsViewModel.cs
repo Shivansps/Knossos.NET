@@ -36,7 +36,9 @@ namespace Knossos.NET.ViewModels
         private const long speed10MB = 170000000;
 
         /* For display only */
-		[ObservableProperty]
+        [ObservableProperty]
+        internal string knossosUpdateChannelInfo = "";
+        [ObservableProperty]
         internal bool isPortableMode = false;
         [ObservableProperty]
         internal bool flagDataLoaded = false;
@@ -552,6 +554,14 @@ namespace Knossos.NET.ViewModels
         public GlobalSettingsViewModel()
         {
             isPortableMode = Knossos.inPortableMode;
+            if (KnUtils.IsModernOS())
+            {
+                knossosUpdateChannelInfo = "(Main Update Channel)";
+            }
+            else
+            {
+                knossosUpdateChannelInfo = "(Legacy Update Channel)";
+            }
         }
 
         public void CheckDisplaySettingsWarning()
