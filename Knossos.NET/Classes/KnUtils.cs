@@ -1394,7 +1394,7 @@ namespace Knossos.NET
 
         /// <summary>
         /// Determines if the current OS meets the requirements for .NET 10 / "latest" channel updates.
-        /// Windows 10+ or macOS 12.2+ qualify.
+        /// Windows 10+ or macOS 12.0+ qualify.
         /// </summary>
         public static bool IsModernOS()
         {
