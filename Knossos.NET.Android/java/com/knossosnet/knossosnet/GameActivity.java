@@ -15,6 +15,15 @@ import java.util.Arrays;
 import java.util.List;
 
 public class GameActivity extends org.libsdl.app.SDLActivity {
+
+    private static String _workingFolder = "";
+
+    /* FSO API */
+
+    public static String getWorkingFolder() { return _workingFolder; }
+
+    /* ******* */
+
     @Override
     protected String[] getArguments() {
         android.content.Intent i = getIntent();
@@ -101,11 +110,17 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         //Init TTS
         TTSManager.init(this);
 
+        Intent i = getIntent();
+        // Set working folder
+        if(i != null)
+        {
+            _workingFolder = i.getStringExtra("workingFolder");
+        }
+
         //Start game
         super.onCreate(savedInstanceState);
 
         //Start the touch overlay? Needs to be done after super.oncreate
-        Intent i = getIntent();
         boolean touchOverlay = i == null || i.getBooleanExtra("touchOverlay", true);
         if (touchOverlay) {
             getWindow().getDecorView().post(new Runnable() {
@@ -207,6 +222,7 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
 
     @Override protected void onDestroy()
     {
+        _workingFolder = "";
         TTSManager.shutdown();
         super.onDestroy();
         try {

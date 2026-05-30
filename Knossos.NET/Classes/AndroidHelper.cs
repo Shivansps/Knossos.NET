@@ -145,7 +145,7 @@ public static class AndroidHelper
     }
 
     /// <summary>
-    /// Launch FSO, on Android.
+    /// Launch FSO, on Android.g
     /// All so files will be copied to app internal storage
     /// </summary>
     /// <param name="engineLibPath"></param>
@@ -167,12 +167,11 @@ public static class AndroidHelper
             intent.SetClassName(ctx, "com.knossosnet.knossosnet.GameActivity");
             intent.AddFlags(ActivityFlags.NewTask);
             intent.PutExtra("engineLibName", Path.Combine(dstAbiDir, libName));
-
             if (workingFolder != null)
             {
-                cmdline += " -working_folder " + workingFolder;
+                intent.PutExtra("workingFolder", workingFolder);
             }
-
+            
             if (cmdline.Length > 0)
                 intent.PutStringArrayListExtra("fsoArgs", cmdline.Split(" "));
 
