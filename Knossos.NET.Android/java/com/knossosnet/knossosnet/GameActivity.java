@@ -253,8 +253,28 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         }
     }
 
-
     @SuppressLint("ClickableViewAccessibility")
+    private android.view.View.OnTouchListener makeTouchHandler(final int code) {
+        return new android.view.View.OnTouchListener() {
+            @Override public boolean onTouch(android.view.View v, android.view.MotionEvent e) {
+                int action = e.getActionMasked();
+                if (action == android.view.MotionEvent.ACTION_DOWN) {
+                    v.setPressed(true);
+                    NativeBridge.onButton(code, true);
+                    return true;
+                } else if (action == android.view.MotionEvent.ACTION_UP
+                        || action == android.view.MotionEvent.ACTION_CANCEL) {
+                    v.setPressed(false);
+                    NativeBridge.onButton(code, false);
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
+
+
+    @SuppressLint({"ClickableViewAccessibility", "DiscouragedApi"})
     private void setupOverlayFromXml()
     {
         int layoutId = getResources().getIdentifier("overlay_controls", "layout", getPackageName());
@@ -263,16 +283,16 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         Button btnToggle = overlay.findViewById(getResources().getIdentifier("btnToggle", "id", getPackageName()));
         RadialDpadView dpad = overlay.findViewById(getResources().getIdentifier("dpad", "id", getPackageName()));
 
-        
+
         // Button listeners
-		Button btnKyb = overlay.findViewById(getResources().getIdentifier("btnKyb", "id", getPackageName()));
+        Button btnKyb = overlay.findViewById(getResources().getIdentifier("btnKyb", "id", getPackageName()));
         btnKyb.setOnClickListener(v -> toggleSdlKeyboard(overlay));
         // ESC
         Button btnEsc = overlay.findViewById(getResources().getIdentifier("btnEsc", "id", getPackageName()));
         btnEsc.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_ESC));
 
         // F3
-        Button btnF3 = overlay.findViewById(getResources().getIdentifier("btnF3", "id", getPackageName())); 
+        Button btnF3 = overlay.findViewById(getResources().getIdentifier("btnF3", "id", getPackageName()));
         btnF3.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_F3));
 
         // ALT+J
@@ -288,15 +308,15 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         btnALTH.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_ALT_H));
 
         // ALT+A
-        Button btnAltA = overlay.findViewById(getResources().getIdentifier("btnAltA", "id", getPackageName())); 
+        Button btnAltA = overlay.findViewById(getResources().getIdentifier("btnAltA", "id", getPackageName()));
         btnAltA.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_ALT_A));
 
         // Space
-        Button btnSpace = overlay.findViewById(getResources().getIdentifier("btnFireS", "id", getPackageName())); 
+        Button btnSpace = overlay.findViewById(getResources().getIdentifier("btnFireS", "id", getPackageName()));
         btnSpace.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_SPACE));
 
         // LCtrl
-        Button btnLCtrl = overlay.findViewById(getResources().getIdentifier("btnFireP", "id", getPackageName())); 
+        Button btnLCtrl = overlay.findViewById(getResources().getIdentifier("btnFireP", "id", getPackageName()));
         btnLCtrl.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_CTRL));
 
         // CycleP
@@ -308,19 +328,19 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         btnCycleS.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_CYCLE_S));
 
         // Tab
-        Button btnTab = overlay.findViewById(getResources().getIdentifier("btnTab", "id", getPackageName())); 
+        Button btnTab = overlay.findViewById(getResources().getIdentifier("btnTab", "id", getPackageName()));
         btnTab.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_TAB));
 
         // +
-        Button btnPlus = overlay.findViewById(getResources().getIdentifier("btnPlus", "id", getPackageName())); 
+        Button btnPlus = overlay.findViewById(getResources().getIdentifier("btnPlus", "id", getPackageName()));
         btnPlus.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_PLUS));
 
         // -
-        Button btnMinus = overlay.findViewById(getResources().getIdentifier("btnMinus", "id", getPackageName())); 
+        Button btnMinus = overlay.findViewById(getResources().getIdentifier("btnMinus", "id", getPackageName()));
         btnMinus.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_MINUS));
 
         // Q
-        Button btnQ = overlay.findViewById(getResources().getIdentifier("btnQ", "id", getPackageName())); 
+        Button btnQ = overlay.findViewById(getResources().getIdentifier("btnQ", "id", getPackageName()));
         btnQ.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_Q));
 
         // -
@@ -332,15 +352,15 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         btnY.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_Y));
 
         // H
-        Button btnH = overlay.findViewById(getResources().getIdentifier("btnH", "id", getPackageName())); 
+        Button btnH = overlay.findViewById(getResources().getIdentifier("btnH", "id", getPackageName()));
         btnH.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_H));
 
         // B
-        Button btnB = overlay.findViewById(getResources().getIdentifier("btnB", "id", getPackageName())); 
+        Button btnB = overlay.findViewById(getResources().getIdentifier("btnB", "id", getPackageName()));
         btnB.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_B));
 
         // E
-        Button btnE = overlay.findViewById(getResources().getIdentifier("btnE", "id", getPackageName())); 
+        Button btnE = overlay.findViewById(getResources().getIdentifier("btnE", "id", getPackageName()));
         btnE.setOnTouchListener(makeTouchHandler(NativeBridge.CODE_KEY_E));
 
         // F
@@ -377,35 +397,19 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
 
         // C+3+1
         Button btnC31 = overlay.findViewById(getResources().getIdentifier("btnC31", "id", getPackageName()));
-        btnC31.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override public void onClick(android.view.View v) {
-                NativeBridge.runMacro(NativeBridge.C_3_1);
-            }
-        });
+        btnC31.setOnClickListener(v -> NativeBridge.runMacro(NativeBridge.C_3_1));
 
         // C+3+5
         Button btnC35 = overlay.findViewById(getResources().getIdentifier("btnC35", "id", getPackageName()));
-        btnC35.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override public void onClick(android.view.View v) {
-                NativeBridge.runMacro(NativeBridge.C_3_5);
-            }
-        });
+        btnC35.setOnClickListener(v -> NativeBridge.runMacro(NativeBridge.C_3_5));
 
         // C+3+9
         Button btnC39 = overlay.findViewById(getResources().getIdentifier("btnC39", "id", getPackageName()));
-        btnC39.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override public void onClick(android.view.View v) {
-                NativeBridge.runMacro(NativeBridge.C_3_9);
-            }
-        });
+        btnC39.setOnClickListener(v -> NativeBridge.runMacro(NativeBridge.C_3_9));
 
         // C+5
         Button btnC5 = overlay.findViewById(getResources().getIdentifier("btnC5", "id", getPackageName()));
-        btnC5.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override public void onClick(android.view.View v) {
-                NativeBridge.runMacro(NativeBridge.C_5);
-            }
-        });
+        btnC5.setOnClickListener(v -> NativeBridge.runMacro(NativeBridge.C_5));
 
         // Buttons that visibility are controlled by the toggle
         View[] topBar = new View[] {
@@ -415,17 +419,15 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
                 dpad, btnSpace, btnLCtrl, btnCycleP, btnCycleS, btnTab, btnS, btnA, btnZ, btnRet,
                 btnPlus, btnMinus, btnX, btnQ, btnY, btnH, btnB, btnE, btnF, btnT, btnM, btnBackSlash };
 
-        btnToggle.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override public void onClick(android.view.View v) {
-                boolean topBarVisible = topBar[0].getVisibility() == android.view.View.VISIBLE;
-                boolean joystickVisible = joystick[0].getVisibility() == android.view.View.VISIBLE;
+        btnToggle.setOnClickListener(v -> {
+            boolean topBarVisible = topBar[0].getVisibility() == View.VISIBLE;
+            boolean joystickVisible = joystick[0].getVisibility() == View.VISIBLE;
 
-                int newTop = (topBarVisible && joystickVisible) ? android.view.View.GONE : android.view.View.VISIBLE;
-                int newJoy = (topBarVisible && !joystickVisible) ? android.view.View.VISIBLE : android.view.View.GONE;
+            int newTop = (topBarVisible && joystickVisible) ? View.GONE : View.VISIBLE;
+            int newJoy = (topBarVisible && !joystickVisible) ? View.VISIBLE : View.GONE;
 
-                for (int i = 0; i < topBar.length; i++) topBar[i].setVisibility(newTop);
-                for (int i = 0; i < joystick.length; i++) joystick[i].setVisibility(newJoy);
-            }
+            for (int i = 0; i < topBar.length; i++) topBar[i].setVisibility(newTop);
+            for (int i = 0; i < joystick.length; i++) joystick[i].setVisibility(newJoy);
         });
 
         for (View w : topBar) w.setVisibility(
@@ -434,7 +436,7 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         for (View w : joystick) w.setVisibility(
                 View.GONE
         );
-        
+
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT);
@@ -450,25 +452,5 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
                 c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
         }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private android.view.View.OnTouchListener makeTouchHandler(final int code) {
-        return new android.view.View.OnTouchListener() {
-            @Override public boolean onTouch(android.view.View v, android.view.MotionEvent e) {
-                int action = e.getActionMasked();
-                if (action == android.view.MotionEvent.ACTION_DOWN) {
-                    v.setPressed(true);
-                    NativeBridge.onButton(code, true);
-                    return true;
-                } else if (action == android.view.MotionEvent.ACTION_UP
-                        || action == android.view.MotionEvent.ACTION_CANCEL) {
-                    v.setPressed(false);
-                    NativeBridge.onButton(code, false);
-                    return true;
-                }
-                return false;
-            }
-        };
     }
 }
