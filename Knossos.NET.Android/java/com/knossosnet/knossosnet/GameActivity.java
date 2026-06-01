@@ -13,14 +13,38 @@ import android.widget.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.lang.ref.WeakReference;
 
 public class GameActivity extends org.libsdl.app.SDLActivity {
 
     private static String _workingFolder = "";
+    private static WeakReference<View> _overlayRef = null;
+    private static Boolean _pendingVisibility = null;
+    private static Boolean _forceOverlayOn = false;
 
     /* FSO API */
 
     public static String getWorkingFolder() { return _workingFolder; }
+
+    public static void enableOverlay() {
+        if (_forceOverlayOn) return;
+        View overlay = _overlayRef != null ? _overlayRef.get() : null;
+        if (overlay != null) {
+            overlay.post(() -> overlay.setVisibility(View.VISIBLE));
+        } else {
+            _pendingVisibility = true;
+        }
+    }
+
+    public static void disableOverlay() {
+        if (_forceOverlayOn) return;
+        View overlay = _overlayRef != null ? _overlayRef.get() : null;
+        if (overlay != null) {
+            overlay.post(() -> overlay.setVisibility(View.GONE));
+        } else {
+            _pendingVisibility = false;
+        }
+    }
 
     /* ******* */
 
@@ -115,17 +139,16 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         if(i != null)
         {
             _workingFolder = i.getStringExtra("workingFolder");
+            _forceOverlayOn = i.getBooleanExtra("forceTouchOverlay", true);
         }
 
         //Start game
         super.onCreate(savedInstanceState);
 
         //Start the touch overlay? Needs to be done after super.oncreate
-        boolean touchOverlay = i == null || i.getBooleanExtra("touchOverlay", true);
-        if (touchOverlay) {
-            getWindow().getDecorView().post(new Runnable() {
-                @Override public void run() { setupOverlayFromXml(); }
-            });
+        if(i != null)
+        {
+            _forceOverlayOn = i.getBooleanExtra("forceTouchOverlay", true);
         }
     }
 
@@ -223,6 +246,8 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
     @Override protected void onDestroy()
     {
         _workingFolder = "";
+        _overlayRef  = null;
+        _pendingVisibility = null;
         TTSManager.shutdown();
         super.onDestroy();
         try {
@@ -451,6 +476,16 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
                 c.hide(WindowInsets.Type.systemBars());
                 c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
+        }
+
+        _overlayRef = new WeakReference<>(overlay);
+
+        if(!_forceOverlayOn)
+            overlay.setVisibility(View.GONE);
+
+        if (_pendingVisibility != null) {
+            overlay.setVisibility(_pendingVisibility ? View.VISIBLE : View.GONE);
+            _pendingVisibility = null;
         }
     }
 }
