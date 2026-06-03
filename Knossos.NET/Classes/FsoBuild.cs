@@ -93,9 +93,11 @@ namespace Knossos.NET.Models
         public string? directExec = null;
         public bool isInstalled = true;
         public bool devMode = false;
-        public Mod? modData; 
+        public Mod? modData;
+#pragma warning disable CS0414
         private static bool _flagErrorOneWarn = false;
-      
+#pragma warning restore CS0414
+
         /// <summary>
         /// This is a "DirectExec" FsoBuild
         /// This is intended to be used for when the user manually selects a FSO build executable file on mod settings

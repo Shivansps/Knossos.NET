@@ -346,6 +346,7 @@ namespace Knossos.NET.Models
             }
         }
 
+        /// <summary>
         /// Load setting data that saves on the fs2_open.ini
         /// On the ini we save all data that is used by both FSO and KNET
         /// </summary>
