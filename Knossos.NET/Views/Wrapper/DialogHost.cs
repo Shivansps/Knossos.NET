@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -8,42 +7,57 @@ using System.Linq;
 
 namespace Knossos.NET.Views
 {
-    /// <summary>
-    /// Handles displaying a view over an overlay on the MainView
-    /// to display windows or messages
-    /// </summary>
     public static class DialogHost
     {
-        public static ContentPresenter? Show(Control dialog, Action? onDismiss = null)
+        public enum Layer { Window, MessageBox }
+
+        public static Border? Show(Control dialog, Layer layer = Layer.Window, Action? onDismiss = null)
         {
-            var overlayHost = MainView.instance?.GetVisualDescendants().OfType<ContentPresenter>().FirstOrDefault(x => x.Name == "DialogOverlay");
-            if (overlayHost == null)
+            var host = GetHost(layer);
+            if (host == null)
             {
-                Log.Add(Log.LogSeverity.Error, "DialogHost.Show()", "Unable to find the dialog overlay.");
+                Log.Add(Log.LogSeverity.Error, "DialogHost.Show()", "Unable to find the dialog overlay panel.");
                 return null;
             }
-            EnsureHost(overlayHost);
-            overlayHost.IsHitTestVisible = true;
-            overlayHost.Content = Wrap(dialog, onDismiss);
-            return overlayHost;
+
+            var wrapper = Wrap(dialog, onDismiss);
+            host.Children.Add(wrapper);
+            host.IsHitTestVisible = true;
+            return wrapper;
         }
 
-
-        public static void Hide(Control dialog, ContentPresenter? overlayHost = null)
+        public static void Hide(Control dialogOrWrapper)
         {
-            if(overlayHost == null)
-                overlayHost = MainView.instance?.GetVisualDescendants().OfType<ContentPresenter>().FirstOrDefault(x => x.Name == "DialogOverlay");
-            if (overlayHost == null)
+            foreach (var host in AllHosts())
             {
-                Log.Add(Log.LogSeverity.Error, "DialogHost.Show()", "Unable to find the dialog overlay.");
-                return;
+                if (host == null) continue;
+
+                var entry = host.Children.FirstOrDefault(c =>
+                    c == dialogOrWrapper ||
+                    (c is Border b && b.Child == dialogOrWrapper));
+
+                if (entry != null)
+                {
+                    host.Children.Remove(entry);
+                    host.IsHitTestVisible = host.Children.Count > 0;
+                    return;
+                }
             }
-            overlayHost.Content = null;
-            overlayHost.IsHitTestVisible = false;
         }
 
+        private static Panel? GetHost(Layer layer)
+        {
+            var name = layer == Layer.MessageBox ? "MessageBoxOverlay" : "WindowOverlay";
+            return MainView.instance?
+                .GetVisualDescendants()
+                .OfType<Panel>()
+                .FirstOrDefault(x => x.Name == name);
+        }
 
-        private static Control Wrap(Control content, Action? onDismiss)
+        private static Panel?[] AllHosts() =>
+            new[] { GetHost(Layer.MessageBox), GetHost(Layer.Window) };
+
+        private static Border Wrap(Control content, Action? onDismiss)
         {
             var root = new Border
             {
@@ -52,16 +66,8 @@ namespace Knossos.NET.Views
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
-            //root.PointerPressed += (_, __) => onDismiss?.Invoke(); // dismiss outside card
+            //root.PointerPressed += (_, __) => onDismiss?.Invoke();
             return root;
-        }
-
-
-        private static void EnsureHost(ContentPresenter overlayHost)
-        {
-            // Make sure overlayHost stretches over the window
-            overlayHost.HorizontalAlignment = HorizontalAlignment.Stretch;
-            overlayHost.VerticalAlignment = VerticalAlignment.Stretch;
         }
     }
 }

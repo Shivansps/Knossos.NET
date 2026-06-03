@@ -123,6 +123,8 @@ namespace Knossos.NET.Models
         public string? basePath { get; set; } = null;
         [JsonPropertyName("enable_log")]
         public bool enableLogFile { get; set; } = true;
+        [JsonPropertyName("single_view_mode")]
+        public bool singleViewMode { get; set; } = false;
         [JsonPropertyName("log_level")]
         public int logLevel { get; set; } = 1;
         [JsonPropertyName("global_cmdline")]
@@ -678,6 +680,7 @@ namespace Knossos.NET.Models
                         hiddenModIds = tempSettings.hiddenModIds;
                         antiStuck = tempSettings.antiStuck;
                         maxUploadRetries = tempSettings.maxUploadRetries;
+                        singleViewMode = tempSettings.singleViewMode;
                         if (hiddenModIds.Any())
                         {
                             foreach (var hiddenMod in hiddenModIds)

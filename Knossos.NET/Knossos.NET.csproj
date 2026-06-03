@@ -24,6 +24,9 @@
     <None Remove="ViewModels\ModCardViewModel.cs~RF423e49e6.TMP" />
     <None Remove="ViewModels\Windows\ModInstallViewModel.cs~RF3e55a24c.TMP" />
     <None Remove="Views\Windows\ModDetailsView.axaml~RF2bc1dec5.TMP" />
+    <Compile Update="Views\MessageBox.axaml.cs">
+      <DependentUpon>MessageBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\NebulaModListView.axaml.cs">
       <DependentUpon>NebulaModListView.axaml</DependentUpon>
     </Compile>
@@ -85,9 +88,6 @@
     </Compile>
     <Compile Update="Views\Windows\DevModAdvancedUploadView.axaml.cs">
       <DependentUpon>DevModAdvancedUploadView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\MessageBox.axaml.cs">
-      <DependentUpon>MessageBox.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\ModListView.axaml.cs">
       <DependentUpon>ModListView.axaml</DependentUpon>

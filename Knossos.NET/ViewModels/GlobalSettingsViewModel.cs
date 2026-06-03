@@ -223,6 +223,13 @@ namespace Knossos.NET.ViewModels
             set { if (showDevOptions != value) { this.SetProperty(ref showDevOptions, value); UnCommitedChanges = true; } }
         }
 
+        private bool singleView = true;
+        internal bool SingleView
+        {
+            get { return singleView; }
+            set { if (singleView != value) { this.SetProperty(ref singleView, value); UnCommitedChanges = true; } }
+        }
+
         /* This change is applied right away */
         private bool closeToTray = false;
         internal bool CloseToTray
@@ -748,6 +755,7 @@ namespace Knossos.NET.ViewModels
             CloseToTray = Knossos.globalSettings.closeToTray;
             AntiStuck = Knossos.globalSettings.antiStuck;
             MaxUploadsRetries = Knossos.globalSettings.maxUploadRetries;
+            SingleView = Knossos.globalSettings.singleViewMode;
 
             /* VIDEO SETTINGS */
             //RESOLUTION
@@ -1332,6 +1340,7 @@ namespace Knossos.NET.ViewModels
             Knossos.globalSettings.closeToTray = CloseToTray;
             Knossos.globalSettings.antiStuck = AntiStuck;
             Knossos.globalSettings.maxUploadRetries = MaxUploadsRetries;
+            Knossos.globalSettings.singleViewMode = SingleView;
 
             /* VIDEO */
             //Resolution

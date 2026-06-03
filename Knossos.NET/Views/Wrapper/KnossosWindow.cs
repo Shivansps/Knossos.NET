@@ -135,7 +135,7 @@ namespace Knossos.NET.Views
         // ── Internal state ───────────────────────────────────────────────────
 
         private Window? _hostWindow;
-        private ContentPresenter? _overlayHost;
+        private Control? _overlayWrapper;
         private TaskCompletionSource<object?>? _tcs;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _mainViewBoundsHandler;
 
@@ -157,21 +157,20 @@ namespace Knossos.NET.Views
                 return;
             }
 
-            if (_overlayHost != null)
-            {
-                if (_mainViewBoundsHandler != null && MainView.instance != null)
-                {
-                    MainView.instance.PropertyChanged -= _mainViewBoundsHandler;
-                    _mainViewBoundsHandler = null;
-                }
+			if (_overlayWrapper != null)
+			{
+				if (_mainViewBoundsHandler != null && MainView.instance != null)
+				{
+					MainView.instance.PropertyChanged -= _mainViewBoundsHandler;
+					_mainViewBoundsHandler = null;
+				}
 
-                DialogHost.Hide(this, _overlayHost);
-                _overlayHost.IsHitTestVisible = false;
-                _overlayHost = null;
-                _tcs?.TrySetResult(DialogResult);
-                _tcs = null;
-                Closed?.Invoke(this, EventArgs.Empty);
-            }
+				DialogHost.Hide(_overlayWrapper);
+				_overlayWrapper = null;
+				_tcs?.TrySetResult(DialogResult);
+				_tcs = null;
+				Closed?.Invoke(this, EventArgs.Empty);
+			}
         }
 
         // ── Overlay chrome (Android / browser) ───────────────────────────────
@@ -253,12 +252,12 @@ namespace Knossos.NET.Views
 
         private async Task ShowInternalAsync(TopLevel? owner, bool isDialog)
         {
-            if (KnUtils.IsAndroid || KnUtils.IsBrowser)
+            if (Knossos.globalSettings.singleViewMode || KnUtils.IsAndroid || KnUtils.IsBrowser)
             {
                 _tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                var chrome = BuildOverlayChrome(this);
-                _overlayHost = DialogHost.Show(chrome, onDismiss: () => Close());
+				var chrome = BuildOverlayChrome(this);
+				_overlayWrapper = DialogHost.Show(chrome, DialogHost.Layer.Window, onDismiss: () => Close());
 
                 // Subscribe to MainView resize so the chrome triggers a re-measure.
                 // Avalonia layout propagates automatically via Stretch alignment, but this
