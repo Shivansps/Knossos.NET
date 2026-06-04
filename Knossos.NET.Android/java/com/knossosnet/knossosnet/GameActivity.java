@@ -45,6 +45,18 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
             _pendingVisibility = false;
         }
     }
+	
+	// TTS wrappers ----------------------------------------------------------
+    public static boolean tts_speak(String text)     { return TTSManager.speak(text); }
+    public static boolean tts_stop()                 { return TTSManager.stop(); }
+    public static boolean tts_pause()                { return TTSManager.pause(); }
+    public static boolean tts_resume()               { return TTSManager.resume(); }
+    public static boolean tts_isSpeaking()           { return TTSManager.isSpeaking(); }
+    public static void    tts_shutdown()             { TTSManager.shutdown(); }
+    public static void    tts_setRate(float rate)    { TTSManager.setRate(rate); }
+    public static void    tts_setLanguageTag(String tag) { TTSManager.setLanguageTag(tag); }
+    public static String[] tts_getAvailableLanguageTags() { return TTSManager.getAvailableLanguageTags(); }
+    // -------------------------------------------------------------------------
 
     /* ******* */
 
