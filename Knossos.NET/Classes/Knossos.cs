@@ -1,23 +1,24 @@
-﻿using Avalonia.Threading;
+﻿using Avalonia.Platform;
+using Avalonia.Threading;
 using Knossos.NET.Classes;
 using Knossos.NET.Models;
 using Knossos.NET.ViewModels;
 using Knossos.NET.Views;
 using Microsoft.VisualBasic.FileIO;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Avalonia.Platform;
+using System.Reflection;
+using System.Threading.Tasks;
 using VP.NET;
 
 namespace Knossos.NET
 {
     public static class Knossos
     {
-        public static readonly string AppVersion = "1.3.7";
+        public static readonly string AppVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "0.0.0";
         public readonly static string ToolRepoURL = "https://raw.githubusercontent.com/KnossosNET/Knet-Tool-Repo/main/knet_tools.json";
         public readonly static string GitHubUpdateRepoURL = "https://api.github.com/repos/KnossosNET/Knossos.NET";
         public readonly static string FAQURL = "https://raw.githubusercontent.com/KnossosNET/KNet-General-Resources-Repo/main/communityfaq.json";

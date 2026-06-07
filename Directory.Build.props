@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <AppVersion>1.3.8</AppVersion>
+    <AndroidVersionCode>4</AndroidVersionCode>
+
+    <Version>$(AppVersion)</Version>
+    <AssemblyVersion>$(AppVersion)</AssemblyVersion>
+    <InformationalVersion>$(AppVersion)</InformationalVersion>
+  </PropertyGroup>
+</Project>
