@@ -39,6 +39,8 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal string knossosUpdateChannelInfo = "";
         [ObservableProperty]
+        internal string knossosUpdateTooltip = "";
+        [ObservableProperty]
         internal bool isPortableMode = false;
         [ObservableProperty]
         internal bool flagDataLoaded = false;
@@ -554,13 +556,12 @@ namespace Knossos.NET.ViewModels
         public GlobalSettingsViewModel()
         {
             isPortableMode = Knossos.inPortableMode;
-            if (KnUtils.IsModernOS())
+            if (!KnUtils.IsModernOS())
             {
-                knossosUpdateChannelInfo = "(Main Update Channel)";
-            }
-            else
-            {
-                knossosUpdateChannelInfo = "(Legacy Update Channel)";
+                KnossosUpdateChannelInfo = "(Legacy Update Channel)";
+                var current = KnUtils.IsWindows ? $"Windows {Environment.OSVersion.Version.Major}" : $"MacOS {Environment.OSVersion.Version}";
+                var minimum = KnUtils.IsWindows ? "Windows 10+" : "MacOS 12+";
+                KnossosUpdateTooltip = $"Your version of {current} is not compatible with version 1.4 of Knossos.NET and above. To receive new features, you should upgrade to version {minimum}. You will still receive bugfix updates when they apply to version 1.3.";
             }
         }
 
