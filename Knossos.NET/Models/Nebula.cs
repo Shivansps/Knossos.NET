@@ -470,7 +470,13 @@ namespace Knossos.NET.Models
                 //Remove Installed and FS2 parent mods if FS2 root pack is not detected, Mark update available to installed ones, set installed ones as inNebula
                 foreach (var m in modsTcs.ToList())
                 {
-
+                    //Do not load mods that belong to the new DLC system now.
+                    //TODO: Remove for next version
+                    if (m.parent == "DLC" || m.id == "DLC")
+                    {
+                        modsTcs.Remove(m);
+                        continue;
+                    }
                     if (listFS2Override || ( m.parent != "FS2" || m.parent == "FS2" && Knossos.retailFs2RootFound ))
                     {
                         //This is already installed?
