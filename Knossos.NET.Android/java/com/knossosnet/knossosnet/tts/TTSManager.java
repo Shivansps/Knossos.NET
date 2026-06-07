@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
 import android.app.Activity;
-import java.util.Collections;
-import java.util.Comparator;
 
 public final class TTSManager implements TextToSpeech.OnInitListener {
     private static final String defaultLangTag = "en-US";
@@ -20,6 +18,8 @@ public final class TTSManager implements TextToSpeech.OnInitListener {
     private static volatile TextToSpeech tts;
     private static volatile boolean ready;
     private static volatile boolean speaking;
+    private static String _pendingSetVoice = null;
+    private static float _pendingSetRate = -1;
 
     private TTSManager() {}
 
@@ -51,6 +51,16 @@ public final class TTSManager implements TextToSpeech.OnInitListener {
             @Override public void onDone(String utteranceId)  { speaking = false; }
             @Override public void onError(String utteranceId) { speaking = false; }
         });
+        
+        if(_pendingSetVoice != null)
+        {
+            setLanguageTag(_pendingSetVoice);
+            _pendingSetVoice = null;
+        }
+        if(_pendingSetRate != -1) {
+            setRate(_pendingSetRate);
+            _pendingSetRate = -1;
+        }
     }
 
     public static boolean speak(String text) {
@@ -74,10 +84,20 @@ public final class TTSManager implements TextToSpeech.OnInitListener {
     public static boolean resume() { return false; }
     public static boolean isSpeaking() { return speaking; }
 
-    public static void setRate(float rate) { if (tts != null) tts.setSpeechRate(rate); }
-    public static void setPitch(float pitch) { if (tts != null) tts.setPitch(pitch); }
+    public static void setRate(float rate) { 
+        if(!ready) {
+            _pendingSetRate = rate;
+            return;
+        }
+        if (tts != null) 
+            tts.setSpeechRate(rate); 
+    }
 
 	public static void setLanguageTag(String voiceName) {
+        if(!ready) {
+            _pendingSetVoice = voiceName;
+            return;
+        }
 		TextToSpeech engine = tts;
 		if (engine == null || !ready || voiceName == null || voiceName.isEmpty()) return;
 
@@ -111,16 +131,14 @@ public final class TTSManager implements TextToSpeech.OnInitListener {
 		}
 
 		// List english voices first
-		Collections.sort(usable, new Comparator<Voice>() {
-			@Override public int compare(Voice a, Voice b) {
-				boolean aEn = "en".equals(a.getLocale().getLanguage());
-				boolean bEn = "en".equals(b.getLocale().getLanguage());
-				if (aEn != bEn) return aEn ? -1 : 1;
-				int byTag = a.getLocale().toLanguageTag().compareTo(b.getLocale().toLanguageTag());
-				if (byTag != 0) return byTag;
-				return a.getName().compareTo(b.getName());
-			}
-		});
+		usable.sort((a, b) -> {
+            boolean aEn = "en".equals(a.getLocale().getLanguage());
+            boolean bEn = "en".equals(b.getLocale().getLanguage());
+            if (aEn != bEn) return aEn ? -1 : 1;
+            int byTag = a.getLocale().toLanguageTag().compareTo(b.getLocale().toLanguageTag());
+            if (byTag != 0) return byTag;
+            return a.getName().compareTo(b.getName());
+        });
 
 		ArrayList<String> out = new ArrayList<>(usable.size());
 		for (Voice v : usable) out.add(v.getName());

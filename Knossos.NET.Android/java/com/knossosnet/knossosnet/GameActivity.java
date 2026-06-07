@@ -151,17 +151,14 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         if(i != null)
         {
             _workingFolder = i.getStringExtra("workingFolder");
-            _forceOverlayOn = i.getBooleanExtra("forceTouchOverlay", true);
+            _forceOverlayOn = i.getBooleanExtra("forceTouchOverlay", false);
         }
 
         //Start game
         super.onCreate(savedInstanceState);
 
         //Start the touch overlay? Needs to be done after super.oncreate
-        if(i != null)
-        {
-            _forceOverlayOn = i.getBooleanExtra("forceTouchOverlay", true);
-        }
+		getWindow().getDecorView().post(this::setupOverlayFromXml);
     }
 
     private static final String[] PREFERRED_ORDER = new String[] {
