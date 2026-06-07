@@ -213,6 +213,8 @@ namespace Knossos.NET.Views
             {
                 Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)),
                 Height = 35,
+                MinHeight = 35,
+                MaxHeight = 35,
                 ColumnDefinitions = new ColumnDefinitions("*, Auto")
             };
             titleBar.Children.Add(titleText);
@@ -225,7 +227,7 @@ namespace Knossos.NET.Views
 
             var layout = new Grid
             {
-                RowDefinitions = new RowDefinitions("35, *"),
+                RowDefinitions = new RowDefinitions("Auto, *"),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment   = Avalonia.Layout.VerticalAlignment.Stretch
             };
@@ -233,13 +235,14 @@ namespace Knossos.NET.Views
             layout.Children.Add(titleBar);
             Grid.SetRow(body, 1);
             layout.Children.Add(body);
+            body.MinHeight = 0;
 
             var card = new Border
             {
                 Background  = new SolidColorBrush(Colors.Black),
                 CornerRadius = new CornerRadius(10),
                 Padding     = new Thickness(0),
-                Margin      = new Thickness(20),
+                Margin      = new Thickness(10),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment   = Avalonia.Layout.VerticalAlignment.Stretch,
                 Child = layout
