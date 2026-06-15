@@ -28,6 +28,11 @@
 						</Label>
 					</Expander.Header>
 					<StackPanel Margin="5">
+						<!-- Knossos version -->
+						<WrapPanel Margin="6,10,0,0">	
+							<Label Width="200">Knossos Version</Label>
+							<TextBlock Margin="10,5,0,0" Text="{Binding KnossosVersion}"></TextBlock>
+						</WrapPanel>
 						<!-- Base Path -->
 						<WrapPanel Margin="7,10,0,0" IsVisible="{Binding !IsAndroid}">
 							<TextBlock VerticalAlignment="Center" Width="200">Library Folder </TextBlock>
@@ -249,9 +254,12 @@
 					</StackPanel>
 				</Expander>
 
+				<!--Hack to allow to write on the cmdline textbox above in a way that the android keybord is not on top of it-->
+				<StackPanel Background="Transparent" Height="400" IsVisible="{Binding IsAndroid}"/>
+
 				<!--LEGACY SETTINGS-->
 				<TextBlock Margin="12,20,0,0" Text="Legacy Settings" IsVisible="{Binding !IsAndroid}" />
-				<Separator  />
+				<Separator IsVisible="{Binding !IsAndroid}"  />
 
 				<!--VIDEO SETTINGS-->
 				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740" IsVisible="{Binding !IsAndroid}">

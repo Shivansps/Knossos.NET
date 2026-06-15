@@ -73,6 +73,8 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal string cpuArch = string.Empty;
         [ObservableProperty]
+        internal string knossosVersion = string.Empty;
+        [ObservableProperty]
         internal bool isAVX = false;
         [ObservableProperty]
         internal bool isAVX2 = false;
@@ -575,6 +577,7 @@ namespace Knossos.NET.ViewModels
         public GlobalSettingsViewModel()
         {
             isPortableMode = Knossos.inPortableMode;
+            knossosVersion = Knossos.AppVersion;
             if (!KnUtils.IsModernOS())
             {
                 KnossosUpdateChannelInfo = "(Legacy Update Channel)";
