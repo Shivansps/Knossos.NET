@@ -70,7 +70,7 @@ namespace Knossos.NET.ViewModels
                             try
                             {
                                 var fso = mod.GetDependency("FSO");
-                                if (fso != null && (fso.version == null || SemanticVersion.Compare(fso.version.Replace(">=", "").Replace("<=", "").Replace(">", "").Replace("<", "").Replace("~", "").Trim(), VPCompression.MinimumFSOVersion) > 0))
+                                if (fso != null && (fso.version == null || SemanticVersion.Compare(SemanticVersion.GetLowerBound(fso.version) ?? "0.0.0", VPCompression.MinimumFSOVersion) > 0))
                                     compressMod = true;
                             }
                             catch (Exception ex)

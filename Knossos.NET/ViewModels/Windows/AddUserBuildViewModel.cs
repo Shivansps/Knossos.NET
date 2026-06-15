@@ -350,7 +350,7 @@ namespace Knossos.NET.ViewModels
                 CollapseData = true;
                 CollapseExecs = true;
                 CollapseArch = true;
-                string[] ignoreList = { ".pdb", ".lib", ".exp", ".a", ".map" };
+                string[] ignoreList = { ".pdb", ".lib", ".exp", ".a", ".map", ".vp", ".vpc" };
                 if(await KnUtils.CopyDirectoryAsync(folderPath, BuildNewPath, true, new CancellationTokenSource(), copyCallback, ignoreList))
                 {
                     Mod mod = new Mod();
