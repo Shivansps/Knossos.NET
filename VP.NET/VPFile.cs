@@ -80,6 +80,59 @@ namespace VP.NET
         }
 
         /// <summary>
+        /// Search for a single file name, recursively.
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns>VPFile or null</returns>
+        public VPFile? SearchForFileName(string filename)
+        {
+            if (type == VPFileType.File)
+            {
+                if (info.name.ToLower() == filename.ToLower())
+                {
+                    return this;
+                }
+            }
+            else if (type == VPFileType.Directory && files != null)
+            {
+                foreach (var f in files)
+                {
+                    var found = f.SearchForFileName(filename);
+                    if (found != null)
+                        return found;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get all files in a VP that have a certain extension.
+        /// </summary>
+        /// <param name="ext"></param>
+        /// <returns>List of VpFiles with that extension or empty list</returns>
+        public List<VPFile> SearchForFileExtension(string ext)
+        {
+            var list = new List<VPFile>();
+            if (type == VPFileType.File)
+            {
+                if (Path.GetExtension(info.name.ToLower()) == ext.ToLower())
+                    list.Add(this);
+            }
+            else if (type == VPFileType.Directory && files != null)
+            {
+                foreach (var f in files)
+                {
+                    var found = f.SearchForFileExtension(ext);
+                    if (found.Any())
+                        list.AddRange(found);
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
         /// Adds a file into this directory
         /// </summary>
         /// <param name="file"></param>
@@ -256,7 +309,7 @@ namespace VP.NET
                 throw new Exception("Unable to open vp file in path : " + vp?.vpFilePath);
             }
 
-            var source = new FileStream(vp.vpFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
+            using var source = new FileStream(vp.vpFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
 
             if (!source.CanRead)
             {
@@ -285,13 +338,12 @@ namespace VP.NET
                     {
                         throw new IOException("Unable to read from file");
                     }
+                    if (!source.CanRead || !destination.CanWrite) throw new OperationCanceledException();
                     leftToCopy -= bytesRead;
                     await destination.WriteAsync(buffer, 0, bytesRead);
                 }
             }
 
-            source.Close();
-            await source.DisposeAsync();
             destination.Position = 0;
         }
 

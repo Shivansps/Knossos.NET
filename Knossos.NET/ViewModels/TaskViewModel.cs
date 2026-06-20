@@ -380,6 +380,44 @@ namespace Knossos.NET.ViewModels
         }
 
         /// <summary>
+        /// Transcode all DDS BCn files in a mod to KTX ETC2
+        /// </summary>
+        /// <param name="mod"></param>
+        /// <returns></returns>
+        public async Task TranscodeMod(Mod mod)
+        {
+            if (mod.type == ModType.engine)
+            {
+                //If this is an engine build then do nothing
+            }
+            else
+            {
+                using (var cancelSource = new CancellationTokenSource())
+                {
+                    var newTask = new TaskItemViewModel();
+                    Dispatcher.UIThread.Invoke(() =>
+                    {
+                        TaskList.Add(newTask);
+                        taskQueue.Enqueue(newTask);
+                    });
+                    var res = await newTask.TranscodeMod(mod, cancelSource).ConfigureAwait(false);
+                    if (res && Knossos.inSingleTCMode)
+                    {
+                        try
+                        {
+                            TaskList.Remove(newTask);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Add(Log.LogSeverity.Error, "TaskViewModel.TranscodeMod()", ex);
+                        }
+                        Dispatcher.UIThread.Invoke(() => TaskViewModel.Instance?.AddMessageTask("Completed: " + newTask.Name), DispatcherPriority.Background);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Decompresses a mod from LZ41 into regular files
         /// Reemplaces .vpc for .vp and decompress .lz41 files inside the data folder
         /// </summary>
