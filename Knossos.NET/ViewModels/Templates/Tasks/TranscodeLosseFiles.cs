@@ -1,18 +1,23 @@
-﻿using Avalonia.Threading;
+﻿using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Threading;
+using Etc2;
+using Knossos.NET.Classes;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Runtime;
 using System.Threading;
+using System.Threading.Tasks;
 using VP.NET;
-using Knossos.NET.Classes;
-using System.Collections.Concurrent;
+using static Etc2.Dds;
 
 namespace Knossos.NET.ViewModels
 {
     public partial class TaskItemViewModel : ViewModelBase
     {
+        private int _progressCounter = 0;
         /// <summary>
         /// Transcode .dds BCn files to .ktx ETC2
         /// </summary>
@@ -49,96 +54,67 @@ namespace Knossos.NET.ViewModels
                     int skippedCount = alreadySkipped;
                     int compressedCount = 0;
 
-                    var cmpxVersion = CmpxTranscoder.NativeVersion();
-
-                    if (cmpxVersion != "")
-                    {
-                        Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeLosseFiles()", $"Cmpx loaded: v{cmpxVersion}");
-                    }
-                    else
-                    {
-                        throw new TaskCanceledException("Unable to load Cmpx library!");
-                    }
-
                     Log.Add(Log.LogSeverity.Information, "TaskItemViewModel.TranscodeLosseFiles()", "Starting to transcode loose files");
 
-                    await Parallel.ForEachAsync(filePaths, new ParallelOptions { MaxDegreeOfParallelism = Knossos.globalSettings.compressionMaxParallelism }, async (file, token) =>
-                    {
-                        if(Path.GetExtension(file.ToLower()) == ".dds")
+                    await Parallel.ForEachAsync(filePaths, new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationTokenSource.Token },
+                        async (file, token) =>
                         {
+                            if (Path.GetExtension(file).ToLowerInvariant() != ".dds") { Interlocked.Increment(ref skippedCount); return; }
+
                             var nameLower = Path.GetFileName(file).ToLowerInvariant();
-                            if (forceList != null && !forceList.Contains(nameLower))
+                            if (forceList != null && !forceList.Contains(nameLower)) { Interlocked.Increment(ref skippedCount); return; }
+
+                            var filename = Path.GetFileNameWithoutExtension(file).ToLowerInvariant();
+                            var outputFileName = Path.Combine(Path.GetDirectoryName(file) ?? "", filename + ".ktx");
+                            bool forceRGBA8 = filename.ToLower().Contains("normal") || filename.ToLower().Contains("reflect"); //normal and reflect textures must use ETC2 rgba8
+                            if (forceList != null) forceRGBA8 = true;
+
+                            int done = Interlocked.Increment(ref _progressCounter);
+                            await Dispatcher.UIThread.InvokeAsync(() =>
                             {
-                                skippedCount++;
+                                ProgressCurrent = done;
+                                Info = $"{done} / {ProgressBarMax} {filename}";
+                            });
+
+                            Etc2Status result;
+                            try
+                            {
+                                result = await Task.Run(() => Etc2Transcoder.TranscodeFile(file, outputFileName,
+                                            forceRgba8: forceRGBA8, forceResize: true, quality: 10, jobs: 8,
+                                            forceTranscodeUncompressed: forceList != null), token);
+                            }
+                            catch (OperationCanceledException) { throw; }
+                            catch (Exception ex)
+                            {
+                                Interlocked.Increment(ref skippedCount);
+                                Log.Add(Log.LogSeverity.Error, "TranscodeLosseFiles()", $"Error transcoding {filename}: {ex.Message}");
+                                return;
+                            }
+
+                            if (result == Etc2Status.Transcoded)
+                            {
+                                File.Delete(file);  
+                                Interlocked.Increment(ref compressedCount);
+                                lock (transcodedNames!) transcodedNames.Add(nameLower);
                             }
                             else
                             {
-                                using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-                                if (!input.CanRead)
-                                {
-                                    throw new TaskCanceledException();
-                                }
-                                var filename = Path.GetFileNameWithoutExtension(file).ToLower();
-                                var outputFileName = Path.Combine(Path.GetDirectoryName(file) ?? "", filename + ".ktx");
-                                bool forceRGBA8 = filename.Contains("normal") || filename.Contains("reflect"); // normal and reflect must be ETC2 RGBA8
-                                if (forceList != null) forceRGBA8 = true; //on the 2nd pass i need to force-transcode of all files on the list
-
-                                using var output = new FileStream(outputFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-                                if (!output.CanWrite)
-                                {
-                                    throw new TaskCanceledException();
-                                }
-
-                                input.Seek(0, SeekOrigin.Begin);
-                                await Dispatcher.UIThread.InvokeAsync(() =>
-                                {
-                                    Info = ProgressCurrent + " / " + ProgressBarMax + " " + filename;
-                                });
-
-                                var result = CmpxTranscoder.Transcode(input, output, forceRGBA8);
-                                input.Close();
-                                output.Close();
-
-                                if (result == CmpxTranscodeStatus.Transcoded)
-                                {
-                                    //Delete original
-                                    File.Delete(file);
-                                    compressedCount++;
-                                    transcodedNames?.Add(nameLower);
-                                    //Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeLosseFiles()", $"Transcoded {filename} to {outputFileName}");
-                                }
+                                Interlocked.Increment(ref skippedCount);
+                                if (result == Etc2Status.NotCompressed)
+                                    Log.Add(Log.LogSeverity.Information, "TranscodeLosseFiles()", $"Skipping {filename} (DDS uncompressed).");
                                 else
-                                {
-                                    //Roll back
-                                    File.Delete(outputFileName);
-                                    skippedCount++;
-                                    if (result == CmpxTranscodeStatus.NotCompressed)
-                                    {
-                                        Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeLosseFiles()", $"Skipping {filename} because it is DDS Uncompressed.");
-                                    }
-                                    else
-                                    {
-                                        Log.Add(Log.LogSeverity.Error, "TaskViewModel.TranscodeLosseFiles()", $"Error while transcoding {filename} : {result.ToString()}");
-                                    }
-                                }
+                                    Log.Add(Log.LogSeverity.Error, "TranscodeLosseFiles()", $"Error transcoding {filename}: {result}");
                             }
-                        }
-                        else
-                        {
-                            skippedCount++;
-                        }
 
-                        ProgressCurrent++;
-
-                        if (cancellationTokenSource.IsCancellationRequested)
-                        {
-                            throw new TaskCanceledException();
-                        }
-                    });
+                            token.ThrowIfCancellationRequested();
+                        });
                     if (cancellationTokenSource.IsCancellationRequested)
                     {
                         throw new TaskCanceledException();
                     }
+
+                    GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                    GC.Collect(2, GCCollectionMode.Forced, blocking: true);
 
                     IsCompleted = true;
                     ProgressCurrent = ProgressBarMax;

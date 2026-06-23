@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
@@ -78,53 +78,53 @@
 
   <!-- Windows -->
   <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsX64)' == 'true'">
-    <None Update="precompiled\windows\x64\cmpx.dll">
+    <None Update="precompiled\windows\x64\etc2native.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>cmpx.dll</Link>
+      <Link>etc2native.dll</Link>
     </None>
   </ItemGroup>
   <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsX86)' == 'true'">
-    <None Update="precompiled\windows\x86\cmpx.dll">
+    <None Update="precompiled\windows\x86\etc2native.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>cmpx.dll</Link>
+      <Link>etc2native.dll</Link>
     </None>
   </ItemGroup>
   <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsArm64)' == 'true'">
-    <None Update="precompiled\windows\arm64\cmpx.dll">
+    <None Update="precompiled\windows\arm64\etc2native.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>cmpx.dll</Link>
+      <Link>etc2native.dll</Link>
     </None>
   </ItemGroup>
 
   <!-- Linux x64 -->
   <ItemGroup Condition="'$(_IsLinux)' == 'true' And '$(_IsX64)' == 'true'">
-    <None Update="precompiled\linux\x64\libcmpx.so">
+    <None Update="precompiled\linux\x64\libetc2native.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libcmpx.so</Link>
+      <Link>libetc2native.so</Link>
     </None>
   </ItemGroup>
 
   <!-- Linux arm64 -->
   <ItemGroup Condition="'$(_IsLinux)' == 'true' And '$(_IsArm64)' == 'true'">
-    <None Update="precompiled\linux\arm64\libcmpx.so">
+    <None Update="precompiled\linux\arm64\libetc2native.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libcmpx.so</Link>
+      <Link>libetc2native.so</Link>
     </None>
   </ItemGroup>
 
   <!-- Linux riscv64 -->
   <ItemGroup Condition="'$(_IsLinux)' == 'true' And '$(_IsRiscV64)' == 'true'">
-    <None Update="precompiled\linux\riscv64\libcmpx.so">
+    <None Update="precompiled\linux\riscv64\libetc2native.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libcmpx.so</Link>
+      <Link>libetc2native.so</Link>
     </None>
   </ItemGroup>
 
   <!-- macOS (x64 / arm64) -->
   <ItemGroup Condition="'$(_IsOsx)' == 'true'">
-    <None Update="precompiled\osx\libcmpx.dylib">
+    <None Update="precompiled\osx\libetc2native.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libcmpx.dylib</Link>
+      <Link>libetc2native.dylib</Link>
     </None>
   </ItemGroup>
 

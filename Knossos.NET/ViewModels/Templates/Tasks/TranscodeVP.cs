@@ -1,10 +1,12 @@
 ﻿using Avalonia.Threading;
+using Etc2;
 using Knossos.NET.Classes;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using VP.NET;
@@ -40,21 +42,16 @@ namespace Knossos.NET.ViewModels
                         throw new TaskCanceledException();
                     }
 
-                    var cmpxVersion = CmpxTranscoder.NativeVersion();
-
-                    if (cmpxVersion != "")
-                    {
-                        Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeLosseFiles()", $"Cmpx loaded: v{cmpxVersion}");
-                    }
-                    else
-                    {
-                        throw new TaskCanceledException("Unable to load Cmpx library!");
-                    }
-
                     Log.Add(Log.LogSeverity.Information, "TaskItemViewModel.TranscodeVP()", "Starting to transcode VP file: " + vpFile.Name);
 
-                    workFolder = Path.Combine(KnUtils.GetFSODataFolderPath(), "transcodeTemp");
+                    workFolder = Path.Combine(Knossos.GetKnossosLibraryPath() ?? KnUtils.GetKnossosDataFolderPath() , "temp", Guid.NewGuid().ToString());
                     Directory.CreateDirectory(workFolder);
+                    try
+                    {
+                        //make sure this folder is deleted at next startup if it remains
+                        File.Create(Path.Combine(workFolder, "knossos_net_download.token")).Close(); 
+                    }
+                    catch { }
 
                     var vp = new VPContainer();
                     await vp.LoadVP(vpFile.FullName);
@@ -68,49 +65,49 @@ namespace Knossos.NET.ViewModels
                             foreach (var ddsFile in ddsFiles)
                             {
                                 var nameLower = ddsFile.info.name.ToLowerInvariant();
-                                await Dispatcher.UIThread.InvokeAsync(() =>
-                                {
-                                    Info = ProgressCurrent + " / " + ProgressBarMax + " " + nameLower;
-                                });
+                                await Dispatcher.UIThread.InvokeAsync(() => Info = $"{ProgressCurrent} / {ProgressBarMax} {nameLower}");
                                 ProgressCurrent++;
-                                if (forceList != null && !forceList.Contains(nameLower)) continue; //on the 2nd pass only process files on the forced list
+                                if (forceList != null && !forceList.Contains(nameLower)) continue;
 
-                                using var inputStream = new MemoryStream();
-                                await ddsFile.ReadToStream(inputStream);
-                                inputStream.Position = 0;
+                                byte[] ddsBytes;
+                                using (var inputStream = new MemoryStream())
+                                {
+                                    await ddsFile.ReadToStream(inputStream);
+                                    ddsBytes = inputStream.ToArray();
+                                }
+
                                 var filename = Path.GetFileNameWithoutExtension(ddsFile.info.name);
-                                var outputFileName = Path.Combine(workFolder, filename+ ".ktx");
-                                bool forceRGBA8 = filename.Contains("normal") || filename.Contains("reflect"); // normal and reflect must be ETC2 RGBA8
-                                if (forceList != null) forceRGBA8 = true; //on the 2nd pass i need to force-transcode of all files on the list
+                                var outputFileName = Path.Combine(workFolder, filename + ".ktx");
+                                bool forceRGBA8 = filename.ToLower().Contains("normal") || filename.ToLower().Contains("reflect"); //normal and reflect textures must use ETC2 rgba8
+                                if (forceList != null) forceRGBA8 = true;
 
-                                using var output = new FileStream(outputFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-                                var result = CmpxTranscoder.Transcode(inputStream, output, forceRGBA8);
-                                inputStream.Close();
-                                output.Close();
+                                byte[]? ktx;
+                                try
+                                {
+                                    ktx = await Task.Run(() => Etc2Transcoder.TranscodeToKtxBytes(ddsBytes, forceRgba8: forceRGBA8, 
+                                        forceResize: true, quality: 10, jobs: 8, forceTranscodeUncompressed : forceList != null), cancellationTokenSource.Token);
+                                }
+                                catch (OperationCanceledException) { throw; }
+                                catch (Exception ex)
+                                {
+                                    Log.Add(Log.LogSeverity.Error, "TaskViewModel.TranscodeVP()", $"Error transcoding {filename}: {ex.Message}");
+                                    continue;
+                                }
 
-                                if (result == CmpxTranscodeStatus.Transcoded)
+                                if (ktx == null)
                                 {
-                                    //Delete original
-                                    ddsFile.Delete();
-                                    changes = true;
-                                    ddsFile.parent!.AddFile(new FileInfo(outputFileName));
-                                    transcodedNames?.Add(nameLower);
-                                    //Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeVP()", $"Transcoded {filename}");
+                                    Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeVP()", $"Skipping {filename} (DDS uncompressed).");
+                                    continue;
                                 }
-                                else
-                                {
-                                    //Roll back
-                                    File.Delete(outputFileName);
-                                    if (result == CmpxTranscodeStatus.NotCompressed)
-                                    {
-                                        Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeVP()", $"Skipping {filename} because it is DDS Uncompressed.");
-                                    }
-                                    else
-                                    {
-                                        Log.Add(Log.LogSeverity.Error, "TaskViewModel.TranscodeVP()", $"Error while transcoding {filename} : {result.ToString()}");
-                                    }
-                                }
+
+                                await File.WriteAllBytesAsync(outputFileName, ktx, cancellationTokenSource.Token);
+                                ddsFile.Delete();
+                                changes = true;
+                                ddsFile.parent!.AddFile(new FileInfo(outputFileName));
+                                transcodedNames?.Add(nameLower);
                             }
+                            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
                         }
                     }
                     await Task.Delay(2000);

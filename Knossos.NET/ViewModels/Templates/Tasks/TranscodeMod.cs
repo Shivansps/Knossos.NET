@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using VP.NET;
+using Etc2;
 
 namespace Knossos.NET.ViewModels
 {
@@ -62,6 +63,17 @@ namespace Knossos.NET.ViewModels
 
                     Log.Add(Log.LogSeverity.Information, "TaskItemViewModel.TranscodeMod()", "Starting to transcode Mod: " + mod.title);
 
+                    var etc2Version = Etc2Transcoder.NativeVersion();
+
+                    if (etc2Version != "")
+                    {
+                        Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeMod()", $"Lib loaded: {etc2Version}");
+                    }
+                    else
+                    {
+                        throw new TaskCanceledException("Unable to load etc2native library!");
+                    }
+
                     //get all .vp / .vpc
                     var vpFiles = Directory.GetFiles(mod.fullPath, "*.vp").Concat(Directory.GetFiles(mod.fullPath, "*.vpc")).ToList();
                     ProgressBarMax = vpFiles.Count() + 2;
@@ -113,7 +125,7 @@ namespace Knossos.NET.ViewModels
                     Info = "Tasks: " + ProgressCurrent + "/" + ProgressBarMax;
 
                     //VP Compression
-                    await Parallel.ForEachAsync(vpFiles, new ParallelOptions { MaxDegreeOfParallelism = Knossos.globalSettings.compressionMaxParallelism }, async (file, token) =>
+                    await Parallel.ForEachAsync(vpFiles, new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationTokenSource.Token }, async (file, token) =>
                     {
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {

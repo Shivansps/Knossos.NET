@@ -46,7 +46,7 @@ namespace Knossos.NET.ViewModels
                     {
                         if (progressPercentage.HasValue && filesize.HasValue)
                         {
-                            ProgressCurrent = (float)progressPercentage.Value;
+                            ProgressCurrent = (int)progressPercentage.Value;
                             Info = KnUtils.FormatBytes(bytesDownloaded) + " / " + KnUtils.FormatBytes(filesize.Value) + " @ " + speed;
                         }
 

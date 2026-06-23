@@ -14,6 +14,7 @@
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.11" />
     <PackageVersion Include="Avalonia.iOS" Version="11.3.6" />
     <PackageVersion Include="Avalonia.Android" Version="11.3.15" />
+    <PackageVersion Include="BCnEncoder.Net" Version="2.3.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.1" />
     <PackageVersion Include="AnimatedImage.Avalonia" Version="1.0.7" />

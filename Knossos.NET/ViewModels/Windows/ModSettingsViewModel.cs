@@ -530,11 +530,11 @@ namespace Knossos.NET.ViewModels
 
             if (modJson != null && modJson.fullPath != string.Empty)
             {
-                await TaskViewModel.Instance?.CompressMod(modJson)!;
+                await TaskViewModel.Instance?.TranscodeMod(modJson)!;
                 if (modJson.modSettings.isCompressed)
                 {
-                    CompressionAvailable = false;
-                    Compressed = true;
+                    //CompressionAvailable = false;
+                    //Compressed = true;
                 }
                 await Task.Factory.StartNew(() => UpdateModSize());
             }

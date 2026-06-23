@@ -168,11 +168,11 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal string info = string.Empty;
         [ObservableProperty]
-        internal float progressBarMin = 0;
+        internal int progressBarMin = 0;
         [ObservableProperty]
-        internal float progressBarMax = 0;
+        internal int progressBarMax = 0;
         [ObservableProperty]
-        internal float progressCurrent = 0;
+        internal int progressCurrent = 0;
         [ObservableProperty]
         internal string name = string.Empty;
         [ObservableProperty]

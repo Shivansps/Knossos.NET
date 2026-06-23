@@ -65,6 +65,7 @@
     <PackageReference Include="Avalonia.HtmlRenderer" />
     <PackageReference Include="Avalonia.Markup.Xaml.Loader" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="BCnEncoder.Net" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="ini-parser-netstandard" />
     <PackageReference Include="Microsoft.Extensions.Http" />
