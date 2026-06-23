@@ -133,10 +133,12 @@ namespace Knossos.NET.ViewModels
                     token.ThrowIfCancellationRequested();
                     string text;
                     EffHelper eff;
+                    Dispatcher.UIThread.Invoke(() => { Info = $"{Path.GetFileName(effPath)}"; });
                     try { text = await File.ReadAllTextAsync(effPath, token).ConfigureAwait(false); eff = EffHelper.Parse(text, Path.GetFileName(effPath)); }
                     catch (Exception ex) { Log.Add(Log.LogSeverity.Warning, "TaskItemViewModel.PatchEffFiles()", $"Skipping unreadable eff '{Path.GetFileName(effPath)}': {ex.Message}"); continue; }
 
                     await ConsiderEffAsync(eff, () => EffHelper.PatchLooseAsync(effPath, "ktx", token), Path.GetFileName(effPath));
+                    Dispatcher.UIThread.Invoke(() => { Info = ""; });
                 }
 
                 // 3b) Archive effs -> patch the node and mark the archive dirty.
@@ -203,7 +205,9 @@ namespace Knossos.NET.ViewModels
         {
             var tmp = archivePath + ".tmp";
             if (File.Exists(tmp)) File.Delete(tmp);
+            Dispatcher.UIThread.Invoke(() => { Name = $"Patching eff files - {Path.GetFileName(archivePath)}"; });
             await vp.SaveAsAsync(tmp, compressionCallback, cts);
+            Dispatcher.UIThread.Invoke(() => { Name = "Patching eff files"; });
             File.Delete(archivePath);
             File.Move(tmp, archivePath);
         }
