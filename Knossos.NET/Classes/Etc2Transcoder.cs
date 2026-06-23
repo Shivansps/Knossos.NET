@@ -171,18 +171,6 @@ namespace Etc2
             return st;
         }
 
-        /// <summary>
-        /// A conservative default for the encoder 'jobs' (or for your own Parallel degree).
-        /// On phones, fewer threads keeps heat/throttling down; cap accordingly.
-        /// </summary>
-        public static int RecommendedJobs(int cap = 0)
-        {
-            int n = Math.Max(1, Environment.ProcessorCount);
-            int jobs = Math.Max(1, n - 1);     // leave a core for the UI/OS
-            if (cap > 0) jobs = Math.Min(jobs, cap);
-            return jobs;
-        }
-
         // ---- decode one source level to a tight RGBA8 byte[] --------------------
         private static readonly BcDecoder _decoder = new BcDecoder();
 

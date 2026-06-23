@@ -1486,5 +1486,17 @@ namespace Knossos.NET
             // Linux and anything else: treat as modern (no restriction planned)
             return true;
         }
+
+        /// <summary>
+        /// Gets the recommended and max number of threads to use on the host computer
+        /// </summary>
+        public static (int recommended, int max) GetMaxThreads()
+        {
+            int max = Environment.ProcessorCount - 1; // leave a core for the UI/OS
+            if (max < 1) max = 1;
+            int r = max / 2;
+            if (r < 1) r = 1;
+            return (r, max);
+        }
     }
 }
