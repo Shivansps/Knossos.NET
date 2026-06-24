@@ -305,7 +305,7 @@ namespace Knossos.NET.Classes
 
         /// <summary>
         /// True if the constraint cannot be represented as a single-operator + version (e.g. NuGet interval
-        /// "[1.0,2.0)" or space-separated AND ">=1.0 <2.0"). Used by callers that strip operators or by UI
+        /// "[1.0,2.0)" or space-separated AND "&gt;=1.0 &lt;2.0"). Used by callers that strip operators or by UI
         /// pickers that can only display a single operator.
         /// </summary>
         public static bool IsComplexConstraint(string? constraint)
