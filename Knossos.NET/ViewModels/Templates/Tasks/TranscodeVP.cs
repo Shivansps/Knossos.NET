@@ -62,6 +62,8 @@ namespace Knossos.NET.ViewModels
                         if(ddsFiles.Any())
                         {
                             ProgressBarMax = ddsFiles.Count();
+                            var config = Knossos.globalSettings.modEtc2TranscodeConfig ?? new Models.GlobalSettings.Etc2Config();
+                            var onlybc7 = AndroidHelper.GpuSupportsBCnTexturesOpenGL().s3tc && !AndroidHelper.GpuSupportsBCnTexturesOpenGL().bc7;
                             foreach (var ddsFile in ddsFiles)
                             {
                                 var nameLower = ddsFile.info.name.ToLowerInvariant();
@@ -81,11 +83,12 @@ namespace Knossos.NET.ViewModels
                                 bool forceRGBA8 = filename.ToLower().Contains("normal") || filename.ToLower().Contains("reflect"); //normal and reflect textures must use ETC2 rgba8
                                 if (forceList != null) forceRGBA8 = true;
 
-                                byte[]? ktx;
+                                (Etc2Status status, byte[]? bytes) ktx;
                                 try
                                 {
                                     ktx = await Task.Run(() => Etc2Transcoder.TranscodeToKtxBytes(ddsBytes, forceRgba8: forceRGBA8, 
-                                        forceResize: true, quality: 10, jobs: 8, forceTranscodeUncompressed : forceList != null), cancellationTokenSource.Token);
+                                        forceResize: config.Resize, quality: config.Quality, jobs: config.Jobs, onlyBc7 : forceList == null && onlybc7, 
+                                        forceTranscodeUncompressed : forceList != null), cancellationTokenSource.Token);
                                 }
                                 catch (OperationCanceledException) { throw; }
                                 catch (Exception ex)
@@ -94,13 +97,16 @@ namespace Knossos.NET.ViewModels
                                     continue;
                                 }
 
-                                if (ktx == null)
+                                if (ktx.status == Etc2Status.NotCompressed)
                                 {
                                     Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeVP()", $"Skipping {filename} (DDS uncompressed).");
                                     continue;
                                 }
 
-                                await File.WriteAllBytesAsync(outputFileName, ktx, cancellationTokenSource.Token);
+                                if (ktx.status == Etc2Status.Skipped || ktx.bytes == null)
+                                    continue;
+
+                                await File.WriteAllBytesAsync(outputFileName, ktx.bytes, cancellationTokenSource.Token);
                                 ddsFile.Delete();
                                 changes = true;
                                 ddsFile.parent!.AddFile(new FileInfo(outputFileName));

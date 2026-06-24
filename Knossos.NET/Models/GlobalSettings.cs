@@ -61,6 +61,55 @@ namespace Knossos.NET.Models
             "nomusic"
         };
 
+        public struct Etc2Config
+        {
+            public bool TranscodeMods { get; set; }
+            public int Jobs { get; set; }
+            public int Quality { get; set; }
+            public bool Resize { get; set; }
+
+            public Etc2Config()
+            {
+                TranscodeMods = true;
+                Jobs = 2;
+                Quality = 10;
+                Resize = true;
+            }
+
+            public Etc2Config(bool transcodeMods, int jobs, int quality, bool resize)
+            {
+                TranscodeMods = transcodeMods;
+                Jobs = jobs;
+                Quality = quality;
+                Resize = resize;
+            }
+
+            public static bool operator ==(Etc2Config left, Etc2Config right)
+            {
+                return left.TranscodeMods == right.TranscodeMods && left.Jobs == right.Jobs && left.Quality == right.Quality && left.Resize == right.Resize;
+            }
+
+            public static bool operator !=(Etc2Config left, Etc2Config right)
+            {
+                return !(left == right);
+            }
+
+            public bool Equals(Etc2Config other)
+            {
+                return this == other;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Etc2Config other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Jobs, Quality, TranscodeMods, Resize);
+            }
+        }
+
         struct Resolution
         {
             public uint width { get; set; }
@@ -180,6 +229,22 @@ namespace Knossos.NET.Models
 
         [JsonPropertyName("mod_filecopy_extension_skip")]
         public List<string>? skipExtensionsModFilecopy { get; set; } = new List<string>() { ".svn", ".github", ".git", ".gitattributes", ".gitignore", ".md" };
+
+        [JsonIgnore]
+        private Etc2Config? _modEtc2TranscodeConfig { get; set; } = null;
+        [JsonPropertyName("mod_etc2_transcode_config")]
+        public Etc2Config? modEtc2TranscodeConfig
+        {
+            get { return _modEtc2TranscodeConfig; }
+            set 
+            { 
+                if (_modEtc2TranscodeConfig != value) 
+                { 
+                    _modEtc2TranscodeConfig = value; 
+                    pendingChangesOnAppClose = true; 
+                } 
+            }
+        }
 
         /* 
          * Settings that can wait to be saved at app close so we dont have to call save() all the time
@@ -682,6 +747,7 @@ namespace Knossos.NET.Models
                         antiStuck = tempSettings.antiStuck;
                         maxUploadRetries = tempSettings.maxUploadRetries;
                         singleViewMode = tempSettings.singleViewMode;
+                        modEtc2TranscodeConfig = tempSettings.modEtc2TranscodeConfig;
                         if (hiddenModIds.Any())
                         {
                             foreach (var hiddenMod in hiddenModIds)
@@ -696,6 +762,14 @@ namespace Knossos.NET.Models
                         Log.Add(Log.LogSeverity.Information, "GlobalSettings.Load()", "Global settings have been loaded");
 
                         SetCustomModeValues();
+
+                        if (KnUtils.IsAndroid && modEtc2TranscodeConfig == null) // load default
+                        {
+                            var threads = KnUtils.GetMaxThreads();
+                            var gpuSupport = AndroidHelper.GpuSupportsBCnTexturesOpenGL();
+                            var enabled = KnUtils.IsAndroid ? !gpuSupport.s3tc || !gpuSupport.bc7 : false;
+                            modEtc2TranscodeConfig = new Etc2Config(enabled, threads.recommended, 10, true);
+                        }
 
                         pendingChangesOnAppClose = false;
                     }

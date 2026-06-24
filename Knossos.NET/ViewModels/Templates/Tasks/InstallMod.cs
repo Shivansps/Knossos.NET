@@ -1,17 +1,19 @@
-﻿using Avalonia.Threading;
+﻿using Avalonia.Media;
+using Avalonia.Threading;
+using Knossos.NET.Classes;
 using Knossos.NET.Models;
 using Knossos.NET.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
-using System.Threading;
-using Knossos.NET.Classes;
-using VP.NET;
-using Avalonia.Media;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using VP.NET;
+using static Etc2.Dds;
 
 namespace Knossos.NET.ViewModels
 {
@@ -21,7 +23,7 @@ namespace Knossos.NET.ViewModels
         {
             string? modPath = null;
             Mod? installed = null;
-
+            bool transcodingNeeded = false;
             try
             {
                 if (!TaskIsSet)
@@ -56,6 +58,10 @@ namespace Knossos.NET.ViewModels
                             throw new TaskCanceledException();
                         }
                     }
+
+                    //Determine if we need to transcode
+                    var etc2Config = Knossos.globalSettings.modEtc2TranscodeConfig ?? new GlobalSettings.Etc2Config();
+                    transcodingNeeded = etc2Config.TranscodeMods;
 
                     if (!mod.devMode) //Do not compress dev mode mods
                     {
@@ -298,6 +304,11 @@ namespace Knossos.NET.ViewModels
                     ProgressCurrent = 0;
                     ProgressBarMax = installed == null ? (files.Count * 2) + 1 : (files.Count * 2);
                     ProgressBarMax += vPExtractionNeeded;
+
+                    if (transcodingNeeded)
+                    {
+                        ProgressBarMax += 1;
+                    }
                     if (compressMod)
                     {
                         ProgressBarMax += 1;
@@ -589,6 +600,24 @@ namespace Knossos.NET.ViewModels
                     }
 
                     mod.modSettings.SetInitialFilePath(mod.fullPath);
+
+                    //We have to transcode?
+                    if (transcodingNeeded)
+                    {
+                        if (cancellationTokenSource.IsCancellationRequested)
+                        {
+                            throw new TaskCanceledException();
+                        }
+
+                        var cpTask = new TaskItemViewModel();
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            TaskList.Insert(0, cpTask);
+                        });
+                        await cpTask.TranscodeMod(mod, cancellationTokenSource, true);
+                        ProgressCurrent++;
+                        Info = "Tasks: " + ProgressCurrent + "/" + ProgressBarMax;
+                    }
 
                     //We have to compress?
                     if (compressMod)

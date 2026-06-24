@@ -84,6 +84,43 @@ namespace Knossos.NET.ViewModels
         internal bool quickStartButtonVisibility = true;
         [ObservableProperty]
         internal bool expandKnossosSettings = false;
+        /*ETC2 Transcode*/
+        [ObservableProperty]
+        internal int maxTranscodeThreads = 1;
+        [ObservableProperty]
+        internal bool bc7Support = false;
+        [ObservableProperty]
+        internal bool s3tcSupport = false;
+
+        /* Asset Transcoding */
+        private bool _etc2transcodeEnabled = false;
+        internal bool Etc2transcodeEnabled
+        {
+            get { return _etc2transcodeEnabled; }
+            set { if (_etc2transcodeEnabled != value) { this.SetProperty(ref _etc2transcodeEnabled, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(value, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled); UnCommitedChanges = true; } }
+        }
+
+        private bool _etc2ResizeEnabled = false;
+        internal bool Etc2ResizeEnabled
+        {
+            get { return _etc2ResizeEnabled; }
+            set { if (_etc2ResizeEnabled != value) { this.SetProperty(ref _etc2ResizeEnabled, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, value); UnCommitedChanges = true; } }
+        }
+
+        private int _etc2Quality = 10;
+        internal int Etc2Quality
+        {
+            get { return _etc2Quality; }
+            set { if (_etc2Quality != value) { this.SetProperty(ref _etc2Quality, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, value, Etc2ResizeEnabled); UnCommitedChanges = true; } }
+        }
+
+        private int _etc2Jobs = 1;
+        internal int Etc2Jobs
+        {
+            get { return _etc2Jobs; }
+            set { if (_etc2Jobs != value) { this.SetProperty(ref _etc2Jobs, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, value, Etc2Quality, Etc2ResizeEnabled); UnCommitedChanges = true; } }
+        }
+        /*              */
 
         /* Knossos Settings */
         [ObservableProperty]
@@ -771,6 +808,23 @@ namespace Knossos.NET.ViewModels
             MaxUploadsRetries = Knossos.globalSettings.maxUploadRetries;
             SingleView = Knossos.globalSettings.singleViewMode;
 
+            if (KnUtils.IsAndroid)
+            {
+                var threads = KnUtils.GetMaxThreads();
+                MaxTranscodeThreads = threads.max;
+                var gpu = AndroidHelper.GpuSupportsBCnTexturesOpenGL();
+                S3tcSupport = gpu.s3tc;
+                Bc7Support = gpu.bc7;
+                // default config is always created in Globasettings.Load() on android if it does not exist
+                if (Knossos.globalSettings.modEtc2TranscodeConfig.HasValue)
+                {
+                    Etc2Jobs = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Jobs;
+                    Etc2Quality = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Quality;
+                    Etc2transcodeEnabled = Knossos.globalSettings.modEtc2TranscodeConfig.Value.TranscodeMods;
+                    Etc2ResizeEnabled = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Resize;
+                }
+            }
+
             /* VIDEO SETTINGS */
             //RESOLUTION
             ResolutionItems.Clear();
@@ -1355,6 +1409,11 @@ namespace Knossos.NET.ViewModels
             Knossos.globalSettings.antiStuck = AntiStuck;
             Knossos.globalSettings.maxUploadRetries = MaxUploadsRetries;
             Knossos.globalSettings.singleViewMode = SingleView;
+
+            if (IsAndroid)
+            {
+                Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled);
+            }
 
             /* VIDEO */
             //Resolution

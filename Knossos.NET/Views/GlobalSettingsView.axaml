@@ -164,6 +164,53 @@
 					</StackPanel>
 				</Expander>
 
+				<!--Assets Transcoding-->
+				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740" IsVisible="{Binding IsAndroid}">
+					<Expander.Header>
+						<Label Margin="5,0,0,0" FontWeight="Bold" FontSize="18">
+							Game Assets Transcoding
+						</Label>
+					</Expander.Header>
+					<StackPanel Margin="5" HorizontalAlignment="Stretch">
+						<Border BorderBrush="Orange" BorderThickness="2" Margin="5" HorizontalAlignment="Stretch">
+							<TextBlock Margin="5" MaxWidth="{Binding Bounds.Width, RelativeSource={RelativeSource AncestorType=Border}}"  TextWrapping="Wrap" Text="If your device GPU do not supports S3TC/BC7 texture compression you can enable asset transcoding to ETC2 during mod installs. If you dont want to enable ETC2 transcoding, FSO can still run at a increased ram usage what may cause crashing if you run out of memory. It can also have visual issues due to software decompression. Note: If you device supports S3TC but not BC7, only BC7 textures will be transcoded."/>
+						</Border>
+						<Border BorderBrush="Red" BorderThickness="2" Margin="5" HorizontalAlignment="Stretch">
+							<TextBlock Margin="5" MaxWidth="{Binding Bounds.Width, RelativeSource={RelativeSource AncestorType=Border}}"  TextWrapping="Wrap" Text="Warning: Asset transcoding will significantly increase mod install times for large mods like MediaVPs or Total Conversions. It is also very computational expensive so its recomended you have your device plugged in during installs."/>
+						</Border>
+
+						<WrapPanel Margin="5,10,0,0">
+							<Label Margin="0,5,0,0" Width="210">GPU Support</Label>
+							<CheckBox Margin="1,0,0,0" IsChecked="{Binding S3tcSupport}" IsEnabled="False">S3TC</CheckBox>
+							<CheckBox Margin="10,0,0,0" IsChecked="{Binding Bc7Support}" IsEnabled="False">BC7</CheckBox>
+						</WrapPanel>
+
+						<WrapPanel Margin="5,10,0,0">
+							<Label Margin="0,5,0,0" Width="210">Transcode to ETC2</Label>
+							<ToggleSwitch Margin="1,0,0,0" IsChecked="{Binding Etc2transcodeEnabled}"></ToggleSwitch>
+							<Label Margin="5,5,0,0" IsVisible="{Binding !Bc7Support}" Content="(Recommended ON)"/>
+						</WrapPanel>
+
+						<WrapPanel Margin="5,10,0,0">
+							<Label Margin="0,5,0,0" Width="210">Downsize Textures by 50%</Label>
+							<ToggleSwitch Margin="1,0,0,0" IsChecked="{Binding Etc2ResizeEnabled}"></ToggleSwitch>
+							<Label Margin="5,5,0,0" Content="Lower quality, but faster transcoding and less ram usage in-game (Recommended ON)"/>
+						</WrapPanel>
+
+						<WrapPanel Margin="5,10,0,0">
+							<Label Margin="0,5,0,0" Width="210">Encoding Quality</Label>
+							<NumericUpDown Margin="1,0,0,0" Minimum="0" Increment="5" Maximum="100" Value="{Binding Etc2Quality}" ></NumericUpDown>
+							<Label Margin="5,5,0,0" Content="Higher quality results in slower transcoding (Recommended: 0-20)"/>
+						</WrapPanel>
+
+						<WrapPanel Margin="5,10,0,0">
+							<Label Margin="0,5,0,0" Width="210">Encoding Jobs</Label>
+							<NumericUpDown Margin="1,0,0,0" Minimum="1" Increment="1" Maximum="{Binding MaxTranscodeThreads}" Value="{Binding Etc2Jobs}" ></NumericUpDown>
+							<Label Margin="5,5,0,0" Content="Number of threads per texture. Higher means faster transcoding but much higher cpu usage."/>
+						</WrapPanel>
+					</StackPanel>
+				</Expander>
+
 				<!--FSO ENGINE SETTINGS-->
 				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740">
 					<Expander.Header>

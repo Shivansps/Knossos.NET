@@ -55,6 +55,8 @@ namespace Knossos.NET.ViewModels
                     int compressedCount = 0;
 
                     Log.Add(Log.LogSeverity.Information, "TaskItemViewModel.TranscodeLosseFiles()", "Starting to transcode loose files");
+                    var config = Knossos.globalSettings.modEtc2TranscodeConfig ?? new Models.GlobalSettings.Etc2Config();
+                    var onlybc7 = AndroidHelper.GpuSupportsBCnTexturesOpenGL().s3tc && !AndroidHelper.GpuSupportsBCnTexturesOpenGL().bc7;
 
                     await Parallel.ForEachAsync(filePaths, new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationTokenSource.Token },
                         async (file, token) =>
@@ -80,8 +82,8 @@ namespace Knossos.NET.ViewModels
                             try
                             {
                                 result = await Task.Run(() => Etc2Transcoder.TranscodeFile(file, outputFileName,
-                                            forceRgba8: forceRGBA8, forceResize: true, quality: 10, jobs: 8,
-                                            forceTranscodeUncompressed: forceList != null), token);
+                                            forceRgba8: forceRGBA8, forceResize: config.Resize, quality: config.Quality, jobs: config.Jobs,
+                                            forceTranscodeUncompressed: forceList != null, onlyBc7 : forceList == null && onlybc7), token);
                             }
                             catch (OperationCanceledException) { throw; }
                             catch (Exception ex)
@@ -102,6 +104,7 @@ namespace Knossos.NET.ViewModels
                                 Interlocked.Increment(ref skippedCount);
                                 if (result == Etc2Status.NotCompressed)
                                     Log.Add(Log.LogSeverity.Information, "TranscodeLosseFiles()", $"Skipping {filename} (DDS uncompressed).");
+                                else if (result == Etc2Status.Skipped) { /* silent skip */ }
                                 else
                                     Log.Add(Log.LogSeverity.Error, "TranscodeLosseFiles()", $"Error transcoding {filename}: {result}");
                             }

@@ -2,6 +2,7 @@
 using Android.App;
 using System.Linq;
 using Android.Content;
+using Android.Opengl;
 #endif
 using Avalonia.Threading;
 using System;
@@ -183,6 +184,55 @@ public static class AndroidHelper
         }
     }
 
+    static (bool s3tc, bool bc7)? _gpuSupportOpenGL = null;
+    /// <summary>
+    /// Creates a OpenGL ES context to check if the GPU supports S3TC and BPTC extensions
+    /// </summary>
+    /// <returns>true/false</returns>
+    public static (bool s3tc, bool bc7) GpuSupportsBCnTexturesOpenGL()
+    {
+        if(_gpuSupportOpenGL != null)
+            return _gpuSupportOpenGL;
+        try
+        {
+            var display = EGL14.EglGetDisplay(EGL14.EglDefaultDisplay);
+            EGL14.EglInitialize(display, new int[2], 0, new int[2], 1);
+
+            int[] cfgAttribs = {
+                EGL14.EglRenderableType, EGL14.EglOpenglEs2Bit,
+                EGL14.EglSurfaceType,    EGL14.EglPbufferBit,
+                EGL14.EglNone
+            };
+            var configs = new EGLConfig[1];
+            EGL14.EglChooseConfig(display, cfgAttribs, 0, configs, 0, 1, new int[1], 0);
+
+            int[] ctxAttribs = { EGL14.EglContextClientVersion, 2, EGL14.EglNone };
+            var ctx = EGL14.EglCreateContext(display, configs[0], EGL14.EglNoContext, ctxAttribs, 0);
+
+            int[] pbAttribs = { EGL14.EglWidth, 1, EGL14.EglHeight, 1, EGL14.EglNone };
+            var surf = EGL14.EglCreatePbufferSurface(display, configs[0], pbAttribs, 0);
+
+            EGL14.EglMakeCurrent(display, surf, surf, ctx);
+
+            string ext = GLES20.GlGetString(GLES20.GlExtensions) ?? "";
+            _gpuSupportOpenGL = (ext.Contains("GL_EXT_texture_compression_s3tc"), ext.Contains("GL_EXT_texture_compression_bptc"));
+
+            Log.Add(Log.LogSeverity.Information, "AndroidHelper.GpuSupportsBCnTexturesOpenGL()", $"S3TC Support: {_gpuSupportOpenGL.s3tc}");
+            Log.Add(Log.LogSeverity.Information, "AndroidHelper.GpuSupportsBCnTexturesOpenGL()", $"BC7 Support: {_gpuSupportOpenGL.bc7}");
+
+            // cleanup
+            EGL14.EglMakeCurrent(display, EGL14.EglNoSurface, EGL14.EglNoSurface, EGL14.EglNoContext);
+            EGL14.EglDestroySurface(display, surf);
+            EGL14.EglDestroyContext(display, ctx);
+            EGL14.EglTerminate(display);
+        }
+        catch(Exception ex)
+        {
+            Log.Add(Log.LogSeverity.Error, "AndroidHelper.GpuSupportsBCnTexturesOpenGL()", ex);
+            _gpuSupportOpenGL = (false, false);
+        }
+        return _gpuSupportOpenGL;
+    }
 #else
     //Stubs
     public static string? GetExternalAppFilesDir() => "";
@@ -192,6 +242,7 @@ public static class AndroidHelper
     public static string GetDefaultKnetDir() => "";
     public static string GetDefaultKnetDataDir() => "";
     public static string GetDefaultFSODataDir() => "";
+    public static (bool s3tc, bool bc7) GpuSupportsBCnTexturesOpenGL() => (true, true);
     public static void LaunchFSO(string engineLibPath, string? workingFolder, string cmdline) {  }
 #endif
 }
