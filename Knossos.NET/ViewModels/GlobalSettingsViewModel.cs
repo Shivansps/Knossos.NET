@@ -100,7 +100,7 @@ namespace Knossos.NET.ViewModels
             set { if (_etc2transcodeEnabled != value) { this.SetProperty(ref _etc2transcodeEnabled, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(value, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled); UnCommitedChanges = true; } }
         }
 
-        private bool _etc2ResizeEnabled = false;
+        private bool _etc2ResizeEnabled = true;
         internal bool Etc2ResizeEnabled
         {
             get { return _etc2ResizeEnabled; }
