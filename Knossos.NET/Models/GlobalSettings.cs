@@ -70,7 +70,7 @@ namespace Knossos.NET.Models
 
             public Etc2Config()
             {
-                TranscodeMods = true;
+                TranscodeMods = false;
                 Jobs = 2;
                 Quality = 10;
                 Resize = true;

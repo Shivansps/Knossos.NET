@@ -173,10 +173,10 @@
 					</Expander.Header>
 					<StackPanel Margin="5" HorizontalAlignment="Stretch">
 						<Border BorderBrush="Orange" BorderThickness="2" Margin="5" HorizontalAlignment="Stretch">
-							<TextBlock Margin="5" MaxWidth="{Binding Bounds.Width, RelativeSource={RelativeSource AncestorType=Border}}"  TextWrapping="Wrap" Text="If your device GPU do not supports S3TC/BC7 texture compression you can enable asset transcoding to ETC2 during mod installs. If you dont want to enable ETC2 transcoding, FSO can still run at a increased ram usage what may cause crashing if you run out of memory. It can also have visual issues due to software decompression. Note: If you device supports S3TC but not BC7, only BC7 textures will be transcoded."/>
+							<TextBlock Margin="5" MaxWidth="700"  TextWrapping="Wrap" Text="If your device GPU do not supports S3TC/BC7 texture compression you can enable asset transcoding to ETC2 during mod installs. If you dont want to enable ETC2 transcoding, FSO can still run at a increased ram usage what may cause crashing if you run out of memory. It can also have visual issues due to software decompression. Note: If you device supports S3TC but not BC7, only BC7 textures will be transcoded."/>
 						</Border>
 						<Border BorderBrush="Red" BorderThickness="2" Margin="5" HorizontalAlignment="Stretch">
-							<TextBlock Margin="5" MaxWidth="{Binding Bounds.Width, RelativeSource={RelativeSource AncestorType=Border}}"  TextWrapping="Wrap" Text="Warning: Asset transcoding will significantly increase mod install times for large mods like MediaVPs or Total Conversions. It is also very computational expensive so its recomended you have your device plugged in during installs."/>
+							<TextBlock Margin="5" MaxWidth="700"  TextWrapping="Wrap" Text="Warning: Asset transcoding will significantly increase mod install times for large mods like MediaVPs or Total Conversions. It is also very computational expensive so its recomended you have your device plugged in during installs."/>
 						</Border>
 
 						<WrapPanel Margin="5,10,0,0">
