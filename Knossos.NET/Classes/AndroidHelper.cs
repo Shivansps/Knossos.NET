@@ -184,14 +184,14 @@ public static class AndroidHelper
         }
     }
 
-    static (bool s3tc, bool bc7)? _gpuSupportOpenGL = null;
+    static (bool s3tc, bool bc7, bool read) _gpuSupportOpenGL = (false, false, false);
     /// <summary>
     /// Creates a OpenGL ES context to check if the GPU supports S3TC and BPTC extensions
     /// </summary>
     /// <returns>true/false</returns>
-    public static (bool s3tc, bool bc7) GpuSupportsBCnTexturesOpenGL()
+    public static (bool s3tc, bool bc7, bool read) GpuSupportsBCnTexturesOpenGL()
     {
-        if(_gpuSupportOpenGL != null)
+        if(_gpuSupportOpenGL.read)
             return _gpuSupportOpenGL;
         try
         {
@@ -215,8 +215,9 @@ public static class AndroidHelper
             EGL14.EglMakeCurrent(display, surf, surf, ctx);
 
             string ext = GLES20.GlGetString(GLES20.GlExtensions) ?? "";
-            _gpuSupportOpenGL = (ext.Contains("GL_EXT_texture_compression_s3tc"), ext.Contains("GL_EXT_texture_compression_bptc"));
-
+            _gpuSupportOpenGL.s3tc = ext.Contains("GL_EXT_texture_compression_s3tc");
+            _gpuSupportOpenGL.bc7 = ext.Contains("GL_EXT_texture_compression_bptc");
+            _gpuSupportOpenGL.read = true;
             Log.Add(Log.LogSeverity.Information, "AndroidHelper.GpuSupportsBCnTexturesOpenGL()", $"S3TC Support: {_gpuSupportOpenGL.s3tc}");
             Log.Add(Log.LogSeverity.Information, "AndroidHelper.GpuSupportsBCnTexturesOpenGL()", $"BC7 Support: {_gpuSupportOpenGL.bc7}");
 
@@ -229,7 +230,7 @@ public static class AndroidHelper
         catch(Exception ex)
         {
             Log.Add(Log.LogSeverity.Error, "AndroidHelper.GpuSupportsBCnTexturesOpenGL()", ex);
-            _gpuSupportOpenGL = (false, false);
+            _gpuSupportOpenGL = (false, false, true);
         }
         return _gpuSupportOpenGL;
     }
@@ -242,7 +243,7 @@ public static class AndroidHelper
     public static string GetDefaultKnetDir() => "";
     public static string GetDefaultKnetDataDir() => "";
     public static string GetDefaultFSODataDir() => "";
-    public static (bool s3tc, bool bc7) GpuSupportsBCnTexturesOpenGL() => (true, true);
+    public static (bool s3tc, bool bc7, bool read) GpuSupportsBCnTexturesOpenGL() => (true, true, true);
     public static void LaunchFSO(string engineLibPath, string? workingFolder, string cmdline) {  }
 #endif
 }
