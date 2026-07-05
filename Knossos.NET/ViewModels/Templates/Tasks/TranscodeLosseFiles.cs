@@ -56,7 +56,9 @@ namespace Knossos.NET.ViewModels
 
                     Log.Add(Log.LogSeverity.Information, "TaskItemViewModel.TranscodeLosseFiles()", "Starting to transcode loose files");
                     var config = Knossos.globalSettings.modEtc2TranscodeConfig ?? new Models.GlobalSettings.Etc2Config();
-                    var onlybc7 = AndroidHelper.GpuSupportsBCnTexturesOpenGL().s3tc && !AndroidHelper.GpuSupportsBCnTexturesOpenGL().bc7;
+                    var hardwareSupport = AndroidHelper.GpuSupportsBCnTexturesOpenGL();
+                    if (config.ForceBC7) hardwareSupport.bc7 = false;
+                    if (config.ForceS3TC) hardwareSupport.s3tc = false;
 
                     await Parallel.ForEachAsync(filePaths, new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = cancellationTokenSource.Token },
                         async (file, token) =>
@@ -69,8 +71,9 @@ namespace Knossos.NET.ViewModels
                             var filename = Path.GetFileNameWithoutExtension(file).ToLowerInvariant();
                             var outputFileName = Path.Combine(Path.GetDirectoryName(file) ?? "", filename + ".ktx");
                             bool forceRGBA8 = filename.ToLower().Contains("normal") || filename.ToLower().Contains("reflect"); //normal and reflect textures must use ETC2 rgba8
+                            if (hardwareSupport.s3tc && hardwareSupport.bc7) forceRGBA8 = false;
                             if (forceList != null) forceRGBA8 = true;
-
+                          
                             int done = Interlocked.Increment(ref _progressCounter);
                             await Dispatcher.UIThread.InvokeAsync(() =>
                             {
@@ -83,7 +86,7 @@ namespace Knossos.NET.ViewModels
                             {
                                 result = await Task.Run(() => Etc2Transcoder.TranscodeFile(file, outputFileName,
                                             forceRgba8: forceRGBA8, forceResize: config.Resize, quality: config.Quality, jobs: config.Jobs,
-                                            forceTranscodeUncompressed: forceList != null, onlyBc7 : forceList == null && onlybc7), token);
+                                            forceTranscodeUncompressed: forceList != null, hasS3TC : hardwareSupport.s3tc, hasBC7: hardwareSupport.bc7), token);
                             }
                             catch (OperationCanceledException) { throw; }
                             catch (Exception ex)

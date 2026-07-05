@@ -30,7 +30,7 @@ namespace Etc2
     {
         Transcoded = 0,
         NotCompressed = 1,     // uncompressed source, left untouched
-        Skipped = 2,           // intentionally filtered out (e.g. onlyBc7 and source isn't BC7); left untouched
+        Skipped = 2,           // hardware already supports this texture's format; left untouched
         ErrorInput = -1,       // not a DDS / truncated
         ErrorUnhandled = -2,   // a format we don't handle
         ErrorEncode = -3,      // native ETC2 encode failed
@@ -69,24 +69,29 @@ namespace Etc2
         /// <param name="jobs">encoder worker threads (1 = single; you can also call this from many C# threads).</param>
         public static Etc2Status Transcode(Stream input, Stream output,
             bool forceRgba8 = false, bool forceResize = false, bool forceTranscodeUncompressed = false,
-            bool onlyBc7 = false, float quality = 60f, int jobs = 1)
+            bool hasS3TC = false, bool hasBC7 = false, float quality = 60f, int jobs = 1)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
             if (output == null) throw new ArgumentNullException(nameof(output));
             byte[] dds = ReadAll(input);
-            return TranscodeBytes(dds, output, forceRgba8, forceResize, forceTranscodeUncompressed, onlyBc7, quality, jobs);
+            return TranscodeBytes(dds, output, forceRgba8, forceResize, forceTranscodeUncompressed, hasS3TC, hasBC7, quality, jobs);
         }
 
         public static Etc2Status TranscodeBytes(byte[] dds, Stream output,
             bool forceRgba8 = false, bool forceResize = false, bool forceTranscodeUncompressed = false,
-            bool onlyBc7 = false, float quality = 60f, int jobs = 1)
+            bool hasS3TC = false, bool hasBC7 = false, float quality = 60f, int jobs = 1)
         {
             if (!Dds.Parse(dds, out var s)) return Etc2Status.ErrorInput;
             if (!s.Handled) return Etc2Status.ErrorUnhandled;
 
-            // Device-capability filter: transcode ONLY BC7 sources, leave everything
-            // else (DXT1/3/5 and uncompressed) untouched. forceRgba8 overrides this.
-            if (onlyBc7 && !forceRgba8 && s.CmpFormat != Dds.Bc.Bc7) return Etc2Status.Skipped;
+            // Hardware-capability filter: a compressed texture only needs transcoding when
+            // the device can't read its format natively. S3TC covers DXT1/DXT3/DXT5 (BC1/2/3);
+            // BC7 is BPTC. forceRgba8 overrides everything (transcode all to RGBA8).
+            if (!forceRgba8 && s.Compressed)
+            {
+                bool deviceHasIt = (s.CmpFormat == Dds.Bc.Bc7) ? hasBC7 : hasS3TC;
+                if (deviceHasIt) return Etc2Status.Skipped;
+            }
 
             if (!s.Compressed && !(forceRgba8 || forceTranscodeUncompressed)) return Etc2Status.NotCompressed;
 
@@ -135,8 +140,8 @@ namespace Etc2
 
         public static Task<Etc2Status> TranscodeAsync(Stream input, Stream output,
             bool forceRgba8 = false, bool forceResize = false, bool forceTranscodeUncompressed = false,
-            bool onlyBc7 = false, float quality = 60f, int jobs = 1, CancellationToken ct = default)
-            => Task.Run(() => Transcode(input, output, forceRgba8, forceResize, forceTranscodeUncompressed, onlyBc7, quality, jobs), ct);
+            bool hasS3TC = false, bool hasBC7 = false, float quality = 60f, int jobs = 1, CancellationToken ct = default)
+            => Task.Run(() => Transcode(input, output, forceRgba8, forceResize, forceTranscodeUncompressed, hasS3TC, hasBC7, quality, jobs), ct);
 
         /// <summary>
         /// Transcode DDS bytes and return the KTX1 bytes, or null if the source was left
@@ -146,10 +151,10 @@ namespace Etc2
         /// </summary>
         public static (Etc2Status etc2status, byte[]? bytes) TranscodeToKtxBytes(byte[] dds,
             bool forceRgba8 = false, bool forceResize = false, bool forceTranscodeUncompressed = false,
-            bool onlyBc7 = false, float quality = 60f, int jobs = 1)
+            bool hasS3TC = false, bool hasBC7 = false, float quality = 60f, int jobs = 1)
         {
             using var ms = new MemoryStream();
-            var st = TranscodeBytes(dds, ms, forceRgba8, forceResize, forceTranscodeUncompressed, onlyBc7, quality, jobs);
+            var st = TranscodeBytes(dds, ms, forceRgba8, forceResize, forceTranscodeUncompressed, hasS3TC, hasBC7, quality, jobs);
 
             if (st != Etc2Status.Transcoded && st != Etc2Status.NotCompressed && st != Etc2Status.Skipped)
                 throw new InvalidDataException($"DDS->KTX transcode failed: {st}");
@@ -165,11 +170,11 @@ namespace Etc2
         /// </summary>
         public static Etc2Status TryTranscode(byte[] dds, out byte[]? ktx,
             bool forceRgba8 = false, bool forceResize = false, bool forceTranscodeUncompressed = false,
-            bool onlyBc7 = false, float quality = 60f, int jobs = 1)
+            bool hasS3TC = false, bool hasBC7 = false, float quality = 60f, int jobs = 1)
         {
             ktx = null;
             using var ms = new MemoryStream();
-            var st = TranscodeBytes(dds, ms, forceRgba8, forceResize, forceTranscodeUncompressed, onlyBc7, quality, jobs);
+            var st = TranscodeBytes(dds, ms, forceRgba8, forceResize, forceTranscodeUncompressed, hasS3TC, hasBC7, quality, jobs);
             switch (st)
             {
                 case Etc2Status.Transcoded: ktx = ms.ToArray(); return st;
@@ -186,11 +191,11 @@ namespace Etc2
         /// </summary>
         public static Etc2Status TranscodeFile(string inputPath, string outputPath,
             bool forceRgba8 = false, bool forceResize = false, bool forceTranscodeUncompressed = false,
-            bool onlyBc7 = false, float quality = 60f, int jobs = 1)
+            bool hasS3TC = false, bool hasBC7 = false, float quality = 60f, int jobs = 1)
         {
             byte[] dds = File.ReadAllBytes(inputPath);                 // opens + closes input handle now
             using var ms = new MemoryStream();
-            var st = TranscodeBytes(dds, ms, forceRgba8, forceResize, forceTranscodeUncompressed, onlyBc7, quality, jobs);
+            var st = TranscodeBytes(dds, ms, forceRgba8, forceResize, forceTranscodeUncompressed, hasS3TC, hasBC7, quality, jobs);
             if (st != Etc2Status.Transcoded) return st;               // nothing written, no output file touched
 
             using var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None);

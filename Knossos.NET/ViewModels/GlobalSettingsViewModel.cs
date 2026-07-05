@@ -97,28 +97,41 @@ namespace Knossos.NET.ViewModels
         internal bool Etc2transcodeEnabled
         {
             get { return _etc2transcodeEnabled; }
-            set { if (_etc2transcodeEnabled != value) { this.SetProperty(ref _etc2transcodeEnabled, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(value, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled); UnCommitedChanges = true; } }
+            set { if (_etc2transcodeEnabled != value) { this.SetProperty(ref _etc2transcodeEnabled, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(value, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled, ForceS3TC, ForceBC7); UnCommitedChanges = true; } }
         }
 
         private bool _etc2ResizeEnabled = true;
         internal bool Etc2ResizeEnabled
         {
             get { return _etc2ResizeEnabled; }
-            set { if (_etc2ResizeEnabled != value) { this.SetProperty(ref _etc2ResizeEnabled, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, value); UnCommitedChanges = true; } }
+            set { if (_etc2ResizeEnabled != value) { this.SetProperty(ref _etc2ResizeEnabled, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, value, ForceS3TC, ForceBC7); UnCommitedChanges = true; } }
         }
 
         private int _etc2Quality = 10;
         internal int Etc2Quality
         {
             get { return _etc2Quality; }
-            set { if (_etc2Quality != value) { this.SetProperty(ref _etc2Quality, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, value, Etc2ResizeEnabled); UnCommitedChanges = true; } }
+            set { if (_etc2Quality != value) { this.SetProperty(ref _etc2Quality, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, value, Etc2ResizeEnabled, ForceS3TC, ForceBC7); UnCommitedChanges = true; } }
         }
 
         private int _etc2Jobs = 1;
         internal int Etc2Jobs
         {
             get { return _etc2Jobs; }
-            set { if (_etc2Jobs != value) { this.SetProperty(ref _etc2Jobs, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, value, Etc2Quality, Etc2ResizeEnabled); UnCommitedChanges = true; } }
+            set { if (_etc2Jobs != value) { this.SetProperty(ref _etc2Jobs, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, value, Etc2Quality, Etc2ResizeEnabled, ForceS3TC, ForceBC7); UnCommitedChanges = true; } }
+        }
+
+        private bool _forceS3TC = false;
+        internal bool ForceS3TC
+        {
+            get { return _forceS3TC; }
+            set { if (_forceS3TC != value) { this.SetProperty(ref _forceS3TC, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled, value, ForceBC7); UnCommitedChanges = true; } }
+        }
+        private bool _forceBC7 = false;
+        internal bool ForceBC7
+        {
+            get { return _forceBC7; }
+            set { if (_forceBC7 != value) { this.SetProperty(ref _forceBC7, value); Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled, ForceS3TC, value); UnCommitedChanges = true; } }
         }
         /*              */
 
@@ -822,6 +835,8 @@ namespace Knossos.NET.ViewModels
                     Etc2Quality = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Quality;
                     Etc2transcodeEnabled = Knossos.globalSettings.modEtc2TranscodeConfig.Value.TranscodeMods;
                     Etc2ResizeEnabled = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Resize;
+                    ForceBC7 = Knossos.globalSettings.modEtc2TranscodeConfig.Value.ForceBC7;
+                    ForceS3TC = Knossos.globalSettings.modEtc2TranscodeConfig.Value.ForceS3TC;
                 }
             }
 
@@ -1412,7 +1427,7 @@ namespace Knossos.NET.ViewModels
 
             if (IsAndroid)
             {
-                Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled);
+                Knossos.globalSettings.modEtc2TranscodeConfig = new GlobalSettings.Etc2Config(Etc2transcodeEnabled, Etc2Jobs, Etc2Quality, Etc2ResizeEnabled, ForceS3TC, ForceBC7);
             }
 
             /* VIDEO */

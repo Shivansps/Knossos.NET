@@ -67,6 +67,8 @@ namespace Knossos.NET.Models
             public int Jobs { get; set; }
             public int Quality { get; set; }
             public bool Resize { get; set; }
+            public bool ForceBC7 { get; set; }
+            public bool ForceS3TC { get; set; }
 
             public Etc2Config()
             {
@@ -74,19 +76,23 @@ namespace Knossos.NET.Models
                 Jobs = 2;
                 Quality = 10;
                 Resize = true;
+                ForceBC7 = false;
+                ForceS3TC = false;
             }
 
-            public Etc2Config(bool transcodeMods, int jobs, int quality, bool resize)
+            public Etc2Config(bool transcodeMods, int jobs, int quality, bool resize, bool forceS3tc, bool forceBC7)
             {
                 TranscodeMods = transcodeMods;
                 Jobs = jobs;
                 Quality = quality;
                 Resize = resize;
+                ForceBC7 = forceBC7;
+                ForceS3TC = forceS3tc;
             }
 
             public static bool operator ==(Etc2Config left, Etc2Config right)
             {
-                return left.TranscodeMods == right.TranscodeMods && left.Jobs == right.Jobs && left.Quality == right.Quality && left.Resize == right.Resize;
+                return left.TranscodeMods == right.TranscodeMods && left.Jobs == right.Jobs && left.Quality == right.Quality && left.Resize == right.Resize && left.ForceS3TC == right.ForceS3TC && left.ForceBC7 == right.ForceBC7;
             }
 
             public static bool operator !=(Etc2Config left, Etc2Config right)
@@ -106,7 +112,7 @@ namespace Knossos.NET.Models
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Jobs, Quality, TranscodeMods, Resize);
+                return HashCode.Combine(Jobs, Quality, TranscodeMods, Resize, ForceBC7, ForceS3TC);
             }
         }
 
@@ -768,7 +774,7 @@ namespace Knossos.NET.Models
                             var threads = KnUtils.GetMaxThreads();
                             var gpuSupport = AndroidHelper.GpuSupportsBCnTexturesOpenGL();
                             var enabled = KnUtils.IsAndroid ? !gpuSupport.s3tc || !gpuSupport.bc7 : false;
-                            modEtc2TranscodeConfig = new Etc2Config(enabled, threads.recommended, 10, true);
+                            modEtc2TranscodeConfig = new Etc2Config(enabled, threads.recommended, 10, true, false, false);
                         }
 
                         pendingChangesOnAppClose = false;
