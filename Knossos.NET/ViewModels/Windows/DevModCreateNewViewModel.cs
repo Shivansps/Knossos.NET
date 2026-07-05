@@ -59,7 +59,7 @@ namespace Knossos.NET.ViewModels
         internal ObservableCollection<ComboBoxItem> parentComboBoxItems = new ObservableCollection<ComboBoxItem>();
         [ObservableProperty]
         internal int parentSelectedIndex = -1;
-        private Window? dialog;
+        private KnossosWindow? dialog;
         internal bool LoggedInNebula
         {
             get { return Nebula.userIsLoggedIn; }
@@ -68,7 +68,7 @@ namespace Knossos.NET.ViewModels
         public DevModCreateNewViewModel()
         { }
 
-        public DevModCreateNewViewModel(Window dialog) 
+        public DevModCreateNewViewModel(KnossosWindow dialog) 
         {
             this.dialog = dialog;
             var tcs = Knossos.GetInstalledModList(null).Where(x=>x.type == Models.ModType.tc);
@@ -303,9 +303,9 @@ namespace Knossos.NET.ViewModels
                 else
                 {
                     Knossos.AddMod(mod);
-                    MainWindowViewModel.Instance!.AddInstalledMod(mod);
+                    MainViewModel.Instance!.AddInstalledMod(mod);
                 }
-                MainWindowViewModel.Instance!.AddDevMod(mod);
+                MainViewModel.Instance!.AddDevMod(mod);
                 if (dialog != null)
                     dialog.Close();
             }

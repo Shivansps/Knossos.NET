@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,7 +8,10 @@
 		xmlns:vm="using:Knossos.NET.ViewModels"
 		x:DataType="vm:DebugFiltersViewModel"
 		Icon="/Assets/knossos-icon.ico"
-		WindowStartupLocation="CenterScreen"
+		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+		MinWidth="400"
         Title="Debug Filter Selection" 
 		CanResize="True">
 	
@@ -55,4 +58,4 @@
 			</StackPanel>
 		</StackPanel>
 	</ScrollViewer>
-</Window>
+</KnossosWindow>

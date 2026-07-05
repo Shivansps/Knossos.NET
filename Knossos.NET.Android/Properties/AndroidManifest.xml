@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="com.knossosnet.knossosnet">
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-feature android:glEsVersion="0x00030002" android:required="false" />
+	<!-- Touchscreen support -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <!-- Game controller support -->
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <uses-feature android:name="android.hardware.gamepad" android:required="false" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+
+    <!-- External mouse input events -->
+    <uses-feature android:name="android.hardware.type.pc" android:required="false" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Allow access to Bluetooth devices -->
+    <!-- Currently this is just for Steam Controller support and requires setting SDL_HINT_JOYSTICK_HIDAPI_STEAM -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+	
+	<application android:label="Knossos.NET" 
+		android:icon="@drawable/Icon"
+		android:hardwareAccelerated="true"
+        android:isGame="true"
+		android:supportsRtl="true"
+		android:extractNativeLibs="true">
+
+		<provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="${applicationId}.fileprovider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/file_paths" />
+		</provider>
+		
+        <activity
+            android:name=".GameActivity"
+            android:exported="false"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:screenOrientation="sensorLandscape"
+            android:immersive="true"
+            android:process=":game"
+            android:launchMode="singleTask">
+        </activity>
+	</application>
+</manifest>

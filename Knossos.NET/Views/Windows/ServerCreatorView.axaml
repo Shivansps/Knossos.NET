@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +9,9 @@
 		x:DataType="vm:ServerCreatorViewModel"
 		Icon="/Assets/knossos-icon.ico"
 		WindowStartupLocation="CenterOwner"
-		SizeToContent="WidthAndHeight"
+		SizeToContent="Width"
+		MinHeight="400"
+	    MinWidth="400"
         Title="PXO Standalone Server Creator">
 	
 	<Design.DataContext>
@@ -62,4 +64,4 @@
 			</WrapPanel>
 		</StackPanel>
 	</ScrollViewer>
-</Window>
+</KnossosWindow>

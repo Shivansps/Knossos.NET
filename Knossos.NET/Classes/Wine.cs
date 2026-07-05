@@ -213,7 +213,7 @@ namespace Knossos.NET.Classes
         /// <summary>
         /// Determine WINEARCH from Arch string (tools)
         /// </summary>
-        /// <param name="fsoArch"></param>
+        /// <param name="archString"></param>
         /// <returns>WineArch compatible string or null</returns>
         private static string? GetWineArch(string archString)
         {

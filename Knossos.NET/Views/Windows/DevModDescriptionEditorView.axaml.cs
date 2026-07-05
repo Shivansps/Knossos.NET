@@ -6,11 +6,12 @@ using System.ComponentModel;
 
 namespace Knossos.NET.Views;
 
-public partial class DevModDescriptionEditorView : Window
+public partial class DevModDescriptionEditorView : KnossosWindow
 {
     public DevModDescriptionEditorView()
     {
-        InitializeComponent();
+        //InitializeComponent();
+        AvaloniaXamlLoader.Load(this);
         Closing += OnWindowClosing;
     }
 
@@ -27,7 +28,7 @@ public partial class DevModDescriptionEditorView : Window
         }
     }
 
-    public void OnWindowClosing(object? sender, WindowClosingEventArgs e)
+    public void OnWindowClosing(object? sender, CancelEventArgs e)
     {
         if(DataContext != null)
         {

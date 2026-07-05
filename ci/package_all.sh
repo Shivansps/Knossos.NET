@@ -45,6 +45,11 @@ for rid in $RIDS; do
 
     if [ ${rid:0:3} = "win" ]; then
         zip "$OUTPUT_DIR/$fname.zip" * -x \*.pdb
+    elif [ $rid = "android" ]; then
+        find . -maxdepth 1 -type f \( -name *-Signed.apk -o -name *.aab \) | while read file; do
+          echo "  copying: ${file:2}"
+          cp -a "$file" "$OUTPUT_DIR"
+        done
     else
         chmod +x "$NAME"  # make sure binary is executable
         tar -czvf "$OUTPUT_DIR/$fname.tar.gz" --exclude='*.pdb' *

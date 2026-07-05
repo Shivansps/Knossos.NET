@@ -65,7 +65,7 @@ namespace Knossos.NET.ViewModels
                     }
                     else
                     {
-                        Image = MainWindowViewModel.Instance?.placeholderTileImage;
+                        Image = MainViewModel.Instance?.placeholderTileImage;
                     }
                 }
             }
@@ -85,6 +85,8 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal bool isQtFredDebugAvailable = false;
         private Bitmap? tileModBitmap;
+
+        public bool androidButtonsEnabled = false;
 
         /* Should only be used by the editor preview */
         public ModCardViewModel()
@@ -131,7 +133,7 @@ namespace Knossos.NET.ViewModels
         private async Task LazyReLoadTileImageAsync()
         {
             await Task.Delay(new Random().Next(200, 700));
-            Image = tileModBitmap != null ? tileModBitmap : MainWindowViewModel.Instance?.placeholderTileImage;
+            Image = tileModBitmap != null ? tileModBitmap : MainViewModel.Instance?.placeholderTileImage;
         }
 
         public void AddModVersion(Mod modJson)
@@ -278,9 +280,18 @@ namespace Knossos.NET.ViewModels
         /* Button Commands */
         internal void ButtonCommand(object command)
         {
-            switch((string)command)
+            if (KnUtils.IsAndroid && !androidButtonsEnabled)
             {
-                case "play" : Knossos.PlayMod(modVersions[activeVersionIndex], FsoExecType.Release); break;
+                return;
+            }
+            ButtonCommandRelay(command);
+        }
+
+        internal void ButtonCommandRelay(object command)
+        {
+            switch ((string)command)
+            {
+                case "play": Knossos.PlayMod(modVersions[activeVersionIndex], FsoExecType.Release); break;
                 case "playvr": Knossos.PlayMod(modVersions[activeVersionIndex], FsoExecType.Release, false, 0, true); break;
                 case "fred2": Knossos.PlayMod(modVersions[activeVersionIndex], FsoExecType.Fred2); break;
                 case "fred2debug": Knossos.PlayMod(modVersions[activeVersionIndex], FsoExecType.Fred2Debug); break;
@@ -300,23 +311,11 @@ namespace Knossos.NET.ViewModels
         {
             if (File.Exists(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log"))
             {
-                try
-                {
-                    var cmd = new Process();
-                    cmd.StartInfo.FileName = Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log");
-                    cmd.StartInfo.UseShellExecute = true;
-                    cmd.Start();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Log.Add(Log.LogSeverity.Error, "ModCardViewModel.OpenFS2Log", ex);
-                }
+                KnUtils.OpenFileInOS(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log");
             }
             else
             {
-                if (MainWindow.instance != null)
-                    MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
 
@@ -346,11 +345,11 @@ namespace Knossos.NET.ViewModels
                         modVersions[modVersions.Count - 1].installed = false;
                         if (!IsLocalMod)
                         {
-                            MainWindowViewModel.Instance?.AddNebulaMod(modVersions[modVersions.Count - 1]);
+                            MainViewModel.Instance?.AddNebulaMod(modVersions[modVersions.Count - 1]);
                         }
                         Knossos.RemoveMod(modVersions[activeVersionIndex].id);
+                        MainViewModel.Instance?.RunModStatusChecks();
                         FreespaceViewModel.Instance?.SetInstalled(ID, false);
-                        MainWindowViewModel.Instance?.RunModStatusChecks();
                         if (Knossos.globalSettings.hiddenModIds.Contains(modVersions[activeVersionIndex].id))
                         {
                             Knossos.globalSettings.hiddenModIds.Remove(modVersions[activeVersionIndex].id);
@@ -371,30 +370,24 @@ namespace Knossos.NET.ViewModels
 
         internal async void ButtonCommandDetails()
         {
-            if (MainWindow.instance != null)
-            {
-                var dialog = new ModDetailsView();
-                dialog.DataContext = new ModDetailsViewModel(modVersions, activeVersionIndex, this, dialog);
-                detailsView = dialog;
-                await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
-                detailsView = null;
-            }
+            var dialog = new ModDetailsView();
+            dialog.DataContext = new ModDetailsViewModel(modVersions, activeVersionIndex, this, dialog);
+            detailsView = dialog;
+            await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
+            detailsView = null;
         }
 
         internal async void ButtonCommandSettings()
         {
-            if (MainWindow.instance != null)
-            {
-                var dialog = new ModSettingsView();
-                dialog.DataContext = new ModSettingsViewModel(modVersions[activeVersionIndex],this);
-                settingsView = dialog;
-                await dialog.ShowDialog<ModSettingsView?>(MainWindow.instance);
-            }
+            var dialog = new ModSettingsView();
+            dialog.DataContext = new ModSettingsViewModel(modVersions[activeVersionIndex],this);
+            settingsView = dialog;
+            await dialog.ShowDialog<ModSettingsView?>(MainWindow.instance);
         }
 
         private void LoadImage()
         {
-            Image = MainWindowViewModel.Instance?.placeholderTileImage;
+            Image = MainViewModel.Instance?.placeholderTileImage;
 
             try
             {

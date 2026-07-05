@@ -55,13 +55,26 @@ esac
 for rid in $RIDS; do
     type="$(echo $rid | cut -d- -f1)"
     # if rid type doesn't match host then skip
-    [ "$type" = "$host_rid" ] || continue
+    [ "$type" = "$host_rid" ] || [ "$type" = "android" -a "$host_rid" = "linux" ] || continue
 
     echo
     echo "Publishing $rid ..."
     echo
 
-    dotnet publish "$NAME/$NAME.csproj" -r $rid -c Release --self-contained -p:PublishSingleFile=true -o "$PUBLISH_DIR/$rid"
+    if [ $rid = "android" ]; then
+        PLATFORM=".Android"
+        PLATFORM_FLAGS="-p:BuildAndroid=true"
+    else
+        PLATFORM=".Desktop"
+        PLATFORM_FLAGS="-r \"$rid\" -f net6.0 --self-contained -p:PublishSingleFile=true -p:CheckEolTargetFramework=false"
+    fi
+
+    dotnet publish "$NAME$PLATFORM/$NAME$PLATFORM.csproj" -c Release $PLATFORM_FLAGS -o "$PUBLISH_DIR/$rid"
+
+    # Rename final executable to remove platform descriptor from it
+    find "$PUBLISH_DIR/$rid" -name "$NAME*" -not -iname \*.pdb | while read file; do
+        mv -n "$file" "${file/$PLATFORM/}"
+    done
 done
 
 echo

@@ -62,11 +62,11 @@ namespace Knossos.NET.ViewModels
                     FilePickerOpenOptions options = new FilePickerOpenOptions();
                     if (editorPackageItem.PkgMgr.editor != null)
                     {
-                        options.SuggestedStartLocation = await MainWindow.instance!.StorageProvider.TryGetFolderFromPathAsync(Path.Combine(editorPackageItem.PkgMgr.editor.ActiveVersion.fullPath, editorPackageItem.Package.folder != null ? editorPackageItem.Package.folder : string.Empty));
+                        options.SuggestedStartLocation = await KnUtils.GetTopLevel().StorageProvider.TryGetFolderFromPathAsync(Path.Combine(editorPackageItem.PkgMgr.editor.ActiveVersion.fullPath, editorPackageItem.Package.folder != null ? editorPackageItem.Package.folder : string.Empty));
                     }
                     options.AllowMultiple = false;
 
-                    var result = await MainWindow.instance!.StorageProvider.OpenFilePickerAsync(options);
+                    var result = await KnUtils.GetTopLevel().StorageProvider.OpenFilePickerAsync(options);
 
                     if (result != null && result.Count > 0)
                     {
@@ -265,11 +265,11 @@ namespace Knossos.NET.ViewModels
                     FilePickerOpenOptions options = new FilePickerOpenOptions();
                     if (PkgMgr.editor != null)
                     {
-                        options.SuggestedStartLocation = await MainWindow.instance!.StorageProvider.TryGetFolderFromPathAsync(Path.Combine(PkgMgr.editor.ActiveVersion.fullPath, Package.folder != null ? Package.folder : string.Empty));
+                        options.SuggestedStartLocation = await KnUtils.GetTopLevel().StorageProvider.TryGetFolderFromPathAsync(Path.Combine(PkgMgr.editor.ActiveVersion.fullPath, Package.folder != null ? Package.folder : string.Empty));
                     }
                     options.AllowMultiple = false;
 
-                    var result = await MainWindow.instance!.StorageProvider.OpenFilePickerAsync(options);
+                    var result = await KnUtils.GetTopLevel().StorageProvider.OpenFilePickerAsync(options);
 
                     if (result != null && result.Count > 0)
                     {

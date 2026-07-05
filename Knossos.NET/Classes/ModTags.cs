@@ -126,7 +126,7 @@ namespace Knossos.NET.Classes
         /// <summary>
         /// Get a list of all filters loaded, without the mod id
         /// </summary>
-        /// <returns>List<string></returns>
+        /// <returns>List&lt;string&gt;</returns>
         public static List<string> GetListAllFilters()
         {
             List<string> list = new List<string>();
@@ -230,7 +230,7 @@ namespace Knossos.NET.Classes
         /// If the id and tag dosent exist already
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="filter"></param>
+        /// <param name="tag"></param>
         public static void AddModTag(string id, string tag)
         {
             bool found = false;

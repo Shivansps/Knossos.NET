@@ -4,10 +4,11 @@ using Avalonia.Markup.Xaml;
 
 namespace Knossos.NET.Views;
 
-public partial class DevModCreateNewView : Window
+public partial class DevModCreateNewView : KnossosWindow
 {
     public DevModCreateNewView()
     {
-        InitializeComponent();
+        //InitializeComponent();
+        AvaloniaXamlLoader.Load(this);
     }
 }

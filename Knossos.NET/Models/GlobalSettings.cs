@@ -123,6 +123,8 @@ namespace Knossos.NET.Models
         public string? basePath { get; set; } = null;
         [JsonPropertyName("enable_log")]
         public bool enableLogFile { get; set; } = true;
+        [JsonPropertyName("single_view_mode")]
+        public bool singleViewMode { get; set; } = false;
         [JsonPropertyName("log_level")]
         public int logLevel { get; set; } = 1;
         [JsonPropertyName("global_cmdline")]
@@ -277,7 +279,7 @@ namespace Knossos.NET.Models
         [JsonIgnore]
         public bool enableEfx { get; set; } = false;
         [JsonPropertyName("enable_tts")]
-        public bool enableTts { get; set; } = false;
+        public bool enableTts { get; set; } = true;
         [JsonIgnore]
         public int? ttsVoice { get; set; } = null;
         public string? ttsVoiceName { get; set; } = null;
@@ -679,13 +681,14 @@ namespace Knossos.NET.Models
                         hiddenModIds = tempSettings.hiddenModIds;
                         antiStuck = tempSettings.antiStuck;
                         maxUploadRetries = tempSettings.maxUploadRetries;
+                        singleViewMode = tempSettings.singleViewMode;
                         if (hiddenModIds.Any())
                         {
                             foreach (var hiddenMod in hiddenModIds)
                             {
                                 ModTags.AddModFilter(hiddenMod, "Hidden");
                             }
-                            MainWindowViewModel.Instance?.InstalledModsView?.ResetFilters();
+                            MainViewModel.Instance?.InstalledModsView?.ResetFilters();
                         }
                         standaloneServerSettings = tempSettings.standaloneServerSettings;
                         skipExtensionsModFilecopy = tempSettings.skipExtensionsModFilecopy;
@@ -735,7 +738,7 @@ namespace Knossos.NET.Models
         /// Stops the ini-watcher if it was enabled and re-enables it to avoid triggering a read
         /// Optional: Specific path to write the .ini to, need to be FULL PATH
         /// </summary>
-        /// <param name="customPath"></param>
+        /// <param name="customFullPath"></param>
         public void WriteFS2IniValues(string? customFullPath = null)
         {
             try
@@ -923,7 +926,7 @@ namespace Knossos.NET.Models
             try
             {
                 // Quickly update the sort type which is managed elsewhere
-                if (MainWindowViewModel.Instance != null){
+                if (MainViewModel.Instance != null){
                     sortType = Knossos.globalSettings.sortType;
                 }
 

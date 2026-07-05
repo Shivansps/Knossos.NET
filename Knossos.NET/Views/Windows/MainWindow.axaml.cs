@@ -17,24 +17,6 @@ namespace Knossos.NET.Views
         }
 
         /// <summary>
-        /// For custom mode, for setting the task buttom at the last place in the menu
-        /// we need to change the margins so it is displayed properly.
-        /// </summary>
-        public void FixMarginButtomTasks()
-        {
-            var tasks = this.FindControl<TaskInfoButtonView>("TaskButtom");
-            if (tasks != null)
-            {
-                tasks.Margin = new Thickness(9, -45, 0, 0);
-            }
-            var list = this.FindControl<ListBox>("ButtomList");
-            if (list != null)
-            {
-                list.Margin = new Thickness(2, 0, -100, 0);
-            }
-        }
-
-        /// <summary>
         /// Change size of the main window
         /// </summary>
         /// <param name="width"></param>
@@ -56,7 +38,7 @@ namespace Knossos.NET.Views
 
                 await Dispatcher.UIThread.InvokeAsync(() => {
                     Knossos.Tts(string.Empty);
-                    MainWindowViewModel.Instance?.GlobalSettingsView?.CommitPendingChanges();
+                    MainViewModel.Instance?.GlobalSettingsView?.CommitPendingChanges();
                     Knossos.globalSettings.SaveSettingsOnAppClose();
                     canClose = true;
                 });

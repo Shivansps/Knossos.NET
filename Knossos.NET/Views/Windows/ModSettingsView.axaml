@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,10 +8,12 @@
 			 xmlns:vm="using:Knossos.NET.ViewModels"
 			 x:DataType="vm:ModSettingsViewModel"
 			 Icon="/Assets/knossos-icon.ico"
-			 WindowStartupLocation="CenterScreen"
-			 Title="{Binding Title}" 
+			 WindowStartupLocation="CenterOwner"
 			 SizeToContent="Width"
-			 Height="650"
+			 MinHeight="400"
+			 MinWidth="400"
+			 WindowHeight="650"
+			 Title="{Binding Title}" 
 			 CanResize="True">
 
 	<Design.DataContext>
@@ -79,4 +81,4 @@
 			</Grid>
 		</Grid>
 	</Grid>
-</Window>
+</KnossosWindow>

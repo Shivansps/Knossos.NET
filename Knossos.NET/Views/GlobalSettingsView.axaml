@@ -28,11 +28,20 @@
 						</Label>
 					</Expander.Header>
 					<StackPanel Margin="5">
+						<!-- Knossos version -->
+						<WrapPanel Margin="6,10,0,0">	
+							<Label Width="200">Knossos Version</Label>
+							<TextBlock Margin="10,5,0,0" Text="{Binding KnossosVersion}"></TextBlock>
+						</WrapPanel>
 						<!-- Base Path -->
-						<WrapPanel Margin="7,10,0,0">
+						<WrapPanel Margin="7,10,0,0" IsVisible="{Binding !IsAndroid}">
 							<TextBlock VerticalAlignment="Center" Width="200">Library Folder </TextBlock>
 							<TextBox HorizontalAlignment="Left" Width="400" Text="{Binding BasePath}" Margin="10,0,0,0" IsReadOnly="True" ></TextBox>
 							<Button IsVisible="{Binding !IsPortableMode}" Margin="5,0,0,0" Classes="Quaternary" Command="{Binding BrowseFolderCommand}" ToolTip.Tip="It is highly recommended to set this as an empty folder in a location with a large amount of available storage. Do not set it to a shared or cloud drive (such as OneDrive or Google Drive) because syncing issues will prevent Knossos from downloading mod files correctly.">Browse</Button>
+						</WrapPanel>
+						<WrapPanel Margin="7,10,0,0" IsVisible="{Binding IsAndroid}">
+							<TextBlock VerticalAlignment="Center" Width="200">Library Folder </TextBlock>
+							<ComboBox HorizontalAlignment="Left" Width="400" SelectedIndex="{Binding AndroidFolderPathsSelectedIndex}" ItemsSource="{Binding AndroidFolderPaths}" Margin="10,0,0,0" ></ComboBox>
 						</WrapPanel>
 						<!-- Lib Info -->
 						<Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="Auto, Auto" Margin="6,10,0,0">
@@ -61,7 +70,7 @@
 							<NumericUpDown IsEnabled="{Binding ModCompression}" Margin="10,0,0,0" Width="120" Grid.Column="2" Minimum="1" Maximum="8" Value="{Binding CompressionMaxParallelism}" ToolTip.Tip="Max number of parallel compression tasks"></NumericUpDown>
 						</WrapPanel>
 						<!-- CloseToTray -->
-							<WrapPanel Margin="5,10,0,0">
+							<WrapPanel Margin="5,10,0,0" IsVisible="{Binding !IsAndroid}">
 								<Label Margin="0,5,0,0" Width="205">Close to tray</Label>
 								<ToggleSwitch IsChecked="{Binding CloseToTray}" Margin="5,0,0,0" ToolTip.Tip="As of Knossos.NET v1.3, this is a experimental feature."></ToggleSwitch>
 							</WrapPanel>
@@ -155,7 +164,7 @@
 					</StackPanel>
 				</Expander>
 
-								<!--FSO ENGINE SETTINGS-->
+				<!--FSO ENGINE SETTINGS-->
 				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740">
 					<Expander.Header>
 						<Label Margin="5,0,0,0" FontWeight="Bold" FontSize="18" ToolTip.Tip="Additional settings that affect how the FSO engine runs.">
@@ -222,6 +231,11 @@
 						<WrapPanel Margin="5,10,0,0">
 							<Button Content="Turn Off Developer Options" ToolTip.Tip="Restore Dev Options to Default and Close Developer Section.  This should restore normal Knossos.NET operations." Command="{Binding ToggleDeveloperOptions}"></Button>
 						</WrapPanel>
+						<!-- Single View Mode -->
+						<WrapPanel Margin="5,10,0,0" IsVisible="{Binding !IsAndroid}">
+							<Label Margin="0,5,0,0" Width="205">Single Window Mode</Label>
+							<ToggleSwitch IsChecked="{Binding SingleView}" Margin="5,0,0,0" ToolTip.Tip="Knossos will work in the same way as it would work on Android, were you can only have one Window."></ToggleSwitch>
+						</WrapPanel>
 						<!-- NoSystemCMD -->
 						<WrapPanel Margin="5,10,0,0">
 							<Label Margin="0,5,0,0" Width="205">Don't Apply Graphics Settings</Label>
@@ -240,12 +254,15 @@
 					</StackPanel>
 				</Expander>
 
+				<!--Hack to allow to write on the cmdline textbox above in a way that the android keybord is not on top of it-->
+				<StackPanel Background="Transparent" Height="400" IsVisible="{Binding IsAndroid}"/>
+
 				<!--LEGACY SETTINGS-->
-				<TextBlock Margin="12,20,0,0" Text="Legacy Settings" />
-				<Separator  />
+				<TextBlock Margin="12,20,0,0" Text="Legacy Settings" IsVisible="{Binding !IsAndroid}" />
+				<Separator IsVisible="{Binding !IsAndroid}"  />
 
 				<!--VIDEO SETTINGS-->
-				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740">
+				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740" IsVisible="{Binding !IsAndroid}">
 					<Expander.Header>
 						<Label Margin="5,0,0,0" FontWeight="Bold" FontSize="18" ToolTip.Tip="Video settings the FSO engine will use in-game.">
 							Video Settings
@@ -357,7 +374,7 @@
 				</Expander>
 
 				<!--Audio SETTINGS-->
-				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740">
+				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740" IsVisible="{Binding !IsAndroid}">
 					<Expander.Header>
 						<Label Margin="5,0,0,0" FontWeight="Bold" FontSize="18" ToolTip.Tip="Audio settings the FSO engine will use in-game.">
 						  Audio Settings
@@ -436,7 +453,7 @@
 				</Expander>
 
 				<!--INPUT SETTINGS-->
-				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740">
+				<Expander VerticalAlignment="Top" Margin="5" MinWidth="740" IsVisible="{Binding !IsAndroid}">
 					<Expander.Header>
 						<Label Margin="5,0,0,0" FontWeight="Bold" FontSize="18" ToolTip.Tip="Input settings where you can specify which of your plugged-in devices FSO can use in-game.">
 							Input Settings

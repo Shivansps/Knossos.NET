@@ -1,18 +1,20 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
 		x:Name="InstallModWindow"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Knossos.NET.Views.ModInstallView"
-		WindowStartupLocation="CenterScreen"
 		xmlns:v="using:Knossos.NET.Views"
 		xmlns:vm="using:Knossos.NET.ViewModels"
 		x:DataType="vm:ModInstallViewModel"
 		xmlns:models="using:Knossos.NET.Models"
 		Icon="/Assets/knossos-icon.ico"
+		WindowStartupLocation="CenterOwner"
 		SizeToContent="Width"
-		Height="600"
+		MinHeight="400"
+	    MinWidth="400"
+		WindowHeight="600"
 		Title="{Binding Title}"
 		CanResize="True">
 	
@@ -20,6 +22,7 @@
 		<vm:ModInstallViewModel/>
 	</Design.DataContext>
 	
+	<ScrollViewer VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 	<Grid MinHeight="400" MinWidth="300" RowDefinitions="Auto,*,Auto, Auto, Auto" Background="{StaticResource BackgroundColorPrimary}">
 		<Label IsVisible="{Binding !DataLoaded}" Grid.Row="0" Margin="0,20,0,0" FontWeight="Bold" FontSize="28" HorizontalAlignment="Center">Loading data from repo...</Label>
 		<StackPanel IsVisible="{Binding DataLoaded}" Margin="0,20,0,0" Grid.Row="0">
@@ -41,7 +44,7 @@
 			<Button Command="{Binding VerifyCommand}" Margin="5" IsVisible="{Binding IsInstalled}" HorizontalAlignment="Center" Classes="Quaternary">Verify</Button>
 			<Label IsVisible="{Binding IsMetaUpdate}" HorizontalAlignment="Center" FontWeight="Black" Foreground="{StaticResource ModCardBorderUpdate}"> A metadata update is available for this mod</Label>
 		</StackPanel>
-		<TreeView IsVisible="{Binding DataLoaded}" Grid.Row="1" Margin="30" ItemsSource="{Binding ModInstallList}"  HorizontalAlignment="Center">
+		<TreeView MinHeight="100" IsVisible="{Binding DataLoaded}" Grid.Row="1" Margin="30" ItemsSource="{Binding ModInstallList}"  HorizontalAlignment="Center">
 			<TreeView.Styles>
 				<Style Selector="TreeViewItem">
 					<Setter Property="IsExpanded" Value="True" />
@@ -78,5 +81,5 @@
 			&#x0a;&#x0a;Note: Editing a hardlinked file will cause it to be edited for all versions using it. Also hardlinked files cannot be completely deleted unless all references to it are deleted.">Allow hardlinks</CheckBox>
 		</WrapPanel>
 	</Grid>
-	
-</Window>
+	</ScrollViewer>
+</KnossosWindow>

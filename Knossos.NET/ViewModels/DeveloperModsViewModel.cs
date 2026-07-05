@@ -337,7 +337,7 @@ namespace Knossos.NET.ViewModels
                 nightly.type = ModType.engine;
                 nightly.stability = "nightly";
 
-                MainWindowViewModel.Instance!.FsoBuildsView!.RelayInstallBuild(nightly);
+                MainViewModel.Instance!.FsoBuildsView!.RelayInstallBuild(nightly);
 
                 var installed = Knossos.GetInstalledBuild("FSO", LatestNightly);
                 if (installed != null){
@@ -356,7 +356,7 @@ namespace Knossos.NET.ViewModels
                 stable.type = ModType.engine;
                 stable.stability = "stable";
 
-                MainWindowViewModel.Instance!.FsoBuildsView!.RelayInstallBuild(stable);
+                MainViewModel.Instance!.FsoBuildsView!.RelayInstallBuild(stable);
 
                 var installed = Knossos.GetInstalledBuild("FSO", LatestStable);
                 if (installed != null){

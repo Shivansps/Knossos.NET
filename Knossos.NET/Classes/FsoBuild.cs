@@ -44,6 +44,7 @@ namespace Knossos.NET.Models
         Windows,
         Linux,
         MacOSX,
+        Android,
         Unknown
     }
 
@@ -92,9 +93,11 @@ namespace Knossos.NET.Models
         public string? directExec = null;
         public bool isInstalled = true;
         public bool devMode = false;
-        public Mod? modData; 
+        public Mod? modData;
+#pragma warning disable CS0414
         private static bool _flagErrorOneWarn = false;
-      
+#pragma warning restore CS0414
+
         /// <summary>
         /// This is a "DirectExec" FsoBuild
         /// This is intended to be used for when the user manually selects a FSO build executable file on mod settings
@@ -236,7 +239,11 @@ namespace Knossos.NET.Models
                     Log.Add(Log.LogSeverity.Error, "FsoBuild.RunFSO()", "Could not find a executable type for the requested fso build :" + executableType.ToString() + " Requested Type: " + executableType);
                     return new FsoResult(false, "Could not find a executable type for the requested fso build :" + executableType.ToString() + " Requested Type: " + executableType);
                 }
-
+#if ANDROID
+                AndroidHelper.LaunchFSO(execPath, workingFolder, cmdline);
+                await Task.Delay(100);
+                return new FsoResult(true);
+#else
                 if (executable != null && executable.useWine)
                 {
                     //We can assume we are in Linux and this is a cpu arch compatible Fred2 Windows executable
@@ -308,8 +315,9 @@ namespace Knossos.NET.Models
                         return new FsoResult(true);
                     }
                 }
+#endif
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Add(Log.LogSeverity.Error, "FsoBuild.RunFSO()", ex);
                 return new FsoResult(false, ex.ToString());
@@ -322,6 +330,10 @@ namespace Knossos.NET.Models
         /// <returns>A FlagsJsonV1 structure or null if failed</returns>
         public async Task<FlagsJsonV1?> GetFlagsV1Async()
         {
+#if ANDROID
+                // no flags on android
+                return null;
+#else
             var executable = GetExecutable(FsoExecType.Flags);
             var fullpath = GetExecutablePath(executable);
             if (fullpath == null)
@@ -444,6 +456,7 @@ namespace Knossos.NET.Models
                 Log.Add(Log.LogSeverity.Error, "FSO EXE OUTPUT ", output);
                 return null;
             }
+#endif
         }
 
         /// <summary>
@@ -609,7 +622,7 @@ namespace Knossos.NET.Models
                 return false;
             }
 
-            if (enviroment.ToLower().Contains("windows") && !KnUtils.IsWindows || enviroment.ToLower().Contains("linux") && !KnUtils.IsLinux || enviroment.ToLower().Contains("macosx") && !KnUtils.IsMacOS)
+            if (enviroment.ToLower().Contains("windows") && !KnUtils.IsWindows || enviroment.ToLower().Contains("linux") && !KnUtils.IsLinux || enviroment.ToLower().Contains("macosx") && !KnUtils.IsMacOS || enviroment.ToLower().Contains("android") && !KnUtils.IsAndroid)
             {
                 return false;
             }
@@ -677,6 +690,8 @@ namespace Knossos.NET.Models
                 return FsoExecEnvironment.Linux;
             if (enviroment.ToLower().Contains("mac"))
                 return FsoExecEnvironment.MacOSX;
+            if (enviroment.ToLower().Contains("android"))
+                return FsoExecEnvironment.Android;
 
             Log.Add(Log.LogSeverity.Information, "FsoBuild.GetExecEnvironment", "Unable to determine the proper build enviroment. Env: " + enviroment);
             return FsoExecEnvironment.Unknown;
@@ -1142,7 +1157,7 @@ namespace Knossos.NET.Models
             }
             else
             {
-                //Linux
+                //Linux and Android
                 switch (arch)
                 {
                     case FsoExecArch.x64_avx2:

@@ -47,8 +47,8 @@ for arch in $ARCHS; do
     fi
 
     if [ ! -f "$PUBLISH_DIR/win-$arch/$NAME.exe" ]; then
-        echo "  $NAME binary for $arch not found! Skipping..."
-        continue
+      echo "  $NAME binary for $arch not found! Skipping..."
+      continue
     fi
 
     if [ -n "$VERSION" ]; then

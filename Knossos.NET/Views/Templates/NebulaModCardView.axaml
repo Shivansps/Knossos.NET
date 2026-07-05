@@ -29,7 +29,7 @@
 		<Image VerticalAlignment="Top" Source="{Binding TileImage}" Width="150" Height="225"></Image>
 		<TextBlock Margin="0,222,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" Width="150" Text="{Binding Name}" TextWrapping="Wrap" MaxLines="2" TextAlignment="Center" FontSize="14" Foreground="White"/>
 		<!--Nebula Overlay-->
-		<StackPanel IsVisible="{Binding !IsInstalling}" Name="Overlay" ZIndex="1" Background="Black" Height="225" Width="150" VerticalAlignment="Top">
+		<StackPanel IsVisible="{Binding !IsInstalling}" Name="Overlay" ZIndex="1" Background="Black" Height="225" Width="150" VerticalAlignment="Top" PointerPressed="StackPanel_PointerPressed">
 			<Label Content="{Binding ModVersion}" FontWeight="Bold" FontSize="14" Width="150" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Foreground="White"/>
 			<Button Margin="0,55,0,0" Command="{Binding ButtonCommand}" CommandParameter="install" Content="Install" Classes="Accept Rounded" HorizontalAlignment="Center" Width="100" ></Button>
 			<Button Margin="0,10,0,0" Command="{Binding ButtonCommand}" CommandParameter="details" Content="Details" Classes="Option Rounded" HorizontalAlignment="Center" Width="100" ></Button>

@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 x:Name="DetailsWindow"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,8 +9,10 @@
 		     x:DataType="vm:ModDetailsViewModel"
 			 xmlns:HtmlRenderer="clr-namespace:TheArtOfDev.HtmlRenderer.Avalonia;assembly=Avalonia.HtmlRenderer"
 			 Icon="/Assets/knossos-icon.ico"
-			 Width="1070"
 			 WindowStartupLocation="CenterOwner"
+			 MinHeight="400"
+			 MinWidth="400"
+			 WindowWidth="1070"
 			 Title="{Binding Name}"
 			 CanResize="True"
 			 xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
@@ -20,9 +22,9 @@
 		<vm:ModDetailsViewModel/>
 	</Design.DataContext>
 
-	<Window.Resources>
+	<KnossosWindow.Resources>
 		<cvt:BitmapAssetValueConverter x:Key="imageConverter"/>
-	</Window.Resources>
+	</KnossosWindow.Resources>
 
 	<ScrollViewer Background="{StaticResource BackgroundColorPrimary}" AllowAutoHide="False">
 	<Grid RowDefinitions="Auto,Auto,*,Auto">
@@ -111,5 +113,5 @@
 		</Grid>
 	</Grid>
 	</ScrollViewer>
-</Window>
+</KnossosWindow>
  

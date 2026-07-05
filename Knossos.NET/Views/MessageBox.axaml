@@ -1,0 +1,23 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="Knossos.NET.Views.MessageBox"
+    HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+    <Border x:Name="CardBorder"
+            HorizontalAlignment="Center" VerticalAlignment="Center"
+            MinWidth="320" MaxWidth="520" Margin="20"
+            CornerRadius="12" BorderThickness="1"
+            BorderBrush="{StaticResource BackgroundColorTertiary}"
+            Background="{StaticResource BackgroundColorPrimary}"
+            BoxShadow="0 8 24 0 #60000000">
+        <Grid RowDefinitions="Auto,Auto,Auto" Margin="20">
+            <TextBlock x:Name="TitleText" Grid.Row="0" Classes="h1" FontWeight="SemiBold" Margin="0,0,0,8"/>
+            <ScrollViewer Grid.Row="1" MaxHeight="800" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" >
+                <TextBlock x:Name="BodyText" TextWrapping="Wrap"/>
+            </ScrollViewer>
+            <StackPanel x:Name="ButtonsHostPanel" Grid.Row="2" Orientation="Horizontal"
+                        Spacing="8" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+        </Grid>
+    </Border>
+</UserControl>

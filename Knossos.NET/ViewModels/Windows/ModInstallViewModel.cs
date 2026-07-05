@@ -17,7 +17,7 @@ namespace Knossos.NET.ViewModels
     /// </summary>
     public partial class ModInstallViewModel : ViewModelBase
     {
-        private Window? dialogWindow;
+        private KnossosWindow? dialogWindow;
 
         [ObservableProperty]
         internal List<Mod> modVersions = new List<Mod>();
@@ -92,7 +92,7 @@ namespace Knossos.NET.ViewModels
         /// <param name="dialog"></param>
         /// <param name="preSelectedVersion"></param>
         /// <param name="forceDevModeOn"></param>
-        public ModInstallViewModel(Mod modJson, Window dialog, string? preSelectedVersion = null, bool forceDevModeOn = false)
+        public ModInstallViewModel(Mod modJson, KnossosWindow dialog, string? preSelectedVersion = null, bool forceDevModeOn = false)
         {
             dialogWindow = dialog;
             Title = "Installing: " + modJson.title;

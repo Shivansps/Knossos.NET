@@ -231,19 +231,16 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         private async void Details()
         {
-            if (MainWindow.instance != null)
+            var dialog = new ModDetailsView();
+            var mod = GetActiveInstalledModVersion != null ? GetActiveInstalledModVersion : nebulaModVersions.FirstOrDefault();
+            if (mod != null)
             {
-                var dialog = new ModDetailsView();
-                var mod = GetActiveInstalledModVersion != null ? GetActiveInstalledModVersion : nebulaModVersions.FirstOrDefault();
-                if (mod != null)
-                {
-                    dialog.DataContext = new ModDetailsViewModel(mod, dialog);
-                    await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
-                }
-                else
-                {
-                    Log.Add(Log.LogSeverity.Error, "CustomHomeViewModel.Details()", "Mod was null, not installed or nebulas versions of this modid were found.");
-                }
+                dialog.DataContext = new ModDetailsViewModel(mod, dialog);
+                await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
+            }
+            else
+            {
+                Log.Add(Log.LogSeverity.Error, "CustomHomeViewModel.Details()", "Mod was null, not installed or nebulas versions of this modid were found.");
             }
         }
 
@@ -252,18 +249,15 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void Settings()
         {
-            if (MainWindow.instance != null)
+            if (GetActiveInstalledModVersion != null)
             {
-                if (GetActiveInstalledModVersion != null)
-                {
-                    var dialog = new ModSettingsView();
-                    dialog.DataContext = new ModSettingsViewModel(GetActiveInstalledModVersion);
-                    await dialog.ShowDialog<ModSettingsView?>(MainWindow.instance);
-                }
-                else
-                {
-                    Log.Add(Log.LogSeverity.Error, "CustomHomeViewModel.Settings()", "Mod was null, not installed versions of this modid were found.");
-                }
+                var dialog = new ModSettingsView();
+                dialog.DataContext = new ModSettingsViewModel(GetActiveInstalledModVersion);
+                await dialog.ShowDialog<ModSettingsView?>(MainWindow.instance);
+            }
+            else
+            {
+                Log.Add(Log.LogSeverity.Error, "CustomHomeViewModel.Settings()", "Mod was null, not installed versions of this modid were found.");
             }
         }
 
@@ -289,8 +283,7 @@ namespace Knossos.NET.ViewModels
             }
             else
             {
-                if (MainWindow.instance != null)
-                    MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
 
@@ -328,7 +321,7 @@ namespace Knossos.NET.ViewModels
                                 {
                                     //Last version
                                     modVersions[0].installed = false;
-                                    MainWindowViewModel.Instance?.AddNebulaMod(modVersions[0]);
+                                    MainViewModel.Instance?.AddNebulaMod(modVersions[0]);
                                     Knossos.RemoveMod(modVersions[0].id);
                                     Installed = false;
                                     Installing = false;
@@ -484,37 +477,32 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void BrowseFolderCommand()
         {
-            if (MainWindow.instance != null)
+            ChangeBasePathButtonVisible = false;
+            NewBasePath = string.Empty;
+            FolderPickerOpenOptions options = new FolderPickerOpenOptions();
+            options.AllowMultiple = false;
+            try
             {
-                ChangeBasePathButtonVisible = false;
-                NewBasePath = string.Empty;
-                FolderPickerOpenOptions options = new FolderPickerOpenOptions();
-                options.AllowMultiple = false;
-
-                var result = await MainWindow.instance.StorageProvider.OpenFolderPickerAsync(options);
-
-                try
+                var result = await KnUtils.GetTopLevel().StorageProvider.OpenFolderPickerAsync(options);
+                if (result != null && result.Count > 0)
                 {
-                    if (result != null && result.Count > 0)
+
+                    // Test if we can write to the new library directory
+                    using (StreamWriter writer = new StreamWriter(result[0].Path.LocalPath.ToString() + Path.DirectorySeparatorChar + "test.txt"))
                     {
-
-                        // Test if we can write to the new library directory
-                        using (StreamWriter writer = new StreamWriter(result[0].Path.LocalPath.ToString() + Path.DirectorySeparatorChar + "test.txt"))
-                        {
-                            writer.WriteLine("test");
-                        }
-                        File.Delete(Path.Combine(result[0].Path.LocalPath.ToString() + Path.DirectorySeparatorChar + "test.txt"));
-                        NewBasePath = result[0].Path.LocalPath.ToString();
-                        ChangeBasePathButtonVisible = true;
+                        writer.WriteLine("test");
                     }
+                    File.Delete(Path.Combine(result[0].Path.LocalPath.ToString() + Path.DirectorySeparatorChar + "test.txt"));
+                    NewBasePath = result[0].Path.LocalPath.ToString();
+                    ChangeBasePathButtonVisible = true;
                 }
-                catch (Exception ex)
-                {
-                    Log.Add(Log.LogSeverity.Error, "CustomHomeViewModel.BrowseFolderCommand() - test read/write was not successful: ", ex);
-                    await Dispatcher.UIThread.Invoke(async () => {
-                        await MessageBox.Show(null, "We were not able to write to this folder.  Please select another Library Folder.", "Cannot Select Folder", MessageBox.MessageBoxButtons.OK);
-                    }).ConfigureAwait(false);
-                }
+            }
+            catch (Exception ex)
+            {
+                Log.Add(Log.LogSeverity.Error, "CustomHomeViewModel.BrowseFolderCommand() - test read/write was not successful: ", ex);
+                await Dispatcher.UIThread.Invoke(async () => {
+                    await MessageBox.Show(null, "We were not able to write to this folder.  Please select another library folder.", "Cannot Select Folder", MessageBox.MessageBoxButtons.OK);
+                }).ConfigureAwait(false);
             }
         }
 

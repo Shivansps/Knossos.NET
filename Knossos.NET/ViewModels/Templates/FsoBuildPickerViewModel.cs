@@ -294,19 +294,16 @@ namespace Knossos.NET.ViewModels
 
         private async Task<string?> GetPath()
         {
-            if (MainWindow.instance != null)
-            {
-                FilePickerOpenOptions options = new FilePickerOpenOptions();
-                options.AllowMultiple = false;
-                options.Title = "Select the FSO executable file";
-                var topmostWindow = window == null ? MainWindow.instance! : window;
-                var result = await topmostWindow.StorageProvider.OpenFilePickerAsync(options);
+            FilePickerOpenOptions options = new FilePickerOpenOptions();
+            options.AllowMultiple = false;
+            options.Title = "Select the FSO executable file";
+            var topmostWindow = KnUtils.GetTopLevel();
+            var result = await topmostWindow.StorageProvider.OpenFilePickerAsync(options);
 
-                if (result != null && result.Count > 0)
-                {
-                    var file = new FileInfo(result[0].Path.LocalPath.ToString());
-                    return file.FullName;
-                }
+            if (result != null && result.Count > 0)
+            {
+                var file = new FileInfo(result[0].Path.LocalPath.ToString());
+                return file.FullName;
             }
             return null;
         }

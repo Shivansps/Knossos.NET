@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,9 +8,12 @@
 		Icon="/Assets/knossos-icon.ico"
 		xmlns:vm="using:Knossos.NET.ViewModels"
 		x:DataType="vm:DevModAdvancedUploadViewModel"
-		Width="1100"
-		Height="700"
 		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+		MinWidth="400"
+		WindowWidth="1100"
+		WindowHeight="700"
 		Title="{Binding Title}"
 		CanResize="True">
 
@@ -63,4 +66,4 @@
 			<Button Grid.Row="3" Width="146" Margin="20" HorizontalAlignment="Center" IsVisible="{Binding !Loading}" Command="{Binding UploadMod}" Classes="Settings">Upload to Nebula</Button>
 		</Grid>
 	</ScrollViewer>
-</Window>
+</KnossosWindow>

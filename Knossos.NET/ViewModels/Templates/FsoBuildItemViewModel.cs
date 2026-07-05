@@ -115,7 +115,7 @@ namespace Knossos.NET.ViewModels
         {
             if (build != null)
             {
-                if (MainWindow.instance != null && build.modData != null)
+                if (build.modData != null)
                 {
                     await build.modData.LoadFulLNebulaData().ConfigureAwait(false);
                     await Dispatcher.UIThread.InvokeAsync(async () => {
@@ -134,7 +134,7 @@ namespace Knossos.NET.ViewModels
 
         internal async void DeleteBuildCommand()
         {
-            if (MainWindow.instance != null && build != null)
+            if (build != null)
             {
                 var resp = await MessageBox.Show(MainWindow.instance, "Deleting FSO build: " + build.ToString() + ". This can't be undone.", "Delete FSO build", MessageBox.MessageBoxButtons.OKCancel);
                 if(resp == MessageBox.MessageBoxResult.OK)
@@ -192,7 +192,7 @@ namespace Knossos.NET.ViewModels
 
         internal async void DownloadBuildCommand()
         {
-            if (MainWindow.instance != null && build != null)
+            if (build != null)
             {
                 var result = await MessageBox.Show(MainWindow.instance, "This will download and install the FSO Build: " + build?.ToString() + ". Do you want to continue?", "Install FSO engine build", MessageBox.MessageBoxButtons.YesNo);
                 if (result == MessageBox.MessageBoxResult.Yes)

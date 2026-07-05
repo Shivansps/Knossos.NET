@@ -1,4 +1,4 @@
 NAME="Knossos.NET"
 ID="io.github.knossosnet.Knossos_NET"
 GITHUB_ORG="KnossosNET"
-RIDS="win-x86 win-x64 win-arm64 linux-x64 linux-arm64 osx-x64 osx-arm64"
+RIDS="win-x86 win-x64 win-arm64 linux-x64 linux-arm64 osx-x64 osx-arm64 android"

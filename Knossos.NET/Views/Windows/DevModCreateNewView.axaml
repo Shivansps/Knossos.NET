@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,9 +9,12 @@
 		x:DataType="vm:DevModCreateNewViewModel"
         Title="Create New Mod"
 		x:Name="CreateModView"
-		SizeToContent="WidthAndHeight"
-		Icon="/Assets/knossos-icon.ico"
 		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+		MinWidth="400"
+		Icon="/Assets/knossos-icon.ico"
+
 		CanResize="False">
 	<Design.DataContext>
 		<vm:DevModCreateNewViewModel/>
@@ -47,4 +50,4 @@
 		</Grid>
 	</ScrollViewer>
 	
-</Window>
+</KnossosWindow>

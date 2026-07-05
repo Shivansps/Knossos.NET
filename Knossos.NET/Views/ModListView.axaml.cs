@@ -67,16 +67,16 @@ namespace Knossos.NET.Views
         {
             try
             {
-                if (filterPanel != null && MainWindowViewModel.Instance != null)
+                if (filterPanel != null && MainViewModel.Instance != null)
                 {
-                    if (MainWindowViewModel.Instance.tagFilter.Any())
+                    if (MainViewModel.Instance.tagFilter.Any())
                     {
                         var tags = ModTags.GetListAllFilters();
                         foreach (var item in filterPanel.Children)
                         {
                             if (item is Button button && button.Tag is int tagIndex)
                             {
-                                if (tags.Count() > tagIndex && MainWindowViewModel.Instance.tagFilter.Contains(tags[tagIndex]))
+                                if (tags.Count() > tagIndex && MainViewModel.Instance.tagFilter.Contains(tags[tagIndex]))
                                 {
                                     button.Classes.Add("Secondary");
                                 }

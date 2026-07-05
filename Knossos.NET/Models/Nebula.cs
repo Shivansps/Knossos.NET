@@ -315,14 +315,14 @@ namespace Knossos.NET.Models
                                 var newer = isInstalled.MaxBy(x => new SemanticVersion(x.version));
                                 if (newer != null && ( new SemanticVersion(newer.version) < new SemanticVersion(mod.version) || newer.version == mod.version && newer.lastUpdate != mod.lastUpdate))
                                 {
-                                    Dispatcher.UIThread.Invoke(() => MainWindowViewModel.Instance?.MarkAsUpdateAvailable(mod.id, true, mod.version), DispatcherPriority.Background);
+                                    Dispatcher.UIThread.Invoke(() => MainViewModel.Instance?.MarkAsUpdateAvailable(mod.id, true, mod.version), DispatcherPriority.Background);
                                 }
                                 if(isInstalled.First().devMode)
                                     DeveloperModsViewModel.Instance?.UpdateVersionManager(isInstalled.First().id);
                             }
                             else
                             {
-                                Dispatcher.UIThread.Invoke(() => MainWindowViewModel.Instance?.AddNebulaMod(mod), DispatcherPriority.Background);
+                                Dispatcher.UIThread.Invoke(() => MainViewModel.Instance?.AddNebulaMod(mod), DispatcherPriority.Background);
                             }
                         }
                     }
@@ -494,7 +494,7 @@ namespace Knossos.NET.Models
                             var newer = isInstalled.MaxBy(x => new SemanticVersion(x.version));
                             if (newer != null && ( new SemanticVersion(newer.version) < new SemanticVersion(m.version) || newer.version == m.version && newer.lastUpdate != m.lastUpdate ))
                             {
-                                await Dispatcher.UIThread.InvokeAsync(() => MainWindowViewModel.Instance?.MarkAsUpdateAvailable(m.id, true, m.version), DispatcherPriority.Background);
+                                await Dispatcher.UIThread.InvokeAsync(() => MainViewModel.Instance?.MarkAsUpdateAvailable(m.id, true, m.version), DispatcherPriority.Background);
                             }
                             modsTcs.Remove(m);
                         }
@@ -505,7 +505,7 @@ namespace Knossos.NET.Models
                     }
                 };
 
-                await Dispatcher.UIThread.InvokeAsync(() => MainWindowViewModel.Instance?.BulkLoadNebulaMods(modsTcs, true), DispatcherPriority.Background);
+                await Dispatcher.UIThread.InvokeAsync(() => MainViewModel.Instance?.BulkLoadNebulaMods(modsTcs, true), DispatcherPriority.Background);
 
                 //Engine Builds
                 var builds = allModsInRepo.Where(m => m.type == ModType.engine).ToList();
@@ -539,10 +539,10 @@ namespace Knossos.NET.Models
 
                 // If the latest of either of these is not installed, signal the main window
                 var installed = Knossos.GetInstalledBuild("FSO", newestStableVersion);
-                MainWindowViewModel.Instance?.AddMostRecent((installed == null) ? newestStableVersion! : "", false);
+                MainViewModel.Instance?.AddMostRecent((installed == null) ? newestStableVersion! : "", false);
                 installed = Knossos.GetInstalledBuild("FSO", newestNightlyVersion);
-                MainWindowViewModel.Instance?.AddMostRecent((installed == null) ? newestNightlyVersion! : "", true);
-                MainWindowViewModel.Instance?.UpdateBuildInstallButtons();
+                MainViewModel.Instance?.AddMostRecent((installed == null) ? newestNightlyVersion! : "", true);
+                MainViewModel.Instance?.UpdateBuildInstallButtons();
 
                 await Dispatcher.UIThread.InvokeAsync(() => FsoBuildsViewModel.Instance?.BulkLoadNebulaBuilds(builds), DispatcherPriority.Background);
 

@@ -1,11 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml;
 using System;
 using System.ComponentModel;
 
 namespace Knossos.NET.Views
 {
-    public partial class ModDetailsView : Window
+    public partial class ModDetailsView : KnossosWindow
     {
         private Carousel _carousel;
         private Button _left;
@@ -13,7 +14,8 @@ namespace Knossos.NET.Views
 
         public ModDetailsView()
         {
-            InitializeComponent();
+            //InitializeComponent();
+            AvaloniaXamlLoader.Load(this);
             this.Closing += ModDetailsView_StopTTS;
 
             _carousel = this.Get<Carousel>("carousel");

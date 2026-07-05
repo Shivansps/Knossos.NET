@@ -1,7 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <PropertyGroup Condition="'$(BuildAndroid)' == 'true'">
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildAndroid)' != 'true'">
+    <TargetFrameworks>net6.0</TargetFrameworks>
+  </PropertyGroup>
+	
 	<PropertyGroup>
-		<TargetFrameworks>net60</TargetFrameworks>
+		<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<PackageId>IonKiwi.lz4.managed</PackageId>
 		<Version>1.0.7</Version>

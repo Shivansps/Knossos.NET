@@ -1,28 +1,31 @@
-﻿using System;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Knossos.NET.Classes;
+using Knossos.NET.Models;
+using Knossos.NET.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using SharpCompress.Readers;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using System.Net;
-using System.Net.Http;
-using SharpCompress.Archives;
-using SharpCompress.Common;
-using SharpCompress.Readers;
-using Knossos.NET.Classes;
-using Knossos.NET.Models;
-using Avalonia;
-using Avalonia.Media;
-using Avalonia.Threading;
-using Microsoft.Win32;
 using WindowsShortcutFactory;
 
 namespace Knossos.NET
@@ -56,19 +59,19 @@ namespace Knossos.NET
             httpClientFactory = serviceCollention.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
         }
 
-        private static readonly bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        private static readonly bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-        private static readonly bool isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-        private static readonly bool isAppImage = isLinux && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPIMAGE"));
+        private static readonly bool isAppImage = IsLinux && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPIMAGE"));
         private static readonly string cpuArch = RuntimeInformation.OSArchitecture.ToString();
         private static readonly bool cpuAVX = Avx.IsSupported;
         private static readonly bool cpuAVX2 = Avx2.IsSupported;
         private static string fsoPrefPath = string.Empty;
         private static IHttpClientFactory httpClientFactory;
 
-        public static bool IsWindows => isWindows;
-        public static bool IsLinux => isLinux;
-        public static bool IsMacOS => isMacOS;
+        public static bool IsAndroid => OperatingSystem.IsAndroid();
+        public static bool IsBrowser => OperatingSystem.IsBrowser();
+        public static bool IsWindows => OperatingSystem.IsWindows();
+        public static bool IsLinux => OperatingSystem.IsLinux();
+        public static bool IsMacOS => OperatingSystem.IsMacOS();
+
         /// <summary>
         /// <para>Possible Values:</para>
         /// <para>Arm	  //A 32-bit ARM processor architecture.</para>
@@ -125,6 +128,10 @@ namespace Knossos.NET
                 }
                 else
                 {
+                    if(IsAndroid)
+                    {
+                        return AndroidHelper.GetDefaultKnetDir();
+                    }
                     return AppDomain.CurrentDomain.BaseDirectory;
                 }
             }
@@ -145,6 +152,10 @@ namespace Knossos.NET
                 }
                 else
                 {
+                    if(IsAndroid)
+                    {
+                        return AndroidHelper.GetDefaultKnetDataDir();
+                    }
                     return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create), "KnossosNET");
                 }
             }
@@ -187,7 +198,11 @@ namespace Knossos.NET
                 }
                 else
                 {
-                    if (KnUtils.isMacOS)
+                    if(KnUtils.IsAndroid)
+                    {
+                        return AndroidHelper.GetDefaultFSODataDir();
+                    }
+                    if (KnUtils.IsMacOS)
                     {
                         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "HardLightProductions", fsoID);
                     }
@@ -358,6 +373,9 @@ namespace Knossos.NET
 
             try
             {
+#if ANDROID
+                _ = AndroidHelper.OpenUrlAsync(url);
+#else
                 using (var process = new Process())
                 {
                     if (IsWindows)
@@ -378,6 +396,7 @@ namespace Knossos.NET
                     process.StartInfo.CreateNoWindow = true;
                     process.Start();
                 }
+#endif
             }
             catch (Exception ex)
             {
@@ -556,7 +575,6 @@ namespace Knossos.NET
         /// (sha256, lowercase)
         /// </summary>
         /// <param name="fullPath"></param>
-        /// <param name="method"></param>
         /// <returns>hash string or null if failed</returns>
         public static async Task<string?> GetFileHash(string fullPath)
         {
@@ -768,7 +786,7 @@ namespace Knossos.NET
         /// If the file is already in cache, a check is done to make sure it has no changed.
         /// If it has changed it is updated
         /// </summary>
-        /// <param name="imageURL"></param>
+        /// <param name="resourceURL"></param>
         /// <param name="attempt"></param>
         /// <returns>string path or null</returns>
         public static async Task<string?> GetRemoteResource(string resourceURL, int attempt = 1)
@@ -1301,7 +1319,7 @@ namespace Knossos.NET
         /// <summary>
         /// Gets rid of 'A', 'An', and 'The' at the beginning of a string, case-insensitively
         /// </summary>
-        /// <param name="text">A string</param>
+        /// <param name="title">A string</param>
         /// <returns>The string with any articles removed from the beginning</returns>
         public static string RemoveArticles(string title)
         {
@@ -1315,7 +1333,7 @@ namespace Knossos.NET
         /// <summary>
         /// Checks if a file is currently in use
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filePath"></param>
         /// <returns>true or false</returns>
         public static bool IsFileInUse(string filePath)
         {
@@ -1393,6 +1411,60 @@ namespace Knossos.NET
         }
 
         /// <summary>
+        /// Resolves TopLevel Window or View, usually to load a filepicker
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static TopLevel GetTopLevel()
+        {
+            if(MainWindow.instance != null)
+                return MainWindow.instance;
+            if (MainView.instance != null)
+                return TopLevel.GetTopLevel(MainView.instance)!;
+            throw new InvalidOperationException("Unable to resolve TopLevel/owner.");
+        }
+
+        /// <summary>
+        /// Opens any file on the right application in the operative system
+        /// mimetype is only used on Android
+        /// </summary>
+        /// <param name="fullpath"></param>
+        /// <param name="mimetype"></param>
+        public static void OpenFileInOS(string fullpath, string mimetype = "text/plain")
+        {
+            if (File.Exists(fullpath))
+            {
+                try
+                {
+#if ANDROID
+                    if(mimetype.ToLower() == "text/plain")
+                    {
+                        var text = File.ReadAllText(fullpath);
+                        _ = AndroidHelper.ShareTextAsync(text);
+                    }
+                    else
+                    {
+                        _ = AndroidHelper.ShareFileAsync(fullpath, mimetype);
+                    }
+#else
+                    var cmd = new Process();
+                    cmd.StartInfo.FileName = fullpath;
+                    cmd.StartInfo.UseShellExecute = true;
+                    cmd.Start();
+                    cmd.Dispose();
+#endif
+                }
+                catch (Exception ex)
+                {
+                    Log.Add(Log.LogSeverity.Error, "KnUtils.OpenFileInOS", ex);
+                }
+            }
+            else
+            {
+                Log.Add(Log.LogSeverity.Warning, "KnUtils.OpenFileInOS", "File does not exist:  " + fullpath);
+            }
+        }
+      
         /// Determines if the current OS meets the requirements for .NET 10 / "latest" channel updates.
         /// Windows 10+ or macOS 12.0+ qualify.
         /// </summary>

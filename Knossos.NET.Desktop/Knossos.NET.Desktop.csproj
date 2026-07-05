@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
+    One for Windows with net8.0-windows TFM, one for MacOS with net8.0-macos and one with net8.0 TFM for Linux.-->
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<ApplicationIcon>..\Knossos.NET\Assets\knossos-icon.ico</ApplicationIcon>
+	<TrimMode>copyused</TrimMode>
+	<PublishSingleFile>true</PublishSingleFile>
+	<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName></AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+	
+    <ItemGroup Condition="'$(Configuration)' != 'Release'">
+	    <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+    <!--https://learn.microsoft.com/en-us/dotnet/core/rid-catalog-->
+    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
+	    <AvaloniaResource Include="Assets\utils\win\**" />
+    </ItemGroup>
+    <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-riscv64'))">
+	    <AvaloniaResource Include="Assets\utils\linux-riscv64\**" />
+    </ItemGroup>
+    <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-arm64'))">
+	    <AvaloniaResource Include="Assets\utils\linux-arm64\**" />
+    </ItemGroup>
+    <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-x64'))">
+	    <AvaloniaResource Include="Assets\utils\linux-x64\**" />
+    </ItemGroup>
+    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('osx'))">
+	    <AvaloniaResource Include="Assets\utils\osx\**" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Knossos.NET\Knossos.NET.csproj" />
+  </ItemGroup>
+</Project>

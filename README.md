@@ -7,7 +7,7 @@ Knossos.NET, also known as KNet, is a multi-platform launcher for Freespace 2 Op
 
 <br /><br />
 ## **Current Status:**<br />
-Version 1.3.0 has been released!<br />
+Version 1.3.x has been released!<br />
 Check out our download page: https://knossoslauncher.com/<br />
 
 <br /><br />
@@ -96,6 +96,7 @@ On KnossosNET there are multiples sources of Command Line arguments that are eve
 - MSVC 2022<br />
 - .NET 6.0.406(or newer) SDK https://dotnet.microsoft.com/en-us/download/dotnet/6.0<br />
 - Avalonia Extension for Visual Studio https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS<br />
+- (optional) .NET 10 SDK + Android workload for android building
 
 <br /><br />
 ## **Included Libs:**<br />
@@ -120,10 +121,25 @@ On KnossosNET there are multiples sources of Command Line arguments that are eve
 - WindowsShortcutFactory 1.2.0<br />
 
 <br /><br />
+## **Compiling/Developing for Desktop (Windows/Linux/mac) on VS:**<br />
+- Set Knossos.NET.Desktop as your starting project<br />
+- Right click Knossos.NET.Android -> Unload Project (or install net 10 SDK + android workload)<br />
+
+<br /><br />
 ## **Compiling for Linux and Mac:**<br />
-- Right click on the project -> Publish<br />
+- Right click on the Knossos.NET.Desktop project -> Publish<br />
 - Export to folder<br />
 - From there you can pick the destination environment on the list<br />
+<br /><br />
+
+## **Compiling for Android:**<br />
+- Download and install the .NET 10 SDK<br />
+- Open a console and run this command "dotnet workload install android" to install the Android target framework.<br />
+- On a console navigate to the solution root folder of the Knossos Project<br />
+- Run "dotnet build Knossos.NET.Android -c Release -p:BuildAndroid=true" this will create a signed apk<br />
+- If you dont want to use apk for developing, you can run directly at your phone with this command<br />
+  "dotnet run --project ./Knossos.NET.Android -c Debug -p:BuildAndroid=true"<br />
+You will need the adb deamon already running for this or it would not be able to find the device. I generally use a tool called "scrcpy" so be able to use my phone from my pc during developing, starting this toll will already start the adb deamon for you and you can compile and run directly to your phone with this command.
 <br /><br />
 
 # Custom TC Launcher Mode<br />

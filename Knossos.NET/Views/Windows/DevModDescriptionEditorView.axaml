@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,10 +10,10 @@
 		x:DataType="vm:DevModDescriptionEditorViewModel"
 		xmlns:HtmlRenderer="clr-namespace:TheArtOfDev.HtmlRenderer.Avalonia;assembly=Avalonia.HtmlRenderer"
         Title="Mod Description Editor"
-	    SizeToContent="Manual"
-		MinHeight="500"
-		MinWidth="500"
 		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+		MinWidth="600"
 	    CanResize="True">
 	
 	<Design.DataContext>
@@ -59,4 +59,4 @@
 				</Grid>
 			</ScrollViewer>
 		</Grid>
-</Window>
+</KnossosWindow>

@@ -45,6 +45,13 @@ namespace Knossos.NET
                     CreateMainWindow(desktop);
                 }
             }
+            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+            {
+                singleViewPlatform.MainView = new MainView
+                {
+                    DataContext = new MainViewModel()
+                };
+            }
 
             base.OnFrameworkInitializationCompleted();
         }
@@ -106,7 +113,7 @@ namespace Knossos.NET
                     desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
                     if (CustomLauncher.IsCustomMode && CustomLauncher.MenuTaskButtonAtTheEnd)
                     {
-                        MainWindow.instance?.FixMarginButtomTasks();
+                        MainView.instance?.FixMarginButtomTasks();
                     }
                     MainWindow.instance?.SetSize(mainVM?.WindowWidth, mainVM?.WindowHeight);
                     trayIcon?.Dispose();

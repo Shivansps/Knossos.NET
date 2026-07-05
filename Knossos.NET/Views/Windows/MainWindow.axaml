@@ -4,13 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	    xmlns:v="using:Knossos.NET.Views"
-		MinWidth="{Binding MinWindowWidth}"
-		MinHeight="{Binding MinWindowHeight}"
 		x:DataType="vm:MainWindowViewModel"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="900"
         x:Class="Knossos.NET.Views.MainWindow"
         Icon="/Assets/knossos-icon.ico"
 		WindowStartupLocation="CenterScreen"
+		MinWidth="{Binding MinWindowWidth}"
+		MinHeight="{Binding MinWindowHeight}"
 		Background="{StaticResource BackgroundColorPrimary}"
         Title="{Binding AppTitle}"
 		xmlns:cvt="clr-namespace:Knossos.NET.Converters;assembly=Knossos.NET">
@@ -19,49 +19,6 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-	<Window.Resources>
-		<cvt:BitmapAssetValueConverter x:Key="iconImageConverter"/>
-	</Window.Resources>
+	<v:MainView DataContext="{Binding MainViewModel}"/>
 	
-	<!-- Main View -->
-	<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-		<SplitView IsPaneOpen="{Binding IsMenuOpen}" CompactPaneLength="60" DisplayMode="CompactInline" OpenPaneLength="150" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-			<SplitView.Pane>
-				<ScrollViewer  Background="{StaticResource BackgroundColorTertiary}">
-					<StackPanel Orientation="Vertical" Spacing="5" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-						<Grid ColumnDefinitions="Auto, Auto">
-							<Button Grid.Column="0" HorizontalAlignment="Left" Width="40" Height="40" Margin="10 10" Command="{Binding TriggerMenuCommand}" ToolTip.Tip="Expand or collapse the menu">
-								<PathIcon Height="15" Data="{StaticResource 3LinesRegular}" />
-							</Button>
-							<Button Grid.Column="1" Margin="15,0,0,0" Width="40" Height="40" HorizontalAlignment="Right" Command="{Binding OpenScreenshotsFolder}" ToolTip.Tip="Open screenshots folder">
-								<Image Height="30" Width="30" Source="/Assets/general/screenshot.png"></Image>
-							</Button>
-						</Grid>
-						<Grid RowDefinitions="Auto, Auto">
-							<v:TaskInfoButtonView Name="TaskButtom" ZIndex="0" Margin="9,0,0,0" Grid.Row="{Binding TaskButtomRow}" Width="40" Height="45" HorizontalAlignment="Left" Content="{Binding TaskInfoButton}"/>
-							<ListBox Name="ButtomList" ZIndex="1" Background="Transparent" Grid.Row="{Binding ButtomListRow}" Margin="2, -45, -100, 0" Padding="0" ItemsSource="{Binding MenuItems}" SelectedItem="{Binding SelectedMenuItem}">
-								<ListBox.Styles>
-									<Style Selector="ListBoxItem">
-										<Setter Property="Padding" Value="12 8"></Setter>
-									</Style>
-								</ListBox.Styles>
-								<ListBox.ItemTemplate> 
-									<DataTemplate DataType="{x:Type vm:MainViewMenuItem}">
-										<StackPanel Height="29" Spacing="18" Orientation="Horizontal" ToolTip.Tip="{Binding tooltip}">
-											<Image Width="30" Source="{Binding iconRoute, Converter={StaticResource iconImageConverter}}"/>
-											<TextBlock VerticalAlignment="Center" Text="{Binding label}"/>
-										</StackPanel>
-									</DataTemplate>
-								</ListBox.ItemTemplate>
-							</ListBox>
-						</Grid>
-					</StackPanel>
-				</ScrollViewer>
-			</SplitView.Pane>
-
-			<SplitView.Content>
-				<TransitioningContentControl PageTransition="{x:Null}" Content="{Binding CurrentViewModel}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-			</SplitView.Content>
-		</SplitView>
-	</Grid>
 </Window>

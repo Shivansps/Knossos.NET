@@ -355,7 +355,9 @@ namespace IonKiwi.lz4 {
                 if (cmpBytes < 0 || cmpBytes > lz4.LZ4_compressBound(blockSize))
                     throw new Exception($"LZ41: block {currentBlock} compressed size out of range: {cmpBytes}");
                 byte[] cmpBuf = new byte[lz4.LZ4_compressBound(blockSize)];
-                inputStream.Read(cmpBuf,0, cmpBytes);
+                var readBytes = inputStream.Read(cmpBuf,0, cmpBytes);
+                if (readBytes != cmpBytes)
+                    throw new Exception("Incomplete read from stream");
                 fixed (byte* cmpPtr = cmpBuf)
                 {
                     fixed (byte* decBuf = new byte[blockSize])

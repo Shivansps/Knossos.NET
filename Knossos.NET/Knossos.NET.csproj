@@ -1,14 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Condition="'$(BuildAndroid)' == 'true'">
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildAndroid)' != 'true'">
+    <TargetFrameworks>net6.0</TargetFrameworks>
+  </PropertyGroup>
+  
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+  	<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <Nullable>enable</Nullable>
-    <!--Avalonia doesen't support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->
     <TrimMode>copyused</TrimMode>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationIcon>Assets\knossos-icon.ico</ApplicationIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
   <ItemGroup>
@@ -20,6 +24,9 @@
     <None Remove="ViewModels\ModCardViewModel.cs~RF423e49e6.TMP" />
     <None Remove="ViewModels\Windows\ModInstallViewModel.cs~RF3e55a24c.TMP" />
     <None Remove="Views\Windows\ModDetailsView.axaml~RF2bc1dec5.TMP" />
+    <Compile Update="Views\MessageBox.axaml.cs">
+      <DependentUpon>MessageBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\NebulaModListView.axaml.cs">
       <DependentUpon>NebulaModListView.axaml</DependentUpon>
     </Compile>
@@ -42,26 +49,6 @@
 	<AvaloniaResource Include="Assets\fs2_res\**" />
 	<AvaloniaResource Include="Assets\fonts\**" />
 	<AvaloniaResource Include="Assets\utils\*" />
-    <Content Include="Assets\knossos-icon.ico" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' != 'Release'"> 
-	<AvaloniaResource Include="Assets\**" />
-  </ItemGroup> 
-  <!--https://learn.microsoft.com/en-us/dotnet/core/rid-catalog-->
-  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
-    <AvaloniaResource Include="Assets\utils\win\**" />
-  </ItemGroup>
-    <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-riscv64'))">
-    <AvaloniaResource Include="Assets\utils\linux-riscv64\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-arm64'))">
-    <AvaloniaResource Include="Assets\utils\linux-arm64\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-x64'))">
-    <AvaloniaResource Include="Assets\utils\linux-x64\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('osx'))">
-    <AvaloniaResource Include="Assets\utils\osx\**" />
   </ItemGroup>
   <ItemGroup>
     <!--This helps with theme dll-s trimming.
@@ -71,22 +58,23 @@
     <TrimmableAssembly Include="Avalonia.Themes.Default" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AnimatedImage.Avalonia" Version="1.0.7" />
-    <PackageReference Include="Avalonia" Version="11.3.9" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.9" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.9" />
-    <PackageReference Include="Avalonia.HtmlRenderer" Version="11.2.0" />
-    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="11.3.9" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
-    <PackageReference Include="ObservableCollections" Version="3.3.3" />
-    <PackageReference Include="SharpCompress" Version="0.48.0" />
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
-    <PackageReference Include="WindowsShortcutFactory" Version="1.2.0" />
+    <PackageReference Include="AnimatedImage.Avalonia" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+	  <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.HtmlRenderer" />
+    <PackageReference Include="Avalonia.Markup.Xaml.Loader" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="ini-parser-netstandard" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="ObservableCollections" />
+    <PackageReference Include="SharpCompress" />
+    <PackageReference Include="WindowsShortcutFactory" />
+	  <PackageReference Include="Avalonia.Diagnostics">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\Templates\DependencyItemView.axaml.cs">
@@ -101,14 +89,13 @@
     <Compile Update="Views\Windows\DevModAdvancedUploadView.axaml.cs">
       <DependentUpon>DevModAdvancedUploadView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Windows\MessageBox.axaml.cs">
-      <DependentUpon>MessageBox.axaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\ModListView.axaml.cs">
       <DependentUpon>ModListView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VP.NET\VP.NET.csproj" />
+    <ProjectReference Include="..\VP.NET\VP.NET.csproj">
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
 </Project>

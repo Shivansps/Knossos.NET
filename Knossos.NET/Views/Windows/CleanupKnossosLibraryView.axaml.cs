@@ -1,21 +1,20 @@
-using System;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 using Knossos.NET.ViewModels;
+using System;
 
 namespace Knossos.NET.Views
 {
-    public partial class CleanupKnossosLibraryView : Window
+    public partial class CleanupKnossosLibraryView : KnossosWindow
     {
         public CleanupKnossosLibraryView()
         {
-            InitializeComponent();
-        }
+            //InitializeComponent();
+            AvaloniaXamlLoader.Load(this);
+            DataContext = new CleanupKnossosLibraryViewModel();
 
-        protected override void OnOpened(EventArgs e)
-        {
-            base.OnOpened(e);
-            ((CleanupKnossosLibraryViewModel)DataContext!).OnRequestClose += (s, ev) => Close();
-            ((CleanupKnossosLibraryViewModel)DataContext!).LoadRemovableMods();
+            ((CleanupKnossosLibraryViewModel)DataContext).OnRequestClose += (s, ev) => Close();
+            ((CleanupKnossosLibraryViewModel)DataContext).LoadRemovableMods();
         }
     }
 }

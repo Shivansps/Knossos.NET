@@ -126,13 +126,10 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void OpenServerCreator()
         {
-            if (MainWindow.instance != null)
-            {
-                var dialog = new ServerCreatorView();
-                dialog.DataContext = new ServerCreatorViewModel();
+            var dialog = new ServerCreatorView();
+            dialog.DataContext = new ServerCreatorViewModel();
 
-                await dialog.ShowDialog<ServerCreatorView?>(MainWindow.instance);
-            }
+            await dialog.ShowDialog<ServerCreatorView?>(MainWindow.instance);
         }
 
         /// <summary>
@@ -165,10 +162,7 @@ namespace Knossos.NET.ViewModels
             }
             catch (Exception ex)
             {
-                if(MainWindow.instance != null)
-                {
-                    await MessageBox.Show(MainWindow.instance,ex.Message,"Error getting PXO Game list",MessageBox.MessageBoxButtons.OK);
-                }
+                await MessageBox.Show(MainWindow.instance,ex.Message,"Error getting PXO Game list",MessageBox.MessageBoxButtons.OK);
             }
         }
     }

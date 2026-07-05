@@ -134,7 +134,7 @@ namespace Knossos.NET.ViewModels
                     Knossos.RemoveMod(mod);
                 }
             });
-            MainWindowViewModel.Instance?.RunModStatusChecks();
+            MainViewModel.Instance?.RunModStatusChecks();
             OnRequestClose?.Invoke(this, EventArgs.Empty);
         }
     }

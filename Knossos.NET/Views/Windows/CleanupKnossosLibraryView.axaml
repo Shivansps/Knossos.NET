@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,9 +8,11 @@
 		xmlns:vm="using:Knossos.NET.ViewModels"
 		x:DataType="vm:CleanupKnossosLibraryViewModel"
 		Icon="/Assets/knossos-icon.ico"
-		WindowStartupLocation="CenterScreen"
         Title="KnossosNET Library Cleanup" 
-		SizeToContent="WidthAndHeight" 
+		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+	    MinWidth="400"
 		CanResize="False">
 	
 	<Design.DataContext>
@@ -27,4 +29,4 @@
 		</ListBox>
 		<Button Classes="Secondary" Command="{Binding Cleanup}" Margin="10">Delete Selected Mods</Button>
 	</StackPanel>
-</Window>
+</KnossosWindow>

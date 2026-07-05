@@ -73,13 +73,13 @@ namespace Knossos.NET.ViewModels
 
         private string buildId = string.Empty;
         private string? folderPath = null;
-        private Window? window = null;
+        private KnossosWindow? window = null;
 
         public AddUserBuildViewModel() 
         {
         }
 
-        public AddUserBuildViewModel(Window window)
+        public AddUserBuildViewModel(KnossosWindow window)
         {
             this.window = window;
         }
@@ -235,21 +235,17 @@ namespace Knossos.NET.ViewModels
 
         private async Task<string?> OpenDir()
         {
-            if(MainWindow.instance != null)
-            {
-                FolderPickerOpenOptions options = new FolderPickerOpenOptions();
-                options.AllowMultiple = false;
-                options.Title = "Select the folder containing the FSO execs files";
+            FolderPickerOpenOptions options = new FolderPickerOpenOptions();
+            options.AllowMultiple = false;
+            options.Title = "Select the folder containing the FSO execs files";
 
-                var topmostWindow = window == null ? MainWindow.instance : window; 
+            var topmostWindow = KnUtils.GetTopLevel();
 
-                var result = await topmostWindow.StorageProvider.OpenFolderPickerAsync(options);
-                if (result != null && result.Count > 0)
-                    return result[0].Path.LocalPath.ToString();
-                else
-                    return null;
-            }
-            return null;
+            var result = await topmostWindow.StorageProvider.OpenFolderPickerAsync(options);
+            if (result != null && result.Count > 0)
+                return result[0].Path.LocalPath.ToString();
+            else
+                return null;
         }
 
         internal async void ChangeReleaseCommand()
@@ -323,14 +319,14 @@ namespace Knossos.NET.ViewModels
 
         public async Task<string?> GetPath(string? folderRoot)
         {
-            if(MainWindow.instance != null && folderRoot != null)
+            if(folderRoot != null)
             {
                 FilePickerOpenOptions options = new FilePickerOpenOptions();
                 options.AllowMultiple = false;
                 options.Title = "Select the executable file";
-                options.SuggestedStartLocation = await MainWindow.instance.StorageProvider.TryGetFolderFromPathAsync(folderRoot);
+                options.SuggestedStartLocation = await KnUtils.GetTopLevel().StorageProvider.TryGetFolderFromPathAsync(folderRoot);
 
-                var topmostWindow = window == null ? MainWindow.instance : window;
+                var topmostWindow = KnUtils.GetTopLevel();
 
                 var result = await topmostWindow.StorageProvider.OpenFilePickerAsync(options);
 
@@ -513,7 +509,7 @@ namespace Knossos.NET.ViewModels
                     CollapseData = false;
                     CollapseExecs = false;
                     CollapseArch = false;
-                    await MessageBox.Show(window, "An error has ocurred while copying files", "Filecopy error", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(null, "An error has ocurred while copying files", "Filecopy error", MessageBox.MessageBoxButtons.OK);
                 }
             }
         }
@@ -522,18 +518,12 @@ namespace Knossos.NET.ViewModels
         { 
             if(!X86 && !X64 && !AVX && !Arm32 && !Arm64 && !Riscv32 && !Riscv64)
             {
-                if(MainWindow.instance != null)
-                {
-                    MessageBox.Show(MainWindow.instance, "You must select at least one cpu arch.", "Verify Fail", MessageBox.MessageBoxButtons.OK);
-                }
+                MessageBox.Show(MainWindow.instance, "You must select at least one cpu arch.", "Verify Fail", MessageBox.MessageBoxButtons.OK);
                 return false;
             }
             if(Release == string.Empty && DebugFile == string.Empty && Fred2 == string.Empty && Fred2Debug == string.Empty && QtFred == string.Empty && QtFredDebug == string.Empty)
             {
-                if (MainWindow.instance != null)
-                {
-                    MessageBox.Show(MainWindow.instance, "You must select at least one executable", "Verify Fail", MessageBox.MessageBoxButtons.OK);
-                }
+                MessageBox.Show(MainWindow.instance, "You must select at least one executable", "Verify Fail", MessageBox.MessageBoxButtons.OK);
                 return false;
             }
             try
@@ -542,18 +532,12 @@ namespace Knossos.NET.ViewModels
             }
             catch 
             {
-                if (MainWindow.instance != null)
-                {
-                    MessageBox.Show(MainWindow.instance, "Build version is not a valid semantic version string", "Verify Fail", MessageBox.MessageBoxButtons.OK);
-                }
+                MessageBox.Show(MainWindow.instance, "Build version is not a valid semantic version string", "Verify Fail", MessageBox.MessageBoxButtons.OK);
                 return false;
             }
             if(BuildName.Trim() == string.Empty)
             {
-                if (MainWindow.instance != null)
-                {
-                    MessageBox.Show(MainWindow.instance, "Build name is empty", "Verify Fail", MessageBox.MessageBoxButtons.OK);
-                }
+                MessageBox.Show(MainWindow.instance, "Build name is empty", "Verify Fail", MessageBox.MessageBoxButtons.OK);
                 return false;
             }
             return true;

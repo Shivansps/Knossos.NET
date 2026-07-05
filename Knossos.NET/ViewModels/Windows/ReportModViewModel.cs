@@ -22,13 +22,13 @@ namespace Knossos.NET.ViewModels
         internal string reasonString = string.Empty;
 
         private Mod? mod;
-        private Window? dialog;
+        private KnossosWindow? dialog;
 
         public ReportModViewModel()
         {
         }
 
-        public ReportModViewModel(Mod mod, Window dialog)
+        public ReportModViewModel(Mod mod, KnossosWindow dialog)
         {
             this.dialog = dialog;
             this.mod = mod;

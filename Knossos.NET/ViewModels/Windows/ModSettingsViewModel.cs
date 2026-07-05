@@ -365,7 +365,7 @@ namespace Knossos.NET.ViewModels
                 }
                 if (oldUserHidden != UserHidden)
                 {
-                    MainWindowViewModel.Instance?.InstalledModsView?.ResetFilters();
+                    MainViewModel.Instance?.InstalledModsView?.ResetFilters();
                     Knossos.globalSettings.Save();
                 }
                 modJson.modSettings.Save();
@@ -577,18 +577,7 @@ namespace Knossos.NET.ViewModels
         {
             if (File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", modJson!.id + "_settings.ini")))
             {
-                try
-                {
-                    var cmd = new Process();
-                    cmd.StartInfo.FileName = Path.Combine(KnUtils.GetFSODataFolderPath(), "data", modJson!.id + "_settings.ini");
-                    cmd.StartInfo.UseShellExecute = true;
-                    cmd.Start();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Log.Add(Log.LogSeverity.Error, "MainWindowViewModel.ViewIngameOptions", ex);
-                }
+                KnUtils.OpenFileInOS(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", modJson!.id + "_settings.ini"));
             }
         }
 

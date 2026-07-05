@@ -325,7 +325,7 @@ namespace Knossos.NET.ViewModels
                 DeveloperModsViewModel.Instance?.UpdateListedFsoBuildVersionsInEditor();
                 if (runModstatusChecks)
                 {
-                    MainWindowViewModel.Instance?.RunModStatusChecks();
+                    MainViewModel.Instance?.RunModStatusChecks();
                 }
             }
             catch(Exception ex)
@@ -339,13 +339,10 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void CommandAddUserBuild()
         {
-            if (MainWindow.instance != null)
-            {
-                var dialog = new AddUserBuildView();
-                dialog.DataContext = new AddUserBuildViewModel(dialog);
+            var dialog = new AddUserBuildView();
+            dialog.DataContext = new AddUserBuildViewModel(dialog);
 
-                await dialog.ShowDialog<AddUserBuildView?>(MainWindow.instance);
-            }
+            await dialog.ShowDialog<AddUserBuildView?>(MainWindow.instance);
         }
 
         /// <summary>
@@ -403,7 +400,7 @@ namespace Knossos.NET.ViewModels
                             }
                         }
                     }
-                    MainWindowViewModel.Instance?.RunModStatusChecks();
+                    MainViewModel.Instance?.RunModStatusChecks();
                 });
             }
             else

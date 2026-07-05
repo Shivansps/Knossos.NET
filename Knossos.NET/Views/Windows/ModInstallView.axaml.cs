@@ -1,15 +1,17 @@
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 using Knossos.NET.ViewModels;
 using System;
 using System.ComponentModel;
 
 namespace Knossos.NET.Views
 {
-    public partial class ModInstallView : Window
+    public partial class ModInstallView : KnossosWindow
     {
         public ModInstallView()
         {
-            InitializeComponent();
+            //InitializeComponent();
+            AvaloniaXamlLoader.Load(this);
             this.Closing += ForceCollectTrash;
         }
 

@@ -164,7 +164,7 @@ namespace Knossos.NET.ViewModels
 
         internal async void OpenDescriptionEditor()
         {
-            if (MainWindow.instance != null && editor != null)
+            if (editor != null)
             {
                 var dialog = new DevModDescriptionEditorView();
                 dialog.DataContext = new DevModDescriptionEditorViewModel(this, ModDescription);
@@ -189,7 +189,7 @@ namespace Knossos.NET.ViewModels
                     new("Image files (*.jpg, *.png)") { Patterns = new[] { "*.png", "*.jpg", "*.jpeg" } }
                 };
 
-                var result = await MainWindow.instance!.StorageProvider.OpenFilePickerAsync(options);
+                var result = await KnUtils.GetTopLevel().StorageProvider.OpenFilePickerAsync(options);
 
                 if (editor != null && result != null && result.Count > 0)
                 {
@@ -254,7 +254,7 @@ namespace Knossos.NET.ViewModels
                     new("Image files (*.jpg, *.png)") { Patterns = new[] { "*.png", "*.jpg", "*.jpeg" } }
                 };
 
-                var result = await MainWindow.instance!.StorageProvider.OpenFilePickerAsync(options);
+                var result = await KnUtils.GetTopLevel().StorageProvider.OpenFilePickerAsync(options);
 
                 if (editor != null && result != null && result.Count > 0)
                 {
@@ -389,7 +389,7 @@ namespace Knossos.NET.ViewModels
                     new("Image files (*.jpg, *.png)") { Patterns = new[] { "*.png", "*.jpg", "*.jpeg" } }
                 };
 
-                var result = await MainWindow.instance!.StorageProvider.OpenFilePickerAsync(options);
+                var result = await KnUtils.GetTopLevel().StorageProvider.OpenFilePickerAsync(options);
 
                 if (editor != null && result != null && result.Count > 0)
                 {

@@ -69,7 +69,7 @@ namespace Knossos.NET.ViewModels
             var card = FindModCard();
             if (card != null)
             {
-                card.ButtonCommand("play");
+                card.ButtonCommandRelay("play");
             }
             else
             {
@@ -82,7 +82,7 @@ namespace Knossos.NET.ViewModels
             var card = FindModCard();
             if (card != null)
             {
-                card.ButtonCommand("settings");
+                card.ButtonCommandRelay("settings");
             }
             else
             {
@@ -95,7 +95,7 @@ namespace Knossos.NET.ViewModels
             var card = FindModCard();
             if (card != null)
             {
-                card.ButtonCommand("modify");
+                card.ButtonCommandRelay("modify");
             }
             else
             {
@@ -108,7 +108,7 @@ namespace Knossos.NET.ViewModels
             var card = FindModCard();
             if (card != null)
             {
-                card.ButtonCommand("details");
+                card.ButtonCommandRelay("details");
             }
             else
             {
@@ -121,7 +121,7 @@ namespace Knossos.NET.ViewModels
             var card = FindNebulaModCard();
             if (card != null)
             {
-                card.ButtonCommand("install");
+                card.ButtonCommandRelay("install");
             }
             else
             {
@@ -131,9 +131,9 @@ namespace Knossos.NET.ViewModels
 
         internal void CommandRetail()
         {
-            if (MainWindowViewModel.Instance != null && MainWindowViewModel.Instance.InstalledModsView != null)
+            if (MainViewModel.Instance != null && MainViewModel.Instance.InstalledModsView != null)
             {
-                MainWindowViewModel.Instance.InstalledModsView.InstallFS2Command();
+                MainViewModel.Instance.InstalledModsView.InstallFS2Command();
             }
         }
 
@@ -149,18 +149,18 @@ namespace Knossos.NET.ViewModels
 
         private ModCardViewModel? FindModCard()
         {
-            if (MainWindowViewModel.Instance != null && MainWindowViewModel.Instance.InstalledModsView != null)
+            if (MainViewModel.Instance != null && MainViewModel.Instance.InstalledModsView != null)
             {
-                return MainWindowViewModel.Instance.InstalledModsView.GetModCardByID(ModID);
+                return MainViewModel.Instance.InstalledModsView.GetModCardByID(ModID);
             }
             return null;
         }
 
         private NebulaModCardViewModel? FindNebulaModCard()
         {
-            if (MainWindowViewModel.Instance != null && MainWindowViewModel.Instance.NebulaModsView != null)
+            if (MainViewModel.Instance != null && MainViewModel.Instance.NebulaModsView != null)
             {
-                return MainWindowViewModel.Instance.NebulaModsView.GetModCardByID(ModID);
+                return MainViewModel.Instance.NebulaModsView.GetModCardByID(ModID);
             }
             return null;
         }

@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,10 +8,13 @@
 		xmlns:vm="using:Knossos.NET.ViewModels"
 		x:DataType="vm:AddUserBuildViewModel"
 		Icon="/Assets/knossos-icon.ico"
-		WindowStartupLocation="CenterScreen"
         Title="Add Custom FSO Build"
-		Width="550"
-		Height="600"
+		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+		MinWidth="400"
+		WindowWidth="550"
+		WindowHeight="600"
 		CanResize="True">
 	
 	<Design.DataContext>
@@ -93,4 +96,4 @@
 		<ProgressBar Grid.Row="1" IsVisible="{Binding CopyProgress}" Value="{Binding CopyProgress}" Maximum="{Binding MaxFiles}" Height="50" Minimum="0" Width="200" HorizontalAlignment="Center"></ProgressBar>
 	</Grid>
 	</ScrollViewer>
-</Window>
+</KnossosWindow>

@@ -88,12 +88,12 @@ namespace Knossos.NET.ViewModels
 
         public void ApplyTagFilter(int tagIndex)
         {
-            if (MainWindowViewModel.Instance != null)
+            if (MainViewModel.Instance != null)
             {
                 var tags = ModTags.GetListAllFilters();
                 if(tags.Count() > tagIndex)
                 {
-                    MainWindowViewModel.Instance.tagFilter.Add(tags[tagIndex]);
+                    MainViewModel.Instance.tagFilter.Add(tags[tagIndex]);
                 }
                 ApplyFilters();
             }
@@ -101,12 +101,12 @@ namespace Knossos.NET.ViewModels
 
         public void RemoveTagFilter(int tagIndex)
         {
-            if (MainWindowViewModel.Instance != null)
+            if (MainViewModel.Instance != null)
             {
                 var tags = ModTags.GetListAllFilters();
                 if (tags.Count() > tagIndex)
                 {
-                    MainWindowViewModel.Instance.tagFilter.Remove(tags[tagIndex]);
+                    MainViewModel.Instance.tagFilter.Remove(tags[tagIndex]);
                 }
 
                 ApplyFilters();
@@ -130,10 +130,10 @@ namespace Knossos.NET.ViewModels
                     }
                 }
                 //Filters
-                if (visibility && MainWindowViewModel.Instance != null && MainWindowViewModel.Instance.tagFilter.Any())
+                if (visibility && MainViewModel.Instance != null && MainViewModel.Instance.tagFilter.Any())
                 {
                     visibility = false;
-                    foreach (var filter in MainWindowViewModel.Instance.tagFilter)
+                    foreach (var filter in MainViewModel.Instance.tagFilter)
                     {
                         if(card.ID != null && ModTags.IsFilterPresentInModID(card.ID, filter))
                         {
@@ -147,12 +147,12 @@ namespace Knossos.NET.ViewModels
         }
 
         private void BuildFilterString(){
-            if (MainWindowViewModel.Instance == null){
+            if (MainViewModel.Instance == null){
                 FilterString = "No Filters Applied";
                 return;
             }
             
-            int externalCount = MainWindowViewModel.Instance.tagFilter.Count;
+            int externalCount = MainViewModel.Instance.tagFilter.Count;
 
             if (externalCount == 0 ){
                 FilterString = "No Filters Applied";
@@ -163,7 +163,7 @@ namespace Knossos.NET.ViewModels
             FilterString = "Filtering for ";
             TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
 
-            foreach (var filter in MainWindowViewModel.Instance.tagFilter) {
+            foreach (var filter in MainViewModel.Instance.tagFilter) {
                 if (count > 2){ 
                     FilterString += " and ...";
                     break;
@@ -212,11 +212,11 @@ namespace Knossos.NET.ViewModels
                 {
                     ShowTiles = false;
                     LoadingAnimation.Animate = 1;
-                    if (MainWindowViewModel.Instance != null)
+                    if (MainViewModel.Instance != null)
                     {
-                        if (Search != MainWindowViewModel.Instance.sharedSearch)
+                        if (Search != MainViewModel.Instance.sharedSearch)
                         {
-                            Search = MainWindowViewModel.Instance.sharedSearch;
+                            Search = MainViewModel.Instance.sharedSearch;
                         }
                         else
                         {
@@ -248,9 +248,9 @@ namespace Knossos.NET.ViewModels
         public void CloseTab()
         {
             ShowTiles = false;
-            if (MainWindowViewModel.Instance != null)
+            if (MainViewModel.Instance != null)
             {
-                MainWindowViewModel.Instance.sharedSearch = Search;
+                MainViewModel.Instance.sharedSearch = Search;
             }
             Parallel.ForEach(Mods, new ParallelOptions { MaxDegreeOfParallelism = 4 }, card =>
             {
@@ -394,15 +394,11 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void InstallFS2Command()
         {
-            if (MainWindow.instance != null)
-            {
-                var dialog = new Fs2InstallerView();
-                dialog.DataContext = new Fs2InstallerViewModel(dialog);
-
-                await dialog.ShowDialog<Fs2InstallerView?>(MainWindow.instance);
-                Fs2Present = Knossos.retailFs2RootFound;
-            }
-        }
+            var dialog = new Fs2InstallerView();
+            dialog.DataContext = new Fs2InstallerViewModel(dialog);
+            await dialog.ShowDialog<Fs2InstallerView?>(MainWindow.instance);
+            Fs2Present = Knossos.retailFs2RootFound;
+        }        
 
         /// <summary>
         /// Find if a modcard is added to this view by mod id, and return a reference to it

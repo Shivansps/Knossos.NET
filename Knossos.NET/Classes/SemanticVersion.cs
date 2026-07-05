@@ -23,7 +23,7 @@ namespace Knossos.NET.Classes
         /// Creates a new Semantic Version class from a version string
         /// If parsing fails it sets, major, minor and revision to "0"
         /// </summary>
-        /// <param name="version"></param>
+        /// <param name='version'></param>
         public SemanticVersion(string version)
         {
             try
@@ -88,9 +88,9 @@ namespace Knossos.NET.Classes
         /// <summary>
         /// Compare two semantic versions.
         /// </summary>
-        /// <param name="versionA"></param>
-        /// <param name="versionB"></param>
-        /// <returns>Retuns >=1 if A is superior, 0 if equal or <=-1 if A is inferior.</returns>    
+        /// <param name='versionA'></param>
+        /// <param name='versionB'></param>
+        /// <returns>Retuns &gt;=1 if A is superior, 0 if equal or &lt;=-1 if A is inferior.</returns>    
         public static int Compare(string versionA, string versionB)
         {
             return Compare(new SemanticVersion(versionA), new SemanticVersion(versionB));
@@ -99,9 +99,9 @@ namespace Knossos.NET.Classes
         /// <summary>
         /// Compare two semantic versions.
         /// </summary>
-        /// <param name="versionA"></param>
-        /// <param name="versionB"></param>
-        /// <returns>Retuns >=1 if A is superior, 0 if equal or <=-1 if A is inferior.</returns>        
+        /// <param name='versionA'></param>
+        /// <param name='versionB'></param>
+        /// <returns>Retuns >=1 if A is superior, 0 if equal or &lt;=-1 if A is inferior.</returns>        
         public static int Compare(SemanticVersion versionA, SemanticVersion versionB)
         {
             if(versionA.major != versionB.major)
@@ -138,7 +138,7 @@ namespace Knossos.NET.Classes
                             -Identifiers with letters or hyphens are compared lexically in ASCII sort order.
                             -Numeric identifiers always have lower precedence than non-numeric identifiers.
                             -A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
-                            -Example: 1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
+                            -Example: 1.0.0-alpha &lt; 1.0.0-alpha.1 &lt; 1.0.0-alpha.beta &lt; 1.0.0-beta &lt; 1.0.0-beta.2 &lt; 1.0.0-beta.11 &lt; 1.0.0-rc.1 &lt; 1.0.0
                         */
 
                         if (versionA.prerelease != null && versionB.prerelease != null)
@@ -228,10 +228,10 @@ namespace Knossos.NET.Classes
         /// <summary>
         /// Inserts separators to numbers within a Pre-Release string so they can be properly compared
         /// Example:
-        /// -RC10 -> -RC.10
-        /// -Beta5Version4 -> -Beta.5.Version.4
+        /// -RC10 -&gt; -RC.10
+        /// -Beta5Version4 -&gt; -Beta.5.Version.4
         /// </summary>
-        /// <param name="preReleaseString"></param>
+        /// <param name='preReleaseString'></param>
         private static string PreReleaseSeparateNumbers(string preReleaseString)
         {
             var pos = 1;
@@ -260,10 +260,10 @@ namespace Knossos.NET.Classes
 
         /// <summary>
         /// Compares a semantic version string to the version string in the mod dependency to see if it sastifies the requirement.
-        /// Version : null -> Any, Version: "4.6.1" -> Only that version, Version: "~4.6.1" -> >=4.6.1 < 4.7.0, Version: ">=4.6.1" -> equal or newer, Version: "<=4.6.1" -> equal or older, Version: ">4.6.1" -> newer, Version: "<4.6.1" -> older, Version: "[4.6.1,5.0.0)" -> NuGet interval (any combination of [/]/(/) brackets), Version: ">=4.6.1 <5.0.0" -> space-separated AND
+        /// Version : null -&gt; Any, Version: "4.6.1" -&gt; Only that version, Version: "~4.6.1" -&gt; &gt;=4.6.1 "&lt; 4.7.0, Version: "&gt;=4.6.1" -&gt; equal or newer, Version: "&lt;=4.6.1" -&gt; equal or older, Version: "&gt;4.6.1" -&gt; newer, Version: "&lt;4.6.1" -&gt; older
         /// </summary>
-        /// <param name="dependencyVersion"></param>
-        /// <param name="version"></param>
+        /// <param name='dependencyVersion'></param>
+        /// <param name='version'></param>
         /// <returns>true or false</returns>
         public static bool SastifiesDependency(string? dependencyVersion, string? version)
         {
@@ -278,10 +278,10 @@ namespace Knossos.NET.Classes
         */
         /// <summary>
         /// Compares a semantic version to the version string in the mod dependency to see if it sastifies the requirement.
-        /// Version : null -> Any, Version: "4.6.1" -> Only that version, Version: "~4.6.1" -> >=4.6.1 < 4.7.0, Version: ">=4.6.1" -> equal or newer, Version: "<=4.6.1" -> equal or older, Version: ">4.6.1" -> newer, Version: "<4.6.1" -> older, Version: "[4.6.1,5.0.0)" -> NuGet interval (any combination of [/]/(/) brackets), Version: ">=4.6.1 <5.0.0" -> space-separated AND
+        /// Version : null -&gt; Any, Version: "4.6.1" -&gt; Only that version, Version: "~4.6.1" -&gt; &gt;=4.6.1 &lt; 4.7.0, Version: "&gt;=4.6.1" -&gt; equal or newer, Version: "&lt;=4.6.1" -&gt; equal or older, Version: "&gt;4.6.1" -&gt; newer, Version: "&lt;4.6.1" -&gt; older
         /// </summary>
-        /// <param name="dependencyVersion"></param>
-        /// <param name="version"></param>
+        /// <param name='dependencyVersion'></param>
+        /// <param name='version'></param>
         /// <returns>returns true or false</returns>
         public static bool SastifiesDependency(string? dependencyVersion, SemanticVersion version)
         {
@@ -305,7 +305,7 @@ namespace Knossos.NET.Classes
 
         /// <summary>
         /// True if the constraint cannot be represented as a single-operator + version (e.g. NuGet interval
-        /// "[1.0,2.0)" or space-separated AND ">=1.0 <2.0"). Used by callers that strip operators or by UI
+        /// "[1.0,2.0)" or space-separated AND "&gt;=1.0 &lt;2.0"). Used by callers that strip operators or by UI
         /// pickers that can only display a single operator.
         /// </summary>
         public static bool IsComplexConstraint(string? constraint)

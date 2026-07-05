@@ -179,7 +179,7 @@ namespace Knossos.NET.Models
         }
 
         /// <summary>
-        /// Returns of List of <ModDependency> with unsastified dependencies.
+        /// Returns of List of ModDependency with unsastified dependencies.
         /// The package list will only contain the missing packages if a valid
         /// semantic version is found, but it is missing packages.
         /// Includes mods, tcs and engines
@@ -319,7 +319,7 @@ namespace Knossos.NET.Models
         }
 
         /// <summary>
-        /// Returns a list of <ModDependency> of all packages in the mod.
+        /// Returns a list of ModDependency of all packages in the mod.
         /// Returns null if the mod has no dependencies or packages.
         /// Takes into account user settings, if any.
         /// Optional option to filter dependencies
@@ -374,7 +374,7 @@ namespace Knossos.NET.Models
         /// Version=null means "any" so others must decide if a version is specified
         /// </summary>
         /// <param name="unFilteredDepList"></param>
-        /// <returns>List<ModDependency></returns>
+        /// <returns>List ModDependency</returns>
         /// TODO: Can can be done a lot better and clearer using LINQ groups.
         private List<ModDependency> FilterDependencies(List<ModDependency> unFilteredDepList)
         {
@@ -847,8 +847,8 @@ namespace Knossos.NET.Models
         /// To use with the List .Sort()
         /// Orders the two titles using a regular case-insensitive string comparison, but ignoring any leading 'A', 'An', or 'The' articles
         /// </summary>
-        /// <param name="title1"></param>
-        /// <param name="title2"></param>
+        /// <param name="mod1"></param>
+        /// <param name="mod2"></param>
         public static int CompareTitles(Mod mod1, Mod mod2)
         {
             return String.Compare(KnUtils.RemoveArticles(mod1.title), KnUtils.RemoveArticles(mod2.title), StringComparison.CurrentCultureIgnoreCase);

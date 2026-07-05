@@ -83,10 +83,10 @@ namespace Knossos.NET.ViewModels
                     else
                     {
                         await Dispatcher.UIThread.InvokeAsync(() => Knossos.AddMod(newMod));
-                        await Dispatcher.UIThread.InvokeAsync(() => MainWindowViewModel.Instance!.AddInstalledMod(newMod));
+                        await Dispatcher.UIThread.InvokeAsync(() => MainViewModel.Instance!.AddInstalledMod(newMod));
 
                     }
-                    await Dispatcher.UIThread.InvokeAsync(() => MainWindowViewModel.Instance!.AddDevMod(newMod));
+                    await Dispatcher.UIThread.InvokeAsync(() => MainViewModel.Instance!.AddDevMod(newMod));
 
                     Info = "";
                     IsCompleted = true;

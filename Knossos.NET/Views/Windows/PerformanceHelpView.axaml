@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,13 +6,15 @@
         x:Class="Knossos.NET.Views.PerformanceHelpView"
 		xmlns:vm="clr-namespace:Knossos.NET.ViewModels;assembly=Knossos.NET"
 		Icon="/Assets/knossos-icon.ico"
-		WindowStartupLocation="CenterScreen"
         Title="How to increase in-game performance" 
-		SizeToContent="WidthAndHeight" 
+		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+	    MinWidth="400"
 		CanResize="False">
 	
 	<StackPanel MaxWidth="500" Background="{StaticResource BackgroundColorPrimary}">
 		<TextBlock Margin="10,20,20,10" TextWrapping="Wrap">If in-game performance is slow, close the game and then disable "Extra Multisample AA" and "Shadows". Note, "Extra Multisample AA" is an added, more expensive anti-aliasing step and if it is disabled then "Post-processing AA" will still be be applied. </TextBlock>
 		<TextBlock Margin="10,10,20,10" TextWrapping="Wrap">If performance remains slow the next best options to disable are "Deferred Lighting" and then "Post-processing AA".</TextBlock>
 	</StackPanel>
-</Window>
+</KnossosWindow>

@@ -33,7 +33,7 @@
 			<Label FontWeight="Bold" FontSize="12">Update Available</Label>
 		</Border>
 		
-		<StackPanel Name="Overlay" ZIndex="1" Background="Black" Height="225" Width="150" VerticalAlignment="Top">
+		<StackPanel Name="Overlay" ZIndex="1" Background="Black" Height="225" Width="150" VerticalAlignment="Top" PointerPressed="StackPanel_PointerPressed">
 			<Label Content="{Binding ModVersion}" FontWeight="Bold" FontSize="14" Width="150" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Foreground="White"/>
 			<!--Installed Overlay-->
 			<TabControl Margin="0,-12,0,0">

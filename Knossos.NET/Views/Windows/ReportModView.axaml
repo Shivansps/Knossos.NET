@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<KnossosWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,11 +6,13 @@
         x:Class="Knossos.NET.Views.ReportModView"
 		x:Name="ReportModWindow"
 		Icon="/Assets/knossos-icon.ico"
-		Height="380"
-		Width="600"
 		CanResize="False"
-		WindowStartupLocation="CenterScreen"
-		SizeToContent="WidthAndHeight"
+		WindowStartupLocation="CenterOwner"
+		SizeToContent="Width"
+		MinHeight="400"
+	    MinWidth="400"
+		WindowHeight="400"
+		WindowWidth="600"
         Title="Report Mod"
 		xmlns:v="using:Knossos.NET.Views"
 		xmlns:vm="using:Knossos.NET.ViewModels"
@@ -35,4 +37,4 @@
 		</Grid>
 	</ScrollViewer>
 	
-</Window>
+</KnossosWindow>
