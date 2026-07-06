@@ -24,7 +24,7 @@
     <PackageVersion Include="ini-parser-netstandard" Version="2.5.3" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.8" />
     <PackageVersion Include="ObservableCollections" Version="3.3.4" />
-    <PackageVersion Include="SharpCompress" Version="0.48.0" />
+    <PackageVersion Include="SharpCompress" Version="0.49.1" />
     <PackageVersion Include="WindowsShortcutFactory" Version="1.2.0" />
   </ItemGroup>
 </Project>

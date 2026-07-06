@@ -32,7 +32,7 @@
 				</StackPanel>
 			</Border>
 			
-			<Border IsVisible="{Binding InnoExtractIsAvailable}" Margin="0,5,0,0" Grid.Row="1" BorderBrush="AliceBlue" BorderThickness="2" CornerRadius="2">
+			<Border Margin="0,5,0,0" Grid.Row="1" BorderBrush="AliceBlue" BorderThickness="2" CornerRadius="2">
 				<StackPanel>
 					<Label Margin="5" FontWeight="Black" FontSize="18">Freespace 2 GoG install file</Label>
 					<Label Margin="5">You do not have Freespace 2 installed, but you have the GoG Freespace 2 install file?</Label>

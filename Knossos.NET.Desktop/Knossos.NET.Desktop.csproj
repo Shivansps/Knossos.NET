@@ -82,17 +82,29 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>etc2native.dll</Link>
     </None>
+	<None Update="precompiled\windows\x64\innowrap.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>innowrap.dll</Link>
+    </None>
   </ItemGroup>
   <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsX86)' == 'true'">
     <None Update="precompiled\windows\x86\etc2native.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>etc2native.dll</Link>
     </None>
+	<None Update="precompiled\windows\x86\innowrap.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>innowrap.dll</Link>
+    </None>
   </ItemGroup>
   <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsArm64)' == 'true'">
     <None Update="precompiled\windows\arm64\etc2native.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>etc2native.dll</Link>
+    </None>
+	<None Update="precompiled\windows\arm64\innowrap.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>innowrap.dll</Link>
     </None>
   </ItemGroup>
 
@@ -102,6 +114,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libetc2native.so</Link>
     </None>
+	<None Update="precompiled\linux\x64\libinnowrap.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.so</Link>
+    </None>
   </ItemGroup>
 
   <!-- Linux arm64 -->
@@ -109,6 +125,10 @@
     <None Update="precompiled\linux\arm64\libetc2native.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libetc2native.so</Link>
+    </None>
+	<None Update="precompiled\linux\arm64\libinnowrap.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.so</Link>
     </None>
   </ItemGroup>
 
@@ -118,6 +138,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libetc2native.so</Link>
     </None>
+	<None Update="precompiled\linux\riscv64\libinnowrap.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.so</Link>
+    </None>
   </ItemGroup>
 
   <!-- macOS (x64 / arm64) -->
@@ -125,6 +149,10 @@
     <None Update="precompiled\osx\libetc2native.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libetc2native.dylib</Link>
+    </None>
+	<None Update="precompiled\osx\libinnowrap.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.dylib</Link>
     </None>
   </ItemGroup>
 
