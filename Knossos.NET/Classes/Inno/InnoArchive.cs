@@ -162,10 +162,12 @@ namespace Knossos.NET.Classes.Inno
         private IntPtr _ctx;
         private ulong _dataOffset;
 
-        // External-slice (.bin) support.
-        private readonly string? _installerPath;   // needed to locate sibling .bin files
+        // External-slice (.bin) support. Slices are opened through a SliceOpener so the
+        // caller controls HOW (File.OpenRead on desktop, Avalonia IStorageFile on mobile).
+        private SliceOpener? _sliceOpener;
+        private string _baseName = "";             // installer stem, for .bin naming
         private uint _slicesPerDisk = 1;
-        private string _baseFilename = "";
+        private string _baseFilename = "";          // header fallback base name
         private SliceSource? _slices;
 
         // Keep delegates rooted so the GC doesn't collect them while native code holds pointers.
@@ -186,27 +188,47 @@ namespace Knossos.NET.Classes.Inno
         public static string Version => Marshal.PtrToStringUTF8(innowrap_version()) ?? "";
 
         /// <summary>
-        /// Open an installer by path. Required for external (.exe + .bin) installers so the
-        /// sibling .bin slices can be located; works for single-.exe installers too.
+        /// Opens a slice (.bin) by index and expected filename. Return a readable stream
+        /// (seekable preferred; a forward-only stream works with <see cref="ExtractFiles"/>),
+        /// or null if not available.
+        /// </summary>
+        public delegate Stream? SliceOpener(int sliceIndex, string expectedFileName);
+
+        /// <summary>
+        /// Open an installer by path (desktop). Locates sibling .bin slices with File I/O.
         /// </summary>
         public InnoArchive(string installerPath)
-            : this(File.OpenRead(installerPath), leaveOpen: false, installerPath) { }
+            : this(OpenSeekable(File.OpenRead(installerPath)), false,
+                   Path.GetFileNameWithoutExtension(installerPath),
+                   DefaultFileOpener(Path.GetDirectoryName(Path.GetFullPath(installerPath)) ?? "."))
+        { }
 
-        /// <param name="stream">A seekable, readable stream over the installer .exe.</param>
-        /// <param name="leaveOpen">If false, the stream is disposed with this object.</param>
-        public InnoArchive(Stream stream, bool leaveOpen = false) : this(stream, leaveOpen, null) { }
+        /// <summary>
+        /// Open an installer from streams (mobile / sandboxed). The .exe is read via
+        /// <paramref name="exeStream"/>; external .bin slices are obtained through
+        /// <paramref name="openSlice"/>. <paramref name="installerName"/> is the .exe file
+        /// name (e.g. "setup_freespace_2_..._(33372).exe"), used to derive .bin names.
+        /// The .exe stream need not be seekable (it is small and buffered if necessary).
+        /// </summary>
+        public InnoArchive(Stream exeStream, string installerName, SliceOpener openSlice, bool leaveOpen = false)
+            : this(OpenSeekable(exeStream), leaveOpen,
+                   Path.GetFileNameWithoutExtension(installerName), openSlice)
+        { }
 
-        private InnoArchive(Stream stream, bool leaveOpen, string? installerPath)
+        /// <summary>Embedded single-.exe installers only (no external .bin access).</summary>
+        public InnoArchive(Stream stream, bool leaveOpen = false)
+            : this(OpenSeekable(stream), leaveOpen, "", null) { }
+
+        private InnoArchive(Stream seekableExe, bool leaveOpen, string baseName, SliceOpener? openSlice)
         {
-            if (stream == null) throw new ArgumentNullException(nameof(stream));
-            if (!stream.CanSeek || !stream.CanRead) throw new ArgumentException("Stream must be seekable and readable.");
-            _stream = stream;
+            _stream = seekableExe;
             _leaveOpen = leaveOpen;
-            _installerPath = installerPath;
+            _baseName = baseName;
+            _sliceOpener = openSlice;
             _readCb = ReadCallback;
             _inflateCb = InflateCallback;
 
-            ulong total = (ulong)stream.Length;
+            ulong total = (ulong)_stream.Length;
             _ctx = innowrap_open(_readCb, _inflateCb, IntPtr.Zero, total, out int err);
             if (_ctx == IntPtr.Zero || err != 0)
                 throw new InnoExtractException("innowrap_open failed (not an Inno Setup installer, or parse error).");
@@ -216,6 +238,33 @@ namespace Knossos.NET.Classes.Inno
             _baseFilename = Marshal.PtrToStringUTF8(innowrap_base_filename(_ctx)) ?? "";
             LoadFileList();
         }
+
+        // The .exe is small; if the provided stream can't seek (e.g. an Android content
+        // stream), buffer it into a MemoryStream so the parser can seek freely.
+        private static Stream OpenSeekable(Stream s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            if (!s.CanRead) throw new ArgumentException("Stream must be readable.");
+            if (s.CanSeek) return s;
+            var ms = new MemoryStream();
+            s.CopyTo(ms);
+            s.Dispose();
+            ms.Position = 0;
+            return ms;
+        }
+
+        // Desktop default: open .bin siblings from a directory by filename.
+        private static SliceOpener DefaultFileOpener(string dir) =>
+            (idx, name) =>
+            {
+                string p = Path.Combine(dir, name);
+                if (File.Exists(p)) return File.Open(p, FileMode.Open, FileAccess.Read, FileShare.Read);
+                if (Directory.Exists(dir))
+                    foreach (var f in Directory.EnumerateFiles(dir))
+                        if (string.Equals(Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase))
+                            return File.Open(f, FileMode.Open, FileAccess.Read, FileShare.Read);
+                return null;
+            };
 
         private void LoadFileList()
         {
@@ -394,72 +443,152 @@ namespace Knossos.NET.Classes.Inno
             }
         }
 
-        // Extract a single part: open its chunk, decompress, skip to the part's offset,
-        // read FileSize bytes, apply the part filter, stream the result to `output` while
-        // feeding the running whole-file checksum. Large parts are NOT buffered whole.
-        private void ExtractPart(InnoPart part, Stream output, RunningChecksum hasher)
+        /// <summary>
+        /// Extract several files in a SINGLE forward pass over each .bin. This is the
+        /// recommended path on sandboxed platforms (e.g. Android) where the .bin stream may
+        /// not be seekable: each slice is read once start-to-finish, so a forward-only
+        /// stream works and no temporary copy of the 1.4 GB .bin is needed. The output
+        /// stream for each file is obtained from <paramref name="outputFor"/> and is written
+        /// (and its whole-file checksum verified) as its parts are encountered.
+        /// </summary>
+        public void ExtractFiles(IReadOnlyCollection<InnoFile> files, Func<InnoFile, Stream> outputFor,
+                                 Action<InnoFile>? onFileExtracted = null)
         {
-            long span = checked((long)part.ChunkSize + 4);   // 4-byte magic + payload
-            Stream chunkStream = OpenChunkStream(part, span);
+            if (files == null) throw new ArgumentNullException(nameof(files));
+
+            // Embedded (.exe) data is seekable (buffered if needed): per-file is fine.
+            if (!IsExternal)
+            {
+                foreach (var f in files)
+                {
+                    using (var outp = outputFor(f))
+                        ExtractTo(f, outp);
+                    onFileExtracted?.Invoke(f);
+                }
+                return;
+            }
+
+            if (_sliceOpener == null)
+                throw new InnoExtractException("External installer requires a SliceOpener (or path constructor).");
+
+            // Global work list, sorted for a strict forward pass over the .bin(s).
+            var work = new List<(InnoFile file, InnoPart part)>();
+            foreach (var f in files)
+                foreach (var p in f.Parts)
+                {
+                    if (p.Encryption != 0) throw new InnoExtractException("Encrypted installers are not supported.");
+                    if (p.FirstSlice != p.LastSlice)
+                        throw new InnoExtractException(
+                            "A part spans multiple .bin slices; use the seekable path for this installer.");
+                    work.Add((f, p));
+                }
+            work.Sort((a, b) =>
+            {
+                int c = a.part.FirstSlice.CompareTo(b.part.FirstSlice);
+                return c != 0 ? c : a.part.ChunkOffset.CompareTo(b.part.ChunkOffset);
+            });
+
+            // Per-file streaming state.
+            var outStream = new Dictionary<InnoFile, Stream>();
+            var hashers = new Dictionary<InnoFile, RunningChecksum>();
+            var remaining = new Dictionary<InnoFile, int>();
+            foreach (var f in files)
+            {
+                outStream[f] = outputFor(f);
+                hashers[f] = new RunningChecksum(f.ChecksumType);
+                remaining[f] = f.Parts.Count;
+            }
+
             try
             {
-                Span<byte> magic = stackalloc byte[4];
-                ReadExact(chunkStream, magic);
-                if (!magic.SequenceEqual(ChunkMagic))
-                    throw new InnoExtractException("Chunk magic mismatch (\"zlb\\x1a\" expected).");
-
-                long needed = checked((long)(part.FileOffset + part.FileSize));
-                Stream decompressed = part.Compression switch
+                using var reader = new ForwardBinReader(_sliceOpener, _baseName, _baseFilename, _slicesPerDisk);
+                foreach (var (f, part) in work)
                 {
-                    InnoCompression.Stored => chunkStream,
-                    InnoCompression.Zlib   => new ZlibStream(chunkStream, CompressionMode.Decompress),
-                    InnoCompression.BZip2  => InnoSharpCompat.BZip2(chunkStream),
-                    InnoCompression.Lzma1  => MakeInnoLzma1Stream(chunkStream, needed),
-                    InnoCompression.Lzma2  => MakeInnoLzma2Stream(chunkStream, needed),
-                    _ => throw new InnoExtractException($"Unsupported chunk compression {part.Compression}.")
-                };
-                try
-                {
-                    SkipExact(decompressed, (long)part.FileOffset);
+                    long span = checked((long)part.ChunkSize + 4);
+                    using (Stream w = reader.Window((int)part.FirstSlice, (long)part.ChunkOffset, span))
+                        DecodePart(w, part, outStream[f], hashers[f]);
 
-                    // Bound the decompressed chunk to this part's pre-filter payload.
-                    using var payload = new BoundedStream(decompressed, (long)part.FileSize);
-
-                    switch (part.Filter)
+                    if (--remaining[f] == 0)
                     {
-                        case InnoFilter.None:
-                            PumpToOutput(payload, output, hasher);
-                            break;
-
-                        case InnoFilter.Zlib:
-                            // GOG Galaxy parts are deflated; inflate then write. The
-                            // whole-file checksum is over the INFLATED bytes.
-                            using (var zs = new ZlibStream(payload, CompressionMode.Decompress))
-                                PumpToOutput(zs, output, hasher);
-                            break;
-
-                        case InnoFilter.Instruction4108:
-                            WriteFiltered(payload, output, hasher, b => InnoExeFilters.Decode4108(b));
-                            break;
-                        case InnoFilter.Instruction5200:
-                            WriteFiltered(payload, output, hasher, b => InnoExeFilters.Decode5200(b, false));
-                            break;
-                        case InnoFilter.Instruction5309:
-                            WriteFiltered(payload, output, hasher, b => InnoExeFilters.Decode5200(b, true));
-                            break;
-
-                        default:
-                            throw new InnoExtractException($"Unsupported file filter {part.Filter}.");
+                        if (f.ChecksumType != InnoChecksumType.None)
+                        {
+                            byte[] actual = hashers[f].Final();
+                            byte[] expected = f.Checksum;
+                            for (int i = 0; i < actual.Length; i++)
+                                if (actual[i] != expected[i])
+                                    throw new InnoExtractException($"Checksum mismatch for {f.Name} ({f.ChecksumType}).");
+                        }
+                        onFileExtracted?.Invoke(f);
                     }
-                }
-                finally
-                {
-                    if (!ReferenceEquals(decompressed, chunkStream)) decompressed.Dispose();
                 }
             }
             finally
             {
-                chunkStream.Dispose();
+                foreach (var s in outStream.Values) { try { s.Dispose(); } catch { } }
+            }
+        }
+
+        // Extract a single part via random access (seekable sources).
+        private void ExtractPart(InnoPart part, Stream output, RunningChecksum hasher)
+        {
+            long span = checked((long)part.ChunkSize + 4);   // 4-byte magic + payload
+            Stream chunkStream = OpenChunkStream(part, span);
+            try { DecodePart(chunkStream, part, output, hasher); }
+            finally { chunkStream.Dispose(); }
+        }
+
+        // Decode one part from a stream positioned at the chunk magic (spanning 4 + ChunkSize
+        // bytes): verify magic, decompress the chunk, skip to FileOffset, read FileSize bytes,
+        // apply the part filter, stream to `output` while feeding the running checksum.
+        private void DecodePart(Stream chunkStream, InnoPart part, Stream output, RunningChecksum hasher)
+        {
+            Span<byte> magic = stackalloc byte[4];
+            ReadExact(chunkStream, magic);
+            if (!magic.SequenceEqual(ChunkMagic))
+                throw new InnoExtractException("Chunk magic mismatch (\"zlb\\x1a\" expected).");
+
+            long needed = checked((long)(part.FileOffset + part.FileSize));
+            Stream decompressed = part.Compression switch
+            {
+                InnoCompression.Stored => chunkStream,
+                InnoCompression.Zlib   => new ZlibStream(chunkStream, CompressionMode.Decompress),
+                InnoCompression.BZip2  => InnoSharpCompat.BZip2(chunkStream),
+                InnoCompression.Lzma1  => MakeInnoLzma1Stream(chunkStream, needed),
+                InnoCompression.Lzma2  => MakeInnoLzma2Stream(chunkStream, needed),
+                _ => throw new InnoExtractException($"Unsupported chunk compression {part.Compression}.")
+            };
+            try
+            {
+                SkipExact(decompressed, (long)part.FileOffset);
+                using var payload = new BoundedStream(decompressed, (long)part.FileSize);
+
+                switch (part.Filter)
+                {
+                    case InnoFilter.None:
+                        PumpToOutput(payload, output, hasher);
+                        break;
+                    case InnoFilter.Zlib:
+                        // GOG Galaxy parts are deflated; inflate then write. The whole-file
+                        // checksum is over the INFLATED bytes.
+                        using (var zs = new ZlibStream(payload, CompressionMode.Decompress))
+                            PumpToOutput(zs, output, hasher);
+                        break;
+                    case InnoFilter.Instruction4108:
+                        WriteFiltered(payload, output, hasher, b => InnoExeFilters.Decode4108(b));
+                        break;
+                    case InnoFilter.Instruction5200:
+                        WriteFiltered(payload, output, hasher, b => InnoExeFilters.Decode5200(b, false));
+                        break;
+                    case InnoFilter.Instruction5309:
+                        WriteFiltered(payload, output, hasher, b => InnoExeFilters.Decode5200(b, true));
+                        break;
+                    default:
+                        throw new InnoExtractException($"Unsupported file filter {part.Filter}.");
+                }
+            }
+            finally
+            {
+                if (!ReferenceEquals(decompressed, chunkStream)) decompressed.Dispose();
             }
         }
 
@@ -485,8 +614,16 @@ namespace Knossos.NET.Classes.Inno
             output.Write(decoded, 0, decoded.Length);
         }
 
-        // Returns a forward-only stream at the chunk's first byte (the magic), bounded to
-        // `span` bytes, reading from the .exe (embedded) or the .bin slices (external).
+        private SliceSource EnsureSlices()
+        {
+            if (_sliceOpener == null)
+                throw new InnoExtractException(
+                    "This installer stores its data in external .bin slices. Open it with the " +
+                    "path constructor, or the (Stream, name, SliceOpener) constructor on mobile.");
+            return _slices ??= new SliceSource(_sliceOpener, _baseName, _baseFilename, _slicesPerDisk);
+        }
+
+        // Random-access chunk stream at the magic, bounded to `span` bytes.
         private Stream OpenChunkStream(InnoPart part, long span)
         {
             if (!IsExternal)
@@ -494,19 +631,7 @@ namespace Knossos.NET.Classes.Inno
                 long start = checked((long)(_dataOffset + part.ChunkOffset));
                 return new WindowStream(_stream, start, span, _io);
             }
-
-            if (_installerPath == null)
-                throw new InnoExtractException(
-                    "This installer stores its data in external .bin slices. Open it with " +
-                    "new InnoArchive(installerExePath) so the .bin files can be located.");
-
-            _slices ??= new SliceSource(
-                Path.GetDirectoryName(Path.GetFullPath(_installerPath)) ?? ".",
-                Path.GetFileNameWithoutExtension(_installerPath),
-                _baseFilename,
-                _slicesPerDisk);
-
-            return new SliceStream(_slices, part.FirstSlice, (long)part.ChunkOffset, span);
+            return new SliceStream(EnsureSlices(), part.FirstSlice, (long)part.ChunkOffset, span);
         }
 
         // ------------------------------------------------------------------ //
@@ -660,7 +785,7 @@ namespace Knossos.NET.Classes.Inno
         // ------------------------------------------------------------------ //
         //  External slice (.bin) reading
         // ------------------------------------------------------------------ //
-        // Opens and caches .bin slice files and exposes their data regions. Each slice is
+        // Opens and caches .bin slices through a SliceOpener. Each slice is
         // [8-byte magic "idska16/32\x1a"][4-byte LE size][data...]; `size` is the whole file.
         private sealed class SliceSource : IDisposable
         {
@@ -671,12 +796,13 @@ namespace Knossos.NET.Classes.Inno
             };
             public const int HeaderSize = 12; // 8 magic + 4 size
 
-            private readonly string _dir, _base, _base2;
+            private readonly SliceOpener _open;
+            private readonly string _base, _base2;
             private readonly uint _slicesPerDisk;
-            private readonly Dictionary<long, (FileStream fs, long size)> _open = new();
+            private readonly Dictionary<long, (Stream s, long size)> _cache = new();
 
-            public SliceSource(string dir, string baseName, string baseName2, uint slicesPerDisk)
-            { _dir = dir; _base = baseName; _base2 = baseName2 ?? ""; _slicesPerDisk = Math.Max(1u, slicesPerDisk); }
+            public SliceSource(SliceOpener opener, string baseName, string baseName2, uint slicesPerDisk)
+            { _open = opener; _base = baseName; _base2 = baseName2 ?? ""; _slicesPerDisk = Math.Max(1u, slicesPerDisk); }
 
             // {base}-{slice+1}.bin, or {base}-{major}{letter}.bin when slicesPerDisk > 1.
             public static string SliceFileName(string baseName, long slice, uint slicesPerDisk)
@@ -687,25 +813,45 @@ namespace Knossos.NET.Classes.Inno
                 return $"{baseName}-{major}{minor}.bin";
             }
 
-            public (FileStream fs, long size) Get(long slice)
+            // A seekable stream over slice `slice`, plus its declared size. Cached.
+            public (Stream s, long size) Get(long slice)
             {
-                if (_open.TryGetValue(slice, out var e)) return e;
+                if (_cache.TryGetValue(slice, out var e)) return e;
 
-                string path = Locate(slice) ?? throw new InnoExtractException(
-                    $"Could not find slice {slice}: {SliceFileName(_base, slice, _slicesPerDisk)}" +
+                Stream s = OpenAnyName((int)slice) ?? throw new InnoExtractException(
+                    $"Could not open slice {slice}: {SliceFileName(_base, slice, _slicesPerDisk)}" +
                     (string.IsNullOrEmpty(_base2) ? "" : $" or {SliceFileName(_base2, slice, _slicesPerDisk)}"));
 
-                var fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                if (!s.CanSeek)
+                {
+                    s.Dispose();
+                    throw new InnoExtractException(
+                        "The .bin slice stream is not seekable. On sandboxed platforms (e.g. Android) " +
+                        "use ExtractFiles(...) which does a single forward pass, or provide a seekable stream.");
+                }
+
                 var hdr = new byte[HeaderSize];
-                int off = 0; while (off < HeaderSize) { int g = fs.Read(hdr, off, HeaderSize - off); if (g <= 0) break; off += g; }
+                s.Position = 0;
+                int off = 0; while (off < HeaderSize) { int g = s.Read(hdr, off, HeaderSize - off); if (g <= 0) break; off += g; }
                 if (off < HeaderSize || !MagicOk(hdr))
-                    throw new InnoExtractException($"Bad slice magic in {Path.GetFileName(path)}");
+                    throw new InnoExtractException("Bad slice magic (not a valid .bin).");
                 long size = (uint)(hdr[8] | (hdr[9] << 8) | (hdr[10] << 16) | (hdr[11] << 24));
-                if (size > fs.Length || size < HeaderSize)
-                    throw new InnoExtractException($"Bad slice size in {Path.GetFileName(path)}");
-                e = (fs, size);
-                _open[slice] = e;
+                if (size < HeaderSize) throw new InnoExtractException("Bad slice size.");
+                e = (s, size);
+                _cache[slice] = e;
                 return e;
+            }
+
+            private Stream? OpenAnyName(int slice)
+            {
+                foreach (var bn in new[] { _base, _base2 })
+                {
+                    if (string.IsNullOrEmpty(bn)) continue;
+                    string name = SliceFileName(bn, slice, _slicesPerDisk);
+                    Stream? s = _open(slice, name);
+                    if (s != null) return s;
+                }
+                return null;
             }
 
             private static bool MagicOk(byte[] hdr)
@@ -719,27 +865,10 @@ namespace Knossos.NET.Classes.Inno
                 return false;
             }
 
-            private string? Locate(long slice)
-            {
-                foreach (var bn in new[] { _base, _base2 })
-                {
-                    if (string.IsNullOrEmpty(bn)) continue;
-                    string name = SliceFileName(bn, slice, _slicesPerDisk);
-                    string p = Path.Combine(_dir, name);
-                    if (File.Exists(p)) return p;
-                    // case-insensitive fallback
-                    if (Directory.Exists(_dir))
-                        foreach (var f in Directory.EnumerateFiles(_dir))
-                            if (string.Equals(Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase))
-                                return f;
-                }
-                return null;
-            }
-
             public void Dispose()
             {
-                foreach (var e in _open.Values) { try { e.fs.Dispose(); } catch { } }
-                _open.Clear();
+                foreach (var e in _cache.Values) { try { e.s.Dispose(); } catch { } }
+                _cache.Clear();
             }
         }
 
@@ -751,14 +880,14 @@ namespace Knossos.NET.Classes.Inno
             private long _slice;
             private long _filePos;      // absolute position within the current .bin
             private long _sliceSize;    // declared size of the current .bin
-            private FileStream _fs;
+            private Stream _fs;
             private long _left;         // bytes still to serve for this chunk
 
             public SliceStream(SliceSource src, long firstSlice, long chunkOffset, long length)
             {
                 _src = src; _slice = firstSlice; _left = length;
-                var (fs, size) = _src.Get(_slice);
-                _fs = fs; _sliceSize = size; _filePos = chunkOffset;
+                var (s, size) = _src.Get(_slice);
+                _fs = s; _sliceSize = size; _filePos = chunkOffset;
             }
 
             public override int Read(byte[] buffer, int offset, int count)
@@ -770,8 +899,8 @@ namespace Knossos.NET.Classes.Inno
                 {
                     // Continue in the next slice, right after its 12-byte header.
                     _slice++;
-                    var (fs, size) = _src.Get(_slice);
-                    _fs = fs; _sliceSize = size; _filePos = SliceSource.HeaderSize;
+                    var (s, size) = _src.Get(_slice);
+                    _fs = s; _sliceSize = size; _filePos = SliceSource.HeaderSize;
                     avail = _sliceSize - _filePos;
                     if (avail <= 0) return 0;
                 }
@@ -796,10 +925,111 @@ namespace Knossos.NET.Classes.Inno
             // The underlying FileStreams are owned by SliceSource; don't dispose them here.
         }
 
+        // Reads .bin slices strictly forward (no seeking), for ExtractFiles. Opens one
+        // stream per slice via the SliceOpener; skips forward to each chunk. Tolerates
+        // forward-only streams (e.g. Android content streams).
+        private sealed class ForwardBinReader : IDisposable
+        {
+            private readonly SliceOpener _open;
+            private readonly string _base, _base2;
+            private readonly uint _spd;
+            private int _slice = -1;
+            private Stream? _s;
+            private long _pos;   // absolute position within the current .bin
+
+            public ForwardBinReader(SliceOpener open, string b, string b2, uint spd)
+            { _open = open; _base = b; _base2 = b2 ?? ""; _spd = spd; }
+
+            private void Ensure(int slice)
+            {
+                if (slice == _slice && _s != null) return;
+                _s?.Dispose(); _s = null;
+                foreach (var bn in new[] { _base, _base2 })
+                {
+                    if (string.IsNullOrEmpty(bn)) continue;
+                    _s = _open(slice, SliceSource.SliceFileName(bn, slice, _spd));
+                    if (_s != null) break;
+                }
+                if (_s == null) throw new InnoExtractException($"Could not open slice {slice}.");
+
+                // Consume+validate the 12-byte slice header.
+                var hdr = new byte[SliceSource.HeaderSize];
+                int o = 0; while (o < hdr.Length) { int g = _s.Read(hdr, o, hdr.Length - o); if (g <= 0) break; o += g; }
+                if (o < hdr.Length || !(hdr[0] == (byte)'i' && hdr[1] == (byte)'d' && hdr[2] == (byte)'s' && hdr[3] == (byte)'k' && hdr[4] == (byte)'a'))
+                    throw new InnoExtractException("Bad slice magic (not a valid .bin).");
+                _slice = slice; _pos = SliceSource.HeaderSize;
+            }
+
+            // A bounded forward view of `len` bytes starting at absolute `absOffset` in `slice`.
+            public Stream Window(int slice, long absOffset, long len)
+            {
+                Ensure(slice);
+                if (absOffset < _pos)
+                    throw new InnoExtractException(
+                        "Non-forward .bin access. Extract files in a single ExtractFiles() call " +
+                        "(offset order is handled internally), or use a seekable stream.");
+                SkipForward(absOffset - _pos);
+                return new FwdWindow(this, len);
+            }
+
+            private void SkipForward(long n)
+            {
+                if (n <= 0) return;
+                var buf = new byte[(int)Math.Min(n, 1 << 16)];
+                while (n > 0)
+                {
+                    int want = (int)Math.Min(n, buf.Length);
+                    int g = _s!.Read(buf, 0, want);
+                    if (g <= 0) throw new EndOfStreamException("Unexpected end of .bin while skipping.");
+                    n -= g; _pos += g;
+                }
+            }
+
+            private int ReadInner(byte[] b, int o, int c)
+            {
+                int g = _s!.Read(b, o, c);
+                if (g > 0) _pos += g;
+                return g;
+            }
+
+            public void Dispose() { _s?.Dispose(); _s = null; }
+
+            // Forward window; on Dispose it drains any bytes the decoder didn't consume so
+            // the parent position lands exactly at the end of this chunk span.
+            private sealed class FwdWindow : Stream
+            {
+                private readonly ForwardBinReader _r;
+                private long _left;
+                public FwdWindow(ForwardBinReader r, long len) { _r = r; _left = len; }
+                public override int Read(byte[] buffer, int offset, int count)
+                {
+                    if (_left <= 0 || count <= 0) return 0;
+                    int want = (int)Math.Min(count, _left);
+                    int got = _r.ReadInner(buffer, offset, want);
+                    if (got > 0) _left -= got;
+                    return got;
+                }
+                protected override void Dispose(bool disposing)
+                {
+                    if (disposing && _left > 0) { _r.SkipForward(_left); _left = 0; }
+                    base.Dispose(disposing);
+                }
+                public override bool CanRead => true;
+                public override bool CanSeek => false;
+                public override bool CanWrite => false;
+                public override long Length => throw new NotSupportedException();
+                public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+                public override void Flush() { }
+                public override long Seek(long o, SeekOrigin r) => throw new NotSupportedException();
+                public override void SetLength(long v) => throw new NotSupportedException();
+                public override void Write(byte[] b, int o, int c) => throw new NotSupportedException();
+            }
+        }
+
         // Test seam: build a cross-slice chunk reader directly (used by unit tests).
-        internal static Stream OpenSliceStreamForTest(string dir, string baseName, string baseName2,
+        internal static Stream OpenSliceStreamForTest(SliceOpener opener, string baseName, string baseName2,
                                                       uint slicesPerDisk, long firstSlice, long chunkOffset, long length)
-            => new SliceStream(new SliceSource(dir, baseName, baseName2, slicesPerDisk), firstSlice, chunkOffset, length);
+            => new SliceStream(new SliceSource(opener, baseName, baseName2, slicesPerDisk), firstSlice, chunkOffset, length);
 
         internal static string SliceFileNameForTest(string baseName, long slice, uint slicesPerDisk)
             => SliceSource.SliceFileName(baseName, slice, slicesPerDisk);
@@ -807,16 +1037,29 @@ namespace Knossos.NET.Classes.Inno
         // Test seam: an embedded (in-.exe) archive over `data`, bypassing native open.
         private InnoArchive(Stream data, ulong dataOffset)
         {
-            _stream = data; _leaveOpen = true; _installerPath = null;
+            _stream = data; _leaveOpen = true;
             _readCb = ReadCallback; _inflateCb = InflateCallback;
             _dataOffset = dataOffset; _files = new List<InnoFile>();
         }
         internal static InnoArchive ForEmbeddedTest(Stream data, ulong dataOffset) => new InnoArchive(data, dataOffset);
         internal void ExtractForTest(InnoFile f, Stream output) => ExtractTo(f, output);
+
+        // Test seam: an external archive over a SliceOpener, bypassing native open (for ExtractFiles).
+        private InnoArchive(SliceOpener opener, string baseName, uint slicesPerDisk)
+        {
+            _stream = new MemoryStream(); _leaveOpen = true;
+            _readCb = ReadCallback; _inflateCb = InflateCallback;
+            _dataOffset = 0; _sliceOpener = opener; _baseName = baseName;
+            _slicesPerDisk = slicesPerDisk; _files = new List<InnoFile>();
+        }
+        internal static InnoArchive ForExternalTest(SliceOpener opener, string baseName, uint slicesPerDisk)
+            => new InnoArchive(opener, baseName, slicesPerDisk);
+        internal void ExtractFilesForTest(IReadOnlyCollection<InnoFile> files, Func<InnoFile, Stream> outputFor)
+            => ExtractFiles(files, outputFor);
         internal static InnoFile MakeFileForTest(ulong size, InnoChecksumType ct, byte[] cksum, List<InnoPart> parts)
             => new InnoFile { Size = size, ChecksumType = ct, Checksum = cksum, Parts = parts };
-        internal static InnoPart MakePartForTest(ulong chunkOffset, ulong chunkSize, ulong fileSize, InnoCompression comp, InnoFilter filter)
-            => new InnoPart { ChunkOffset = chunkOffset, ChunkSize = chunkSize, FileOffset = 0, FileSize = fileSize, Compression = comp, Filter = filter, FirstSlice = 0, LastSlice = 0 };
+        internal static InnoPart MakePartForTest(ulong chunkOffset, ulong chunkSize, ulong fileSize, InnoCompression comp, InnoFilter filter, uint slice = 0)
+            => new InnoPart { ChunkOffset = chunkOffset, ChunkSize = chunkSize, FileOffset = 0, FileSize = fileSize, Compression = comp, Filter = filter, FirstSlice = slice, LastSlice = slice };
 
         // Reads at most `limit` bytes from an underlying (forward-only) stream, then EOF.
         // Does not dispose the underlying stream.
