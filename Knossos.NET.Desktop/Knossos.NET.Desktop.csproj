@@ -11,6 +11,7 @@
 	<TrimMode>copyused</TrimMode>
 	<PublishSingleFile>true</PublishSingleFile>
 	<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+	<Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,27 +28,109 @@
     </PackageReference>
   </ItemGroup>
 	
-    <ItemGroup Condition="'$(Configuration)' != 'Release'">
-	    <AvaloniaResource Include="Assets\**" />
-    </ItemGroup>
-    <!--https://learn.microsoft.com/en-us/dotnet/core/rid-catalog-->
-    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
-	    <AvaloniaResource Include="Assets\utils\win\**" />
-    </ItemGroup>
-    <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-riscv64'))">
-	    <AvaloniaResource Include="Assets\utils\linux-riscv64\**" />
-    </ItemGroup>
-    <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-arm64'))">
-	    <AvaloniaResource Include="Assets\utils\linux-arm64\**" />
-    </ItemGroup>
-    <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-x64'))">
-	    <AvaloniaResource Include="Assets\utils\linux-x64\**" />
-    </ItemGroup>
-    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('osx'))">
-	    <AvaloniaResource Include="Assets\utils\osx\**" />
-    </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Release'">
+	  <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <!--https://learn.microsoft.com/en-us/dotnet/core/rid-catalog-->
+  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
+	  <AvaloniaResource Include="Assets\utils\win\**" />
+  </ItemGroup>
+  <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-riscv64'))">
+	  <AvaloniaResource Include="Assets\utils\linux-riscv64\**" />
+  </ItemGroup>
+  <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-arm64'))">
+	  <AvaloniaResource Include="Assets\utils\linux-arm64\**" />
+  </ItemGroup>
+  <ItemGroup Condition="$(RuntimeIdentifier.Equals('linux-x64'))">
+	  <AvaloniaResource Include="Assets\utils\linux-x64\**" />
+  </ItemGroup>
+  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('osx'))">
+	  <AvaloniaResource Include="Assets\utils\osx\**" />
+  </ItemGroup>
+
+  <!--
+    NATIVE LIBRARY COPY RULES
+    ==========================================================================
+    $(RuntimeIdentifier) is only set during "dotnet publish -r <RID>".
+    During "dotnet run" / F5 / plain "dotnet build" it is EMPTY.
+    So we use a property that normalises both cases:
+      - If RID is set, use it.
+      - If RID is empty, fall back to the OS + arch MSBuild detects at
+        eval time via RuntimeInformation property functions.
+  -->
+  <PropertyGroup>
+    <_IsWin Condition="$(RuntimeIdentifier.StartsWith('win')) Or
+                       ($(RuntimeIdentifier) == '' And $([MSBuild]::IsOSPlatform('Windows')))">true</_IsWin>
+    <_IsLinux Condition="$(RuntimeIdentifier.StartsWith('linux')) Or
+                         ($(RuntimeIdentifier) == '' And $([MSBuild]::IsOSPlatform('Linux')))">true</_IsLinux>
+    <_IsOsx Condition="$(RuntimeIdentifier.StartsWith('osx')) Or
+                       ($(RuntimeIdentifier) == '' And $([MSBuild]::IsOSPlatform('OSX')))">true</_IsOsx>
+
+    <!-- Arch: prefer explicit RID, otherwise ask the runtime -->
+    <_IsX64 Condition="$(RuntimeIdentifier.Contains('x64')) Or
+                       ('$(RuntimeIdentifier)' == '' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64')">true</_IsX64>
+    <_IsX86 Condition="$(RuntimeIdentifier.Contains('x86')) Or
+                       ('$(RuntimeIdentifier)' == '' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86')">true</_IsX86>
+    <_IsArm64 Condition="$(RuntimeIdentifier.Contains('arm64')) Or
+                         ('$(RuntimeIdentifier)' == '' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64')">true</_IsArm64>
+    <_IsRiscV64 Condition="$(RuntimeIdentifier.Contains('riscv64'))">true</_IsRiscV64>
+  </PropertyGroup>
+
+  <!-- Windows -->
+  <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsX64)' == 'true'">
+	<None Update="precompiled\windows\x64\innowrap.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>innowrap.dll</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsX86)' == 'true'">
+	<None Update="precompiled\windows\x86\innowrap.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>innowrap.dll</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsArm64)' == 'true'">
+	<None Update="precompiled\windows\arm64\innowrap.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>innowrap.dll</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- Linux x64 -->
+  <ItemGroup Condition="'$(_IsLinux)' == 'true' And '$(_IsX64)' == 'true'">
+	<None Update="precompiled\linux\x64\libinnowrap.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.so</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- Linux arm64 -->
+  <ItemGroup Condition="'$(_IsLinux)' == 'true' And '$(_IsArm64)' == 'true'">
+	<None Update="precompiled\linux\arm64\libinnowrap.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.so</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- Linux riscv64 -->
+  <ItemGroup Condition="'$(_IsLinux)' == 'true' And '$(_IsRiscV64)' == 'true'">
+	<None Update="precompiled\linux\riscv64\libinnowrap.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.so</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- macOS (x64 / arm64) -->
+  <ItemGroup Condition="'$(_IsOsx)' == 'true'">
+	<None Update="precompiled\osx\libinnowrap.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libinnowrap.dylib</Link>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Knossos.NET\Knossos.NET.csproj" />
   </ItemGroup>
+
 </Project>
+
