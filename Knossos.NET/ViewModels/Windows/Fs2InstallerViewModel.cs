@@ -57,6 +57,11 @@ namespace Knossos.NET.ViewModels
         private string? gogExe = null;
         private KnossosWindow? window;
         private int reqFilesFound = 0;
+        // GOG installer sources. Desktop: a real path. Sandboxed (Android/iOS): storage
+        // handles for the .exe and its .bin slice(s), accessed as streams (no file paths).
+        private IStorageFile? gogExeFile = null;
+        private readonly Dictionary<string, IStorageFile> gogBins =
+            new Dictionary<string, IStorageFile>(StringComparer.OrdinalIgnoreCase);
 
         public Fs2InstallerViewModel() 
         { 
@@ -90,60 +95,48 @@ namespace Knossos.NET.ViewModels
                     Directory.CreateDirectory(moviesPath);
                     Directory.CreateDirectory(playersPath);
 
-                    //GoG
-                    if(gogExe != null)
+                    //GoG (single .exe or .exe + .bin, GOG Galaxy multi-part)
+                    if (gogExe != null || gogExeFile != null)
                     {
-                        using var archive = new InnoArchive(gogExe);
-                        if (archive != null)
+                        var archive = OpenGogArchive(out var cleanup);
+                        try
                         {
-                            foreach (var rf in required)
+                            // Gather the files we want (required + any present optional) and
+                            // their destination paths, using the same routing as before.
+                            var wanted = new List<InnoFile>();
+                            var destPath = new Dictionary<InnoFile, string>();
+                            foreach (var name in required.Concat(optional))
                             {
-                                var file = archive.FindFile(rf);
-                                if(file != null)
-                                {
-                                    var outPath = "";
-                                    Dispatcher.UIThread.Invoke(new Action(() => { InstallText = $"Extracting: {rf}"; }));
-                                    switch (Path.GetExtension(rf))
-                                    {
-                                        case ".vp":
-                                        case ".vpc": outPath = fs2Path; break;
-                                        case ".hcf": outPath = playersPath; break;
-                                        case ".ogg":
-                                        case ".mve": outPath = moviesPath; break;
-                                        default: break;
-                                    }
-                                    if (outPath != "")
-                                    {
-                                        using (var outFs = File.Create(Path.Combine(outPath, rf)))
-                                            archive.ExtractTo(file, outFs);
-                                    }
-                                    Dispatcher.UIThread.Invoke(new Action(() => { ProgressCurrent++; }));
-                                }
+                                var f = archive.FindFile(name);
+                                if (f == null)
+                                    continue;
+                                var dir = RouteDir(name, fs2Path, playersPath, moviesPath);
+                                if (dir == "")
+                                    continue;
+                                wanted.Add(f);
+                                destPath[f] = Path.Combine(dir, name);
                             }
-                            foreach (var of in optional)
-                            {
-                                var file = archive.FindFile(of);
-                                if (file != null)
+
+                            Dispatcher.UIThread.Invoke(new Action(() => { InstallText = "Extracting FreeSpace 2 data..."; }));
+
+                            // Single forward pass over the .bin (works on Android forward-only
+                            // streams). ExtractFiles verifies each file's checksum internally.
+                            archive.ExtractFiles(
+                                wanted,
+                                file => File.Create(destPath[file]),
+                                file =>
                                 {
-                                    var outPath = "";
-                                    Dispatcher.UIThread.Invoke(new Action(() => { InstallText = $"Extracting: {of}"; }));
-                                    switch (Path.GetExtension(of))
+                                    Dispatcher.UIThread.Invoke(new Action(() =>
                                     {
-                                        case ".vp":
-                                        case ".vpc": outPath = fs2Path; break;
-                                        case ".hcf": outPath = playersPath; break;
-                                        case ".ogg":
-                                        case ".mve": outPath = moviesPath; break;
-                                        default: break;
-                                    }
-                                    if (outPath != "")
-                                    {
-                                        using (var outFs = File.Create(Path.Combine(outPath, of)))
-                                            archive.ExtractTo(file, outFs);
-                                    }
-                                    Dispatcher.UIThread.Invoke(new Action(() => { ProgressCurrent++; }));
-                                }
-                            }
+                                        InstallText = $"Extracted: {file.Name}";
+                                        ProgressCurrent++;
+                                    }));
+                                });
+                        }
+                        finally
+                        {
+                            cleanup();
+                            archive.Dispose();
                         }
                     }
 
@@ -320,56 +313,161 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void LoadGoGExeCommand()
         {
-            FilePickerOpenOptions options = new FilePickerOpenOptions();
-            options.AllowMultiple = false;
-            options.Title = "Select your Freespace 2 gog .exe installer file";
-
-            var topmostWindow = KnUtils.GetTopLevel();
-            var result = await topmostWindow.StorageProvider.OpenFilePickerAsync(options);
-
-            if (result != null && result.Count > 0)
+            var top = KnUtils.GetTopLevel();
+            // Sandboxed platforms (Android/Browser) have no usable file paths, so we
+            // pick the FOLDER (which grants access to both the .exe and its .bin siblings).
+            // Desktop keeps the familiar .exe file picker (path-based).
+            bool sandboxed = KnUtils.IsAndroid || KnUtils.IsBrowser;
+            try
             {
                 CanInstall = false;
                 gogExe = null;
-                try
-                {
-                    using var archive = new InnoArchive(result[0].Path.LocalPath.ToString());
-                    int count = 0;
-                    if (archive != null)
-                    {
-                        foreach (var r in required)
-                        {
-                            if (archive.FindFile(r) != null)
-                                count++;
-                        }
-                    }
+                gogExeFile = null;
+                gogBins.Clear();
 
-                    if (count != required.Count())
+                if (!sandboxed)
+                {
+                    var options = new FilePickerOpenOptions();
+                    options.AllowMultiple = false;
+                    options.Title = "Select your Freespace 2 gog .exe installer file";
+                    var result = await top.StorageProvider.OpenFilePickerAsync(options);
+                    if (result == null || result.Count == 0)
+                        return;
+                    // If the platform gives us a real path, use it; otherwise fall back to folder mode.
+                    var localPath = result[0].TryGetLocalPath();
+                    if (localPath != null)
+                        gogExe = localPath;
+                    else
+                        sandboxed = true;
+                }
+
+                if (sandboxed && gogExe == null)
+                {
+                    var fopts = new FolderPickerOpenOptions();
+                    fopts.AllowMultiple = false;
+                    fopts.Title = "Select the folder with your Freespace 2 gog installer (.exe + .bin)";
+                    var folders = await top.StorageProvider.OpenFolderPickerAsync(fopts);
+                    if (folders == null || folders.Count == 0)
+                        return;
+                    await FindGogFilesInFolder(folders[0]);
+                    if (gogExeFile == null)
                     {
-                        //Missing files
-                        gogExe = null;
-                        await MessageBox.Show(MainWindow.instance, "Unable to find all the required Freespace 2 files in gog exe.", "Files not found", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "No .exe installer was found in that folder.", "Installer not found", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
-
-                    if (archive != null)
-                    {
-                        foreach (var o in optional)
-                        {
-                            if (archive.FindFile(o) != null)
-                                count++;
-                        }
-                    }
-
-                    gogExe = result[0].Path.LocalPath.ToString();
-
-                    ProgressMax = count;
-                    CanInstall = true;
-                }catch(Exception ex)
-                {
-                    Log.Add(Log.LogSeverity.Error, "Fs2InstallerViewModel.LoadGoGExeCommand()", ex);
-                    gogExe = null;
                 }
+
+                // Validate on a background thread: opening storage streams blocks, and doing
+                // that on the UI thread can deadlock on Android.
+                int total = 0;
+                bool allRequired = false;
+                await Task.Run(() =>
+                {
+                    var archive = OpenGogArchive(out var cleanup);
+                    try
+                    {
+                        int req = required.Count(r => archive.FindFile(r) != null);
+                        allRequired = req == required.Length;
+                        total = req + optional.Count(o => archive.FindFile(o) != null);
+                    }
+                    finally
+                    {
+                        cleanup();
+                        archive.Dispose();
+                    }
+                });
+
+                if (!allRequired)
+                {
+                    gogExe = null;
+                    gogExeFile = null;
+                    gogBins.Clear();
+                    await MessageBox.Show(MainWindow.instance, "Unable to find all the required Freespace 2 files in gog installer.", "Files not found", MessageBox.MessageBoxButtons.OK);
+                    return;
+                }
+                ProgressMax = total;
+                CanInstall = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Add(Log.LogSeverity.Error, "Fs2InstallerViewModel.LoadGoGExeCommand()", ex);
+                gogExe = null;
+                gogExeFile = null;
+                gogBins.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Finds the GOG installer .exe and its .bin slice(s) inside a picked folder,
+        /// storing them as storage handles (streams are opened later, at install time).
+        /// </summary>
+        private async Task FindGogFilesInFolder(IStorageFolder folder)
+        {
+            IStorageFile? anyExe = null;
+            await foreach (var item in folder.GetItemsAsync())
+            {
+                if (item is not IStorageFile f)
+                    continue;
+                var lname = f.Name.ToLowerInvariant();
+                if (lname.EndsWith(".exe"))
+                {
+                    anyExe ??= f;
+                    if (lname.Contains("setup"))
+                        gogExeFile ??= f;   // prefer a setup*.exe
+                }
+                else if (lname.EndsWith(".bin"))
+                {
+                    gogBins[f.Name] = f;
+                }
+            }
+            gogExeFile ??= anyExe;
+        }
+
+        /// <summary>
+        /// Opens the selected GOG installer as an InnoArchive, from a path (desktop) or from
+        /// storage streams (sandboxed). The returned cleanup action releases opened streams.
+        /// </summary>
+        private InnoArchive OpenGogArchive(out Action cleanup)
+        {
+            if (gogExe != null)
+            {
+                cleanup = () => { };
+                return new InnoArchive(gogExe);
+            }
+            if (gogExeFile != null)
+            {
+                var opened = new List<Stream>();
+                InnoArchive.SliceOpener opener = (idx, expectedName) =>
+                {
+                    if (gogBins.TryGetValue(expectedName, out var bf))
+                    {
+                        var bs = bf.OpenReadAsync().GetAwaiter().GetResult();
+                        opened.Add(bs);
+                        return bs;
+                    }
+                    return null;
+                };
+                var exeStream = gogExeFile.OpenReadAsync().GetAwaiter().GetResult();
+                var archive = new InnoArchive(exeStream, gogExeFile.Name, opener, leaveOpen: false);
+                cleanup = () => { foreach (var st in opened) { try { st.Dispose(); } catch { } } };
+                return archive;
+            }
+            throw new InvalidOperationException("No GOG installer selected.");
+        }
+
+        /// <summary>
+        /// Destination directory for a file name (same routing as the folder-copy path).
+        /// </summary>
+        private static string RouteDir(string name, string fs2Path, string playersPath, string moviesPath)
+        {
+            switch (Path.GetExtension(name).ToLowerInvariant())
+            {
+                case ".vp":
+                case ".vpc": return fs2Path;
+                case ".hcf": return playersPath;
+                case ".ogg":
+                case ".mve": return moviesPath;
+                default: return "";
             }
         }
 
