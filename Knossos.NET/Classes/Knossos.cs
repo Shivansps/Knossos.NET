@@ -1743,58 +1743,19 @@ namespace Knossos.NET
                 {
                     if (KnUtils.IsWindows)
                     {
-                        if (ttsObject != null)
+                        KSapi.Stop();
+
+                        if (!string.IsNullOrEmpty(text))
                         {
-                            var sp = (Process)ttsObject;
-                            sp.Kill();
-                            ttsObject = null;
-                        }
-                        if (text != string.Empty)
-                        {
-                            if (!File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe"))
+                            var voice = voice_index ?? globalSettings.ttsVoice;
+                            var vol = volume ?? globalSettings.ttsVolume;
+
+                            await Task.Run(() =>
                             {
-                                if (KnUtils.CpuArch == "X86")
-                                {
-                                    using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe"))
-                                    {
-                                        AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/win/KSapi_x86.exe")).CopyTo(fileStream);
-                                        fileStream.Close();
-                                    }
-                                }
-                                else
-                                {
-                                    using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe"))
-                                    {
-                                        AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/win/KSapi.exe")).CopyTo(fileStream);
-                                        fileStream.Close();
-                                    }
-                                }
-                            }
-                            await Task.Run(async () =>
-                            {
-                                //Max cmdline lenght is 8192, lets limit the text to 7500
-                                if(text.Length > 7500)
-                                {
-                                    text = text.Substring(0, 7500);
-                                }
-                                await Task.Delay(300);
-                                var voice = globalSettings.ttsVoice;
-                                var vol = globalSettings.ttsVolume;
-                                if (voice_index.HasValue)
-                                    voice = voice_index.Value;
-                                if (volume.HasValue)
-                                    vol = volume.Value;
-                                using var ttsProcess = new Process();
-                                ttsProcess.StartInfo.FileName = KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe";
-                                ttsProcess.StartInfo.Arguments = "-text \"" + text + "\" -voice " + voice + " -vol " + vol;
-                                ttsProcess.StartInfo.UseShellExecute = false;
-                                ttsProcess.StartInfo.CreateNoWindow = true;
-                                ttsObject = ttsProcess;
-                                ttsProcess.Start();
-                                ttsProcess.WaitForExit();
-                                ttsObject = null;
+                                KSapi.Speak(text, voice!.Value, Math.Clamp(vol, 0, 100));
+
                                 if (callBack != null)
-                                    await Dispatcher.UIThread.InvokeAsync(() => callBack(), DispatcherPriority.Background);
+                                    Dispatcher.UIThread.InvokeAsync(() => callBack(), DispatcherPriority.Background);
                             });
                         }
                     }

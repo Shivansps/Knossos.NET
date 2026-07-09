@@ -82,17 +82,29 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>etc2native.dll</Link>
     </None>
+	<None Update="precompiled\windows\x64\KSapi.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>KSapi.dll</Link>
+    </None>
   </ItemGroup>
   <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsX86)' == 'true'">
     <None Update="precompiled\windows\x86\etc2native.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>etc2native.dll</Link>
     </None>
+	<None Update="precompiled\windows\x86\KSapi.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>KSapi.dll</Link>
+    </None>
   </ItemGroup>
   <ItemGroup Condition="'$(_IsWin)' == 'true' And '$(_IsArm64)' == 'true'">
     <None Update="precompiled\windows\arm64\etc2native.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>etc2native.dll</Link>
+    </None>
+	<None Update="precompiled\windows\arm64\KSapi.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>KSapi.dll</Link>
     </None>
   </ItemGroup>
 
