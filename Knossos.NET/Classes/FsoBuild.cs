@@ -396,7 +396,7 @@ namespace Knossos.NET.Models
                     output = result;
                     await cmd.WaitForExitAsync().ConfigureAwait(false);
 
-                    if (KnUtils.IsLinux && !string.IsNullOrEmpty(stderr))
+                    if (KnUtils.IsLinux && !result.Contains("{"))
                     {
                         //Possible missing dependency libs on linux like libfuse for appimage
                         var errorMsg = $"FSO exited with code {cmd.ExitCode}\n\nStdout:\n{output}\n\nStderr:\n{stderr}";
@@ -417,7 +417,6 @@ namespace Knossos.NET.Models
                         }
                         else
                         {
-                            Log.Add(Log.LogSeverity.Error, "FsoBuild.GetFlagsV1()", stderr);
                             if (!_flagErrorOneWarn)
                             {
                                 _flagErrorOneWarn = true;
