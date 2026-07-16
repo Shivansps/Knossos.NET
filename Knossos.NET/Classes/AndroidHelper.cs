@@ -2,8 +2,10 @@
 using Android.App;
 using System.Linq;
 using Android.Content;
-#endif
 using Avalonia.Threading;
+using Android.OS;
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -183,6 +185,74 @@ public static class AndroidHelper
         }
     }
 
+    /// <summary>
+    /// Gets FSO flags
+    /// </summary>
+    /// <param name="engineLibPath"></param>
+    /// <param name="timeoutMs"></param>
+    /// <returns>json string or empty string</returns>
+    public static async Task<string> GetFlagsStringFSOAsync(string engineLibPath, int timeoutMs = 30000)
+    {
+        try
+        {
+            var ctx = Application.Context;
+            string dstAbiDir = System.IO.Path.Combine(ctx.FilesDir!.AbsolutePath, "natives");
+            var fi = new FileInfo(engineLibPath);
+            var folderPath = fi.Directory!.FullName;
+            if (!folderPath.EndsWith("/"))
+                folderPath += "/";
+            StageAllToInternal(folderPath, dstAbiDir);
+            var libName = fi.Name;
+
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var receiver = new FlagsResultReceiver(tcs);
+
+            var intent = new Intent();
+            intent.SetClassName(ctx, "com.knossosnet.knossosnet.FlagsActivity");
+            intent.AddFlags(ActivityFlags.NewTask);
+            intent.PutExtra("engineLibName", System.IO.Path.Combine(dstAbiDir, libName));
+
+            // OJO: dos elementos separados, y json_v2 en MINUSCULA
+            intent.PutStringArrayListExtra("fsoArgs", new List<string> { "-get_flags", "json_v2" });
+            intent.PutExtra("flagsReceiver", receiver);
+
+            ctx.StartActivity(intent);
+
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs)).ConfigureAwait(false);
+            if (completed != tcs.Task)
+            {
+                Log.Add(Log.LogSeverity.Error, "AndroidHelper.GetFlagsStringFSO", "Timeout esperando las flags de FSO (" + timeoutMs + "ms).");
+                return "";
+            }
+
+            return await tcs.Task.ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Add(Log.LogSeverity.Error, "AndroidHelper.GetFlagsStringFSO", ex);
+        }
+        return "";
+    }
+
+    private sealed class FlagsResultReceiver : ResultReceiver
+    {
+        private readonly TaskCompletionSource<string> _tcs;
+
+        public FlagsResultReceiver(TaskCompletionSource<string> tcs)
+            : base(new Handler(Looper.MainLooper!))
+        {
+            _tcs = tcs;
+        }
+
+        protected override void OnReceiveResult(int resultCode, Bundle? resultData)
+        {
+            if (resultCode == (int)Result.Ok)
+                _tcs.TrySetResult(resultData?.GetString("flagsJson") ?? "");
+            else
+                _tcs.TrySetResult("");
+        }
+    }
+
 #else
     //Stubs
     public static string? GetExternalAppFilesDir() => "";
@@ -193,6 +263,7 @@ public static class AndroidHelper
     public static string GetDefaultKnetDataDir() => "";
     public static string GetDefaultFSODataDir() => "";
     public static void LaunchFSO(string engineLibPath, string? workingFolder, string cmdline) {  }
+    public static async Task<string> GetFlagsStringFSOAsync(string engineLibPath, int timeoutMs = 30000) { await Task.Delay(1); return ""; }
 #endif
 }
 
