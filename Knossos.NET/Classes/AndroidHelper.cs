@@ -212,7 +212,6 @@ public static class AndroidHelper
             intent.AddFlags(ActivityFlags.NewTask);
             intent.PutExtra("engineLibName", System.IO.Path.Combine(dstAbiDir, libName));
 
-            // OJO: dos elementos separados, y json_v2 en MINUSCULA
             intent.PutStringArrayListExtra("fsoArgs", new List<string> { "-get_flags", "json_v2" });
             intent.PutExtra("flagsReceiver", receiver);
 
@@ -221,7 +220,7 @@ public static class AndroidHelper
             var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs)).ConfigureAwait(false);
             if (completed != tcs.Task)
             {
-                Log.Add(Log.LogSeverity.Error, "AndroidHelper.GetFlagsStringFSO", "Timeout esperando las flags de FSO (" + timeoutMs + "ms).");
+                Log.Add(Log.LogSeverity.Error, "AndroidHelper.GetFlagsStringFSO", "Timeout waiting for fso flags (" + timeoutMs + "ms).");
                 return "";
             }
 
