@@ -22,10 +22,11 @@
 				<!--MODS-->
 				<StackPanel Margin="10" HorizontalAlignment="Center" IsVisible="{Binding !IsEngineBuild}">
 					<Button Command="{Binding PlayMod}" CommandParameter="release" Classes="Accept" Margin="2" Width="150">Play</Button>
+					<Button Command="{Binding PlayMod}" CommandParameter="qtfred" Classes="Secondary" Margin="2" Width="150">QtFred</Button>
 					<Button Command="{Binding PlayMod}" CommandParameter="fred2" Classes="Secondary" Margin="2" Width="150">Fred2</Button>
 					<Button Command="{Binding PlayMod}" CommandParameter="debug" Classes="Settings" Margin="2" Width="150">Debug</Button>
+					<Button Command="{Binding PlayMod}" CommandParameter="qtfreddebug" Classes="Settings" Margin="2" Width="150">QtFred Debug</Button>
 					<Button Command="{Binding PlayMod}" CommandParameter="fred2debug" Classes="Settings" Margin="2" Width="150">Fred2 Debug</Button>
-					<Button Command="{Binding PlayMod}" CommandParameter="qtfred" Classes="Settings" Margin="2" Width="150">QtFred</Button>
 					<Button Command="{Binding OpenModFolder}" Classes="Quaternary" Margin="2" Width="150">Open Folder</Button>
 				</StackPanel>
 				<!--Engine Builds-->
