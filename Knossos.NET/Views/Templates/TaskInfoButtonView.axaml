@@ -3,16 +3,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="40" d:DesignHeight="40"
-			 xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
              x:Class="Knossos.NET.Views.TaskInfoButtonView"
 	         xmlns:v="using:Knossos.NET.Views"
+			 xmlns:c="using:Knossos.NET.Controls"
 	         xmlns:vm="using:Knossos.NET.ViewModels"
 	         x:DataType="vm:TaskInfoButtonViewModel">
 	
 
 		<Grid>
-			<Image Width="41" Stretch="UniformToFill" anim:ImageBehavior.SpeedRatio="{Binding Animate}" anim:ImageBehavior.AnimatedSource="avares://Knossos.NET/Assets/general/knossos-1.gif" />
-			<Image Width="40" Stretch="UniformToFill" anim:ImageBehavior.SpeedRatio="{Binding Animate}" anim:ImageBehavior.AnimatedSource="avares://Knossos.NET/Assets/general/knossos-2.gif" />
+			<c:AnimatedImage Width="45" ZIndex="0" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform" Extension="apng" Playing="{Binding Animate}" Path="avares://Knossos.NET/Assets/general/knossos.apng"/>
 			<Label HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="12" Content="{Binding TaskNumber}"/>
 		</Grid>
 

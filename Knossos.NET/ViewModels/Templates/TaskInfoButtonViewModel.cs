@@ -1,7 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Knossos.NET.ViewModels
 {
@@ -11,13 +8,9 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal int taskNumber = 0;
         [ObservableProperty]
-        internal int animate = 0;
-        [ObservableProperty]
         internal string tooltip = "";
         [ObservableProperty]
-        internal bool frame0 = true;
-        [ObservableProperty]
-        internal bool frame1 = false;
+        internal bool animate = true;
 
         public TaskInfoButtonViewModel() 
         {
@@ -46,17 +39,17 @@ namespace Knossos.NET.ViewModels
                     Tooltip = "Open Task List\n\n" + TaskViewModel.GetRunningTaskString();
                     if (!TaskViewModel.IsSafeState())
                     {
-                        Animate = 1;
+                        Animate = true;
                     }
                     else
                     {
-                        Animate = 0;
+                        Animate = false;
                     }
                 }
                 else
                 {
                     Tooltip = "Open Task List";
-                    Animate = 0;
+                    Animate = false;
                 }
             }
         }

@@ -6,11 +6,11 @@
                 xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
              x:Class="Knossos.NET.Views.LoadingIconView"
 	         xmlns:v="using:Knossos.NET.Views"
+             xmlns:c="using:Knossos.NET.Controls"
 	         xmlns:vm="using:Knossos.NET.ViewModels"
 	         x:DataType="vm:LoadingIconViewModel">
 	
     <Grid>
-        <Image Width="62" Stretch="UniformToFill" anim:ImageBehavior.SpeedRatio="{Binding Animate}" anim:ImageBehavior.AnimatedSource="avares://Knossos.NET/Assets/general/knossos-1.gif" />
-	    <Image Width="60" Stretch="UniformToFill" anim:ImageBehavior.SpeedRatio="{Binding Animate}" anim:ImageBehavior.AnimatedSource="avares://Knossos.NET/Assets/general/knossos-2.gif" />    
+		<c:AnimatedImage Width="100" ZIndex="0" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform" Extension="apng" Playing="{Binding Animate}" Path="avares://Knossos.NET/Assets/general/knossos.apng"/>
     </Grid>
 </UserControl>

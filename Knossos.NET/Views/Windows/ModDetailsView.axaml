@@ -10,12 +10,12 @@
 			 xmlns:HtmlRenderer="clr-namespace:TheArtOfDev.HtmlRenderer.Avalonia;assembly=Avalonia.HtmlRenderer"
 			 Icon="/Assets/knossos-icon.ico"
 			 WindowStartupLocation="CenterOwner"
+			 xmlns:c="using:Knossos.NET.Controls"
 			 MinHeight="400"
 			 MinWidth="400"
 			 WindowWidth="1070"
 			 Title="{Binding Name}"
 			 CanResize="True"
-			 xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
 			 xmlns:cvt="clr-namespace:Knossos.NET.Converters;assembly=Knossos.NET">
 	
 	<Design.DataContext>
@@ -23,13 +23,13 @@
 	</Design.DataContext>
 
 	<KnossosWindow.Resources>
-		<cvt:BitmapAssetValueConverter x:Key="imageConverter"/>
+		<cvt:RemotePathAssetValueConverter x:Key="imageConverter"/>
 	</KnossosWindow.Resources>
 
 	<ScrollViewer Background="{StaticResource BackgroundColorPrimary}" AllowAutoHide="False">
 	<Grid RowDefinitions="Auto,Auto,*,Auto">
 		<StackPanel Grid.Row="0" Margin="25">
-			<Image Source="{Binding Banner, Converter={StaticResource imageConverter}}" anim:ImageBehavior.AnimatedSource="{Binding ApngBanner}" HorizontalAlignment="Stretch" Height="300" IsVisible="{Binding HasBanner}"></Image>
+			<c:AnimatedImage Height="300" VerticalAlignment="Center" HorizontalAlignment="Stretch" Stretch="Uniform" Path="{Binding Banner, Converter={StaticResource imageConverter}}" IsVisible="{Binding HasBanner}"/>
 			<Label Content="{Binding Name, Converter={StaticResource escapeUnderscoresConverter}}" FontWeight="Bold" FontSize="24" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Foreground="White"/>
 			
 			<!--Buttons and Mod info-->
@@ -98,7 +98,7 @@
 					<DataTemplate DataType="vm:ScreenshotItem">
 						<Grid>
 							<Button Command="{Binding OpenImage}" Classes="Transparent">
-								<Image Width="640" Height="360" Source="{Binding image, Converter={StaticResource imageConverter}}" anim:ImageBehavior.AnimatedSource="{Binding image}"/>
+								<c:AnimatedImage Width="640" Height="360" ZIndex="0" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform" Path="{Binding image, Converter={StaticResource imageConverter}}"/>
 							</Button>
 							<Button IsVisible="{Binding video}" Classes="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Command="{Binding OpenVideo}">
 								<Image HorizontalAlignment="Center" VerticalAlignment="Center" Height="125" Width="125" Source="/Assets/general/play-button.png"/>

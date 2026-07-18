@@ -293,7 +293,7 @@ namespace Knossos.NET.ViewModels
         internal void ChangeSort(object sort)
         {
             Sorting = true;
-            LoadingAnimation.Animate = 1;
+            LoadingAnimation.Animate = true;
             var newSort = ModSortType.unsorted;
             if (sort is ModSortType)
             {
@@ -310,7 +310,7 @@ namespace Knossos.NET.ViewModels
                 Mods.Sort(); //It will use ModCardViewModel.CompareTo()
             }
             SortString = "Sorted by " + newSort;
-            LoadingAnimation.Animate = 0;
+            LoadingAnimation.Animate = false;
             Sorting = false;
         }
 

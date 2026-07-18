@@ -6,8 +6,8 @@
              x:Class="Knossos.NET.Views.CustomHomeView"
 			 xmlns:v="using:Knossos.NET.Views"
 			 xmlns:vm="using:Knossos.NET.ViewModels"
-			 xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
 		     x:DataType="vm:CustomHomeViewModel"
+			 xmlns:c="using:Knossos.NET.Controls"
 			 Name="CustomTCView"
 		     Background="{StaticResource BackgroundColorPrimary}"
 			 xmlns:HtmlRenderer="clr-namespace:TheArtOfDev.HtmlRenderer.Avalonia;assembly=Avalonia.HtmlRenderer"
@@ -17,16 +17,14 @@
 	</Design.DataContext>
 
 	<UserControl.Resources>
-		<cvt:BitmapAssetValueConverter x:Key="imageConverter"/>
+		<cvt:RemotePathAssetValueConverter x:Key="imageConverter"/>
 		<cvt:TextFileToStringConverter x:Key="textFileConverter"/>
 	</UserControl.Resources>
 	<!--Home buttons costumizations are applied in CustomHomeView.axaml.cs-->
 
 		<Grid>
-			<Image ZIndex="0" Stretch="{Binding StretchMode}" 
-				   anim:ImageBehavior.SpeedRatio="{Binding Animate}" 
-				   Source="{Binding BackgroundImage, Converter={StaticResource imageConverter}}" 
-				   anim:ImageBehavior.AnimatedSource="{Binding BackgroundImage}" />
+			<c:AnimatedImage Stretch="{Binding StretchMode}" Path="{Binding BackgroundImage, Converter={StaticResource imageConverter}}"/>
+
 			<Grid ZIndex="1" RowDefinitions="Auto, *, Auto">
 				<!--==========================================Top============================================-->
 				<WrapPanel Grid.Row="0" HorizontalAlignment="Right" Margin="10" Name="LinkButtons">

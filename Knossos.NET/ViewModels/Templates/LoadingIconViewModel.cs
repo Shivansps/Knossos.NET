@@ -7,6 +7,7 @@ namespace Knossos.NET.ViewModels
 {
     public partial class LoadingIconViewModel : ViewModelBase
     {
-        public int Animate {get; set;} = 0;
+        [ObservableProperty]
+        public bool animate  = false;
     }
 }

@@ -30,11 +30,11 @@ namespace Knossos.NET.ViewModels
                 ShowTiles = !isLoading;
                 if (ShowTiles)
                 {
-                    LoadingAnimation.Animate = 0;
+                    LoadingAnimation.Animate = false;
                 } 
                 else  
                 {
-                    LoadingAnimation.Animate = 1;
+                    LoadingAnimation.Animate = true;
                 }        
             }
         }
@@ -82,7 +82,7 @@ namespace Knossos.NET.ViewModels
 
         public NebulaModListViewModel()
         {
-            LoadingAnimation.Animate = 1;
+            LoadingAnimation.Animate = true;
             CardsView = Mods.ToNotifyCollectionChangedSlim(SynchronizationContextCollectionEventDispatcher.Current);
         }
 
@@ -211,7 +211,7 @@ namespace Knossos.NET.ViewModels
                 Task.Run(() =>
                 {
                     ShowTiles = false;
-                    LoadingAnimation.Animate = 1;
+                    LoadingAnimation.Animate = true;
                     if (MainViewModel.Instance != null)
                     {
                         if (Search != MainViewModel.Instance.sharedSearch)
@@ -231,7 +231,7 @@ namespace Knossos.NET.ViewModels
                     {
                         await card.LoadImage();
                     });
-                    LoadingAnimation.Animate = 0;
+                    LoadingAnimation.Animate = false;
                     ShowTiles = true;
                 });
             }

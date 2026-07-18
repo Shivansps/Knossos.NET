@@ -16,7 +16,6 @@
     <PackageVersion Include="Avalonia.Android" Version="11.3.15" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.1" />
-    <PackageVersion Include="AnimatedImage.Avalonia" Version="1.0.7" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.3.13" />
     <PackageVersion Include="Avalonia.HtmlRenderer" Version="11.3.0" />
     <PackageVersion Include="Avalonia.Markup.Xaml.Loader" Version="11.3.15" />
