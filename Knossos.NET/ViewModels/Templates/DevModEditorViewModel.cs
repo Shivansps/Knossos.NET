@@ -239,6 +239,7 @@ namespace Knossos.NET.ViewModels
                     case "release": Knossos.PlayMod(ActiveVersion,FsoExecType.Release); break;
                     case "fred2": Knossos.PlayMod(ActiveVersion, FsoExecType.Fred2); break;
                     case "qtfred": Knossos.PlayMod(ActiveVersion, FsoExecType.QtFred); break;
+                    case "qtfreddebug": Knossos.PlayMod(ActiveVersion, FsoExecType.QtFredDebug); break;
                     case "debug": Knossos.PlayMod(ActiveVersion, FsoExecType.Debug); break;
                     case "fred2debug": Knossos.PlayMod(ActiveVersion, FsoExecType.Fred2Debug); break;
                 }
