@@ -831,12 +831,13 @@ namespace Knossos.NET.ViewModels
                 // default config is always created in Globasettings.Load() on android if it does not exist
                 if (Knossos.globalSettings.modEtc2TranscodeConfig.HasValue)
                 {
-                    Etc2Jobs = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Jobs;
-                    Etc2Quality = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Quality;
-                    Etc2transcodeEnabled = Knossos.globalSettings.modEtc2TranscodeConfig.Value.TranscodeMods;
-                    Etc2ResizeEnabled = Knossos.globalSettings.modEtc2TranscodeConfig.Value.Resize;
-                    ForceBC7 = Knossos.globalSettings.modEtc2TranscodeConfig.Value.ForceBC7;
-                    ForceS3TC = Knossos.globalSettings.modEtc2TranscodeConfig.Value.ForceS3TC;
+                    var savedEtc2Config = Knossos.globalSettings.modEtc2TranscodeConfig.Value;
+                    Etc2Jobs = savedEtc2Config.Jobs;
+                    Etc2Quality = savedEtc2Config.Quality;
+                    Etc2transcodeEnabled = savedEtc2Config.TranscodeMods;
+                    Etc2ResizeEnabled = savedEtc2Config.Resize;
+                    ForceBC7 = savedEtc2Config.ForceBC7;
+                    ForceS3TC = savedEtc2Config.ForceS3TC;
                 }
             }
 
