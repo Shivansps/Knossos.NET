@@ -119,8 +119,7 @@ namespace Knossos.NET.ViewModels
                         throw new TaskCanceledException();
                     }
 
-                    GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-                    GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+                    GC.Collect();
 
                     IsCompleted = true;
                     ProgressCurrent = ProgressBarMax;

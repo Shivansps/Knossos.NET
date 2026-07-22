@@ -116,8 +116,7 @@ namespace Knossos.NET.ViewModels
                                 ddsFile.parent!.AddFile(new FileInfo(outputFileName));
                                 transcodedNames?.Add(nameLower);
                             }
-                            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-                            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+                            GC.Collect();
                         }
                     }
                     await Task.Delay(2000);
