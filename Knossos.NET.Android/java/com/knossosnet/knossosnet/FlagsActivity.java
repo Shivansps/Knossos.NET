@@ -86,7 +86,7 @@ public class FlagsActivity extends org.libsdl.app.SDLActivity {
     }
 
     private static final String[] PREFERRED_ORDER = new String[] {
-        "libSDL2.so", "libshaderc.so", "libopenal.so", "libavutil.so",
+        "libSDL3.so", "libshaderc_shared.so", "libopenal.so", "libavutil.so",
         "libswresample.so", "libswscale.so", "libavcodec.so",
         "libavformat.so", "libavfilter.so"
     };
