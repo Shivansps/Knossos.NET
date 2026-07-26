@@ -192,7 +192,7 @@ public static class AndroidHelper
     public static string GetDefaultKnetDir() => "";
     public static string GetDefaultKnetDataDir() => "";
     public static string GetDefaultFSODataDir() => "";
-    public static void LaunchFSO(string engineLibPath, string? workingFolder, string cmdline) {  }
+    public static void LaunchFSO(string engineLibPath, string? workingFolder, string cmdline) { }
 #endif
 }
 

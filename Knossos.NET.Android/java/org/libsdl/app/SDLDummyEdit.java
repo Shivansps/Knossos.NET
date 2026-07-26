@@ -1,70 +1,28 @@
 package org.libsdl.app;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.UiModeManager;
-import android.content.ClipboardManager;
-import android.content.ClipData;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.text.Editable;
+import android.content.*;
 import android.text.InputType;
-import android.text.Selection;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.SparseArray;
-import android.view.Display;
-import android.view.Gravity;
-import android.view.InputDevice;
-import android.view.KeyEvent;
-import android.view.PointerIcon;
-import android.view.Surface;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.inputmethod.BaseInputConnection;
+import android.view.*;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.Hashtable;
-import java.util.Locale;
-
 
 /* This is a fake invisible editor view that receives the input and defines the
  * pan&scan region
  */
-public class DummyEdit extends View implements View.OnKeyListener {
+public class SDLDummyEdit extends View implements View.OnKeyListener
+{
     InputConnection ic;
+    int input_type;
 
-    public DummyEdit(Context context) {
+    SDLDummyEdit(Context context) {
         super(context);
         setFocusableInTouchMode(true);
         setFocusable(true);
         setOnKeyListener(this);
+    }
+
+    void setInputType(int input_type) {
+        this.input_type = input_type;
     }
 
     @Override
@@ -98,11 +56,11 @@ public class DummyEdit extends View implements View.OnKeyListener {
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         ic = new SDLInputConnection(this, true);
 
-        outAttrs.inputType = InputType.TYPE_CLASS_TEXT |
-                             InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+        outAttrs.inputType = input_type;
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI |
                               EditorInfo.IME_FLAG_NO_FULLSCREEN /* API 11 */;
 
         return ic;
     }
 }
+
