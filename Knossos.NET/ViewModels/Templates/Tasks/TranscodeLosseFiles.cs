@@ -105,9 +105,12 @@ namespace Knossos.NET.ViewModels
                             else
                             {
                                 Interlocked.Increment(ref skippedCount);
-                                if (result == Etc2Status.NotCompressed)
-                                    Log.Add(Log.LogSeverity.Information, "TranscodeLosseFiles()", $"Skipping {filename} (DDS uncompressed).");
-                                else if (result == Etc2Status.Skipped) { /* silent skip */ }
+                                if (result == Etc2Status.NotCompressed) { 
+                                    //Log.Add(Log.LogSeverity.Information, "TranscodeLosseFiles()", $"Skipping {filename} (DDS uncompressed).");
+                                }
+                                else if (result == Etc2Status.Skipped) { 
+                                    /* silent skip */ 
+                                }
                                 else
                                     Log.Add(Log.LogSeverity.Error, "TranscodeLosseFiles()", $"Error transcoding {filename}: {result}");
                             }

@@ -103,7 +103,7 @@ namespace Knossos.NET.ViewModels
 
                                 if (ktx.status == Etc2Status.NotCompressed)
                                 {
-                                    Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeVP()", $"Skipping {filename} (DDS uncompressed).");
+                                    //Log.Add(Log.LogSeverity.Information, "TaskViewModel.TranscodeVP()", $"Skipping {filename} (DDS uncompressed).");
                                     continue;
                                 }
 
