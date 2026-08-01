@@ -76,8 +76,18 @@ namespace Knossos.NET.Models
         //https://fsnebula.org/storage/repo.json"
 
         public static string[] nebulaMirrors = { "cf.fsnebula.org", "dl.fsnebula.org", "fsnebula.org", "hestia.feralhosting.com", "fsnebula.global.ssl.fastly.net" }; //lowercase, last one is the image host
-        private static readonly string repoUrl = @"https://fsnebula.org/storage/repo_minimal.json";
-        private static readonly string apiURL = @"https://api.fsnebula.org/api/1/";
+        private static readonly string[] repoUrls = {
+                @"https://fsnebula.org/storage/repo_minimal.json",
+                @"https://cf.fsnebula.org/storage/repo_minimal.json",
+                @"https://fsnebula.space/storage/repo_minimal.json"
+        };
+
+        private static readonly string[] apiURLs = {
+            @"https://api.fsnebula.org/api/1/",
+            @"https://fsnebula.space/api/1/" 
+        };
+        private static string apiURL = @"https://api.fsnebula.org/api/1/";
+
         private static readonly string nebulaURL = @"https://fsnebula.org/";
         private static readonly bool listFS2Override = false;
         private static CancellationTokenSource? cancellationToken = null;
@@ -138,7 +148,12 @@ namespace Knossos.NET.Models
             try
             {
                 bool displayUpdates = settings.NewerModsVersions.Any() && !CustomLauncher.IsCustomMode ? true : false;
-                var webEtag = await KnUtils.GetUrlFileEtag(repoUrl).ConfigureAwait(false);
+                
+                await ResolveApiMirror().ConfigureAwait(false);
+                var mirror = await ResolveRepoMirror().ConfigureAwait(false);
+                var repoUrl = mirror?.url ?? repoUrls[0];
+                var webEtag = mirror?.etag;
+
                 var neb_text_downloading = CustomLauncher.IsCustomMode ? CustomLauncher.NebulaTextDownloading : "Downloading repo_minimal.json";
                 var neb_text_uptodate = CustomLauncher.IsCustomMode ? CustomLauncher.NebulaTextUpToDate : "Nebula: repo_minimal.json is up to date!";
                 var neb_text_tooltip = CustomLauncher.IsCustomMode ? CustomLauncher.NebulaTextToolTip : "The repo_minimal.json file contains info on all the mods available in Nebula, without this you will not be able to install new mods or engine builds";
@@ -147,12 +162,22 @@ namespace Knossos.NET.Models
                     //Download the repo_minimal.json
                     if (TaskViewModel.Instance != null)
                     {
-                        var result = await Dispatcher.UIThread.InvokeAsync(async()=>await TaskViewModel.Instance.AddFileDownloadTask(repoUrl, KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal_temp.json", neb_text_downloading, true, neb_text_tooltip), DispatcherPriority.Background).ConfigureAwait(false);
-
-                        if (cancellationToken!.IsCancellationRequested)
+                        bool? result = false;
+                        foreach (var mUrl in new[] { repoUrl }.Concat(repoUrls.Where(u => u != repoUrl)))
                         {
-                            throw new TaskCanceledException();
+                            result = await Dispatcher.UIThread.InvokeAsync(async () => await TaskViewModel.Instance.AddFileDownloadTask(mUrl, KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal_temp.json", neb_text_downloading, true, neb_text_tooltip), DispatcherPriority.Background).ConfigureAwait(false);
+
+                            if (cancellationToken!.IsCancellationRequested)
+                            {
+                                throw new TaskCanceledException();
+                            }
+                            if (result == true)
+                            {
+                                break;
+                            }
+                            Log.Add(Log.LogSeverity.Warning, "Nebula.Trinity()", "repo_minimal.json download failed from " + mUrl + ", trying next mirror.");
                         }
+
                         if (result != null && result == true)
                         {
                             try
@@ -264,6 +289,59 @@ namespace Knossos.NET.Models
                     cancellationToken = null;
                 }
             }
+        }
+
+        /// <summary>
+        /// Return the first reachable repo_minimal.json mirror (url + etag), in order.
+        /// </summary>
+        private static async Task<(string url, string? etag)?> ResolveRepoMirror()
+        {
+            foreach (var url in repoUrls)
+            {
+                try
+                {
+                    using var resp = await KnUtils.GetHttpClient().GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                    if (!resp.IsSuccessStatusCode)
+                        continue;
+                    var etag = resp.Headers?.ETag?.ToString().Replace("\"", "");
+                    if (etag == null && resp.Headers != null)
+                    {
+                        var h = resp.Headers.FirstOrDefault(x => x.Key != null && x.Key.ToLower() == "etag");
+                        etag = h.Value?.FirstOrDefault();
+                    }
+                    Log.Add(Log.LogSeverity.Information, "Nebula.ResolveRepoMirror()", "Using repo mirror: " + url);
+                    return (url, etag);
+                }
+                catch (Exception ex)
+                {
+                    Log.Add(Log.LogSeverity.Warning, "Nebula.ResolveRepoMirror()", "Repo mirror unreachable: " + url + " -> " + ex.Message);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Try apiURLs in order and set a apiURL targeting the first reachable server.
+        /// Any HTTP response (even 404) is valid as reachable, only conection error is considered as failure.
+        /// </summary>
+        private static async Task ResolveApiMirror()
+        {
+            foreach (var baseUrl in apiURLs)
+            {
+                try
+                {
+                    using var resp = await KnUtils.GetHttpClient().GetAsync(baseUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                    apiURL = baseUrl;
+                    if (baseUrl != apiURLs[0])
+                        Log.Add(Log.LogSeverity.Information, "Nebula.ResolveApiMirror()", "Using api backup: " + baseUrl);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Log.Add(Log.LogSeverity.Warning, "Nebula.ResolveApiMirror()", "Api host unreachable: " + baseUrl + " -> " + ex.Message);
+                }
+            }
+            apiURL = apiURLs[0];
         }
 
         /// <summary>
