@@ -300,7 +300,9 @@ namespace Knossos.NET.Models
             {
                 try
                 {
-                    using var resp = await KnUtils.GetHttpClient().GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                    using var client = KnUtils.GetHttpClient();
+                    client.Timeout = TimeSpan.FromSeconds(10);
+                    using var resp = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
                     if (!resp.IsSuccessStatusCode)
                         continue;
                     var etag = resp.Headers?.ETag?.ToString().Replace("\"", "");
@@ -330,7 +332,9 @@ namespace Knossos.NET.Models
             {
                 try
                 {
-                    using var resp = await KnUtils.GetHttpClient().GetAsync(baseUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                    using var client = KnUtils.GetHttpClient();
+                    client.Timeout = TimeSpan.FromSeconds(10);
+                    using var resp = await client.GetAsync(baseUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
                     apiURL = baseUrl;
                     if (baseUrl != apiURLs[0])
                         Log.Add(Log.LogSeverity.Information, "Nebula.ResolveApiMirror()", "Using api backup: " + baseUrl);
