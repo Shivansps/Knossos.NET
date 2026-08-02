@@ -260,7 +260,24 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         if (name == null) return false;
         return name.startsWith("libfso") || name.contains("libfs2");
     }
-   
+	
+	@Override public boolean dispatchKeyEvent(KeyEvent e) {
+        int k = e.getKeyCode();
+        if (k == KeyEvent.KEYCODE_ESCAPE || k == KeyEvent.KEYCODE_BACK) {
+            switch (e.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    if (e.getRepeatCount() == 0) {
+                        NativeBridge.onButton(NativeBridge.CODE_ESC, true);
+                    }
+                    return true;
+                case KeyEvent.ACTION_UP:
+                    NativeBridge.onButton(NativeBridge.CODE_ESC, false);
+                    return true;
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
 
     @Override protected void onPause() 
     {
