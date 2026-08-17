@@ -201,6 +201,12 @@
 							<Label Margin="5,5,0,0" IsVisible="{Binding IsAVX}" Width="200">Force SSE2</Label> 
 							<CheckBox Margin="12,0,0,0" IsVisible="{Binding IsAVX}" ToolTip.Tip="When enabled, KnossosNET will force to run SSE2 FSO builds instead of AVX ones, if SSE2 builds are available." IsChecked="{Binding ForceSSE2}"></CheckBox>
 						</WrapPanel>
+						<!-- FSO CACHE -->
+						<WrapPanel Margin="5">
+							<Label VerticalContentAlignment="Center" Width="210">FSO Cache</Label>
+							<Label Margin="3,0,0,0" VerticalAlignment="Center" Content="{Binding FsoCacheSize}"/>
+							<Button VerticalAlignment="Center"  Command="{Binding ClearFSOCache}" Classes="Cancel" Margin="10,0,0,0">Clear</Button>
+						</WrapPanel>
 						<!-- GLOBAL CMDLINE -->
 						<Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="Auto,Auto" Margin="5">
 							<Label Grid.Row="0" ToolTip.Tip="This cmdline will be added to all mods and will override any mod settings using the same flags." Grid.Column="0" VerticalContentAlignment="Center" Width="210">Global Command Line</Label>
