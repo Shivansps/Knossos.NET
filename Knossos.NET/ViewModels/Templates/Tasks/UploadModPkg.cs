@@ -31,10 +31,10 @@ namespace Knossos.NET.ViewModels
                     if (cancellationTokenSource.IsCancellationRequested)
                         throw new TaskCanceledException();
 
-                    var zipPath = modFullPath + Path.DirectorySeparatorChar + "kn_upload" + Path.DirectorySeparatorChar + pkg.folder + ".7z";
+                    var zipPath = Path.Combine(modFullPath, "kn_upload", pkg.folder + ".7z");
                     if (pkg.environment != null && pkg.environment.ToLower().Contains("macos"))
                     {
-                        zipPath = modFullPath + Path.DirectorySeparatorChar + "kn_upload" + Path.DirectorySeparatorChar + pkg.folder + ".tar.gz";
+                        zipPath = Path.Combine(modFullPath, "kn_upload", pkg.folder + ".tar.gz");
                     }
                     if (!File.Exists(zipPath))
                     {

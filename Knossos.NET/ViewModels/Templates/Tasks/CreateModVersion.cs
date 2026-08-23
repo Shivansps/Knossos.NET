@@ -25,7 +25,7 @@ namespace Knossos.NET.ViewModels
                     Name = "Creating Mod Version: " + oldMod.title + " " + newVersion;
                     var currentDir = new DirectoryInfo(oldMod.fullPath);
                     var parentDir = currentDir.Parent;
-                    newDir = parentDir!.FullName + Path.DirectorySeparatorChar + oldMod.id + "-" + newVersion;
+                    newDir = Path.Combine(parentDir!.FullName, oldMod.id + "-" + newVersion);
 
                     if (cancelSource != null)
                     {
@@ -55,7 +55,7 @@ namespace Knossos.NET.ViewModels
 
                     Directory.CreateDirectory(newDir);
 
-                    using (StreamWriter writer = new StreamWriter(newDir + Path.DirectorySeparatorChar + "knossos_net_download.token"))
+                    using (StreamWriter writer = new StreamWriter(Path.Combine(newDir, "knossos_net_download.token")))
                     {
                         writer.WriteLine("Warning: This token indicates an incomplete folder copy. If this token is present on the next KnossosNET startup this folder WILL BE DELETED.");
                     }
@@ -68,7 +68,7 @@ namespace Knossos.NET.ViewModels
                         copyCallback,
                         Knossos.globalSettings.skipExtensionsModFilecopy != null && Knossos.globalSettings.skipExtensionsModFilecopy.Any() ? Knossos.globalSettings.skipExtensionsModFilecopy.ToArray() : null);
 
-                    File.Delete(newDir + Path.DirectorySeparatorChar + "knossos_net_download.token");
+                    File.Delete(Path.Combine(newDir, "knossos_net_download.token"));
 
                     var newMod = new Mod(newDir, oldMod.id + "-" + newVersion);
                     newMod.version = newVersion;

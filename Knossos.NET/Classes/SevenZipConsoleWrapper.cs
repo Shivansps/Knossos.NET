@@ -344,7 +344,7 @@ namespace Knossos.NET
                             AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/win/7za.exe")).CopyTo(fileStream);
                             fileStream.Close();
                         }
-                        using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "7z.License.txt"))
+                        using (var fileStream = File.Create(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "7z.License.txt")))
                         {
                             AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/win/7z.License.txt")).CopyTo(fileStream);
                             fileStream.Close();
@@ -366,7 +366,7 @@ namespace Knossos.NET
                                     fileStream.Close();
                                     KnUtils.Chmod(execPath, "+x");
                                 }
-                                using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "7z.License.txt"))
+                                using (var fileStream = File.Create(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "7z.License.txt")))
                                 {
                                     AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/linux-x64/7z.License.txt")).CopyTo(fileStream);
                                     fileStream.Close();
@@ -384,7 +384,7 @@ namespace Knossos.NET
                                     fileStream.Close();
                                     KnUtils.Chmod(execPath, "+x");
                                 }
-                                using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "7z.License.txt"))
+                                using (var fileStream = File.Create(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "7z.License.txt")))
                                 {
                                     AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/linux-arm64/7z.License.txt")).CopyTo(fileStream);
                                     fileStream.Close();
@@ -402,7 +402,7 @@ namespace Knossos.NET
                                     fileStream.Close();
                                     KnUtils.Chmod(execPath, "+x");
                                 }
-                                using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "7z.License.txt"))
+                                using (var fileStream = File.Create(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "7z.License.txt")))
                                 {
                                     AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/linux-riscv64/7z.License.txt")).CopyTo(fileStream);
                                     fileStream.Close();
@@ -423,7 +423,7 @@ namespace Knossos.NET
                                     fileStream.Close();
                                     KnUtils.Chmod(execPath, "+x");
                                 }
-                                using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "7z.License.txt"))
+                                using (var fileStream = File.Create(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "7z.License.txt")))
                                 {
                                     AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/osx/7z.License.txt")).CopyTo(fileStream);
                                     fileStream.Close();

@@ -195,7 +195,7 @@ namespace Knossos.NET.ViewModels
                 Log.Add(Log.LogSeverity.Error, "DevModVersionsViewModel.CreateNewVersion()", editor.ActiveVersion.fullPath+" get parent folder was null");
                 return;
             }
-            var newDir = parentDir.FullName + Path.DirectorySeparatorChar + editor.ActiveVersion.id + "-" + NewVersion;
+            var newDir = Path.Combine(parentDir.FullName, editor.ActiveVersion.id) + "-" + NewVersion;
             if (Directory.Exists(newDir))
             {
                 await MessageBox.Show(MainWindow.instance!, "The directory '"+ newDir + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
@@ -660,7 +660,7 @@ namespace Knossos.NET.ViewModels
                 Log.Add(Log.LogSeverity.Error, "DevModVersionsViewModel.CreateNewVersion()", editor.ActiveVersion.fullPath + " get parent folder was null");
                 return;
             }
-            var newDir = parentDir.FullName + Path.DirectorySeparatorChar + editor.ActiveVersion.id + "-" + devVersion;
+            var newDir = Path.Combine(parentDir.FullName, editor.ActiveVersion.id) + "-" + devVersion;
             if (Directory.Exists(newDir))
             {
                 await MessageBox.Show(MainWindow.instance!, "The directory '" + newDir + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);

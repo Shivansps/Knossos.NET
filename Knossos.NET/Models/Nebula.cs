@@ -120,9 +120,9 @@ namespace Knossos.NET.Models
                 }
                 cancellationToken = new CancellationTokenSource();
 
-                if (File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "nebula.json"))
+                if (File.Exists(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "nebula.json")))
                 {
-                    string jsonString = File.ReadAllText(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "nebula.json");
+                    string jsonString = File.ReadAllText(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "nebula.json"));
                     settings = JsonSerializer.Deserialize<NebulaSettings>(jsonString);
                     Log.Add(Log.LogSeverity.Information, "Nebula.Constructor()", "Nebula settings have been loaded");
                 }
@@ -142,12 +142,12 @@ namespace Knossos.NET.Models
                 var neb_text_downloading = CustomLauncher.IsCustomMode ? CustomLauncher.NebulaTextDownloading : "Downloading repo_minimal.json";
                 var neb_text_uptodate = CustomLauncher.IsCustomMode ? CustomLauncher.NebulaTextUpToDate : "Nebula: repo_minimal.json is up to date!";
                 var neb_text_tooltip = CustomLauncher.IsCustomMode ? CustomLauncher.NebulaTextToolTip : "The repo_minimal.json file contains info on all the mods available in Nebula, without this you will not be able to install new mods or engine builds";
-                if (!File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal.json") || settings.etag != webEtag)
+                if (!File.Exists(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "repo_minimal.json")) || settings.etag != webEtag)
                 {
                     //Download the repo_minimal.json
                     if (TaskViewModel.Instance != null)
                     {
-                        var result = await Dispatcher.UIThread.InvokeAsync(async()=>await TaskViewModel.Instance.AddFileDownloadTask(repoUrl, KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal_temp.json", neb_text_downloading, true, neb_text_tooltip), DispatcherPriority.Background).ConfigureAwait(false);
+                        var result = await Dispatcher.UIThread.InvokeAsync(async()=>await TaskViewModel.Instance.AddFileDownloadTask(repoUrl, Path.Combine(KnUtils.GetKnossosDataFolderPath(), "repo_minimal_temp.json"), neb_text_downloading, true, neb_text_tooltip), DispatcherPriority.Background).ConfigureAwait(false);
 
                         if (cancellationToken!.IsCancellationRequested)
                         {
@@ -157,8 +157,8 @@ namespace Knossos.NET.Models
                         {
                             try
                             {
-                                File.Delete(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal.json");
-                                File.Move(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal_temp.json", KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal.json");
+                                File.Delete(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "repo_minimal.json"));
+                                File.Move(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "repo_minimal_temp.json"), Path.Combine(KnUtils.GetKnossosDataFolderPath(), "repo_minimal.json"));
                                 settings.etag = webEtag;
                                 SaveSettings();
                             }
@@ -386,13 +386,13 @@ namespace Knossos.NET.Models
         {
             try
             {
-                await WaitForFileAccess(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal.json");
+                await WaitForFileAccess(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "repo_minimal.json"));
                 if (cancelToken != null && cancelToken!.IsCancellationRequested)
                 {
                     throw new TaskCanceledException();
                 }
                 RepoData? repoData = null;
-                using (FileStream? fileStream = new FileStream(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "repo_minimal.json", FileMode.Open, FileAccess.ReadWrite))
+                using (FileStream? fileStream = new FileStream(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "repo_minimal.json"), FileMode.Open, FileAccess.ReadWrite))
                 {
                     JsonSerializerOptions serializerOptions = new JsonSerializerOptions();
                     try
@@ -674,7 +674,7 @@ namespace Knossos.NET.Models
         {
             try
             {
-                await WaitForFileAccess(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "nebula.json");
+                await WaitForFileAccess(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "nebula.json"));
                 var encoderSettings = new TextEncoderSettings();
                 encoderSettings.AllowRange(UnicodeRanges.All);
 
@@ -685,7 +685,7 @@ namespace Knossos.NET.Models
                 };
 
                 var json = JsonSerializer.Serialize(settings, options);
-                File.WriteAllText(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "nebula.json", json, Encoding.UTF8);
+                File.WriteAllText(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "nebula.json"), json, Encoding.UTF8);
                 Log.Add(Log.LogSeverity.Information, "Nebula.SaveSettings()", "Nebula settings have been saved.");
             }
             catch (Exception ex)

@@ -94,7 +94,7 @@ namespace Knossos.NET.ViewModels
                         {
                             //We are good. Im leaving image upload for meta stage
                             Info = "Prepare Packages";
-                            Directory.CreateDirectory(mod.fullPath + Path.DirectorySeparatorChar + "kn_upload");
+                            Directory.CreateDirectory(Path.Combine(mod.fullPath, "kn_upload"));
                             //Prepare packages, update data on mod
                             await Parallel.ForEachAsync(mod.packages, new ParallelOptions { MaxDegreeOfParallelism = parallelCompression }, async (pkg, token) =>
                             {
@@ -233,11 +233,11 @@ namespace Knossos.NET.ViewModels
                     ProgressCurrent = ProgressBarMax;
 
                     //Delete kn_upload folder?
-                    if (Knossos.globalSettings.deleteUploadedFiles && Directory.Exists(mod.fullPath + Path.DirectorySeparatorChar + "kn_upload"))
+                    if (Knossos.globalSettings.deleteUploadedFiles && Directory.Exists(Path.Combine(mod.fullPath, "kn_upload")))
                     {
                         try
                         {
-                            Directory.Delete(mod.fullPath + Path.DirectorySeparatorChar + "kn_upload", true);
+                            Directory.Delete(Path.Combine(mod.fullPath, "kn_upload"), true);
                         }
                         catch (Exception ex)
                         {

@@ -363,9 +363,9 @@ namespace Knossos.NET.ViewModels
             {
                 if (NewPackageFolder.Trim() != string.Empty && NewPackageName.Trim() != string.Empty)
                 {
-                    Directory.CreateDirectory(editor!.ActiveVersion.fullPath + Path.DirectorySeparatorChar + NewPackageFolder + Path.DirectorySeparatorChar + NewPackageFolder);
-                    File.Create(editor!.ActiveVersion.fullPath + Path.DirectorySeparatorChar + NewPackageFolder + Path.DirectorySeparatorChar + "do_not_copy_the_build_files_here").Close();
-                    File.Create(editor!.ActiveVersion.fullPath + Path.DirectorySeparatorChar + NewPackageFolder + Path.DirectorySeparatorChar + NewPackageFolder + Path.DirectorySeparatorChar + "copy_the_build_files_here").Close();
+                    Directory.CreateDirectory(Path.Combine(editor!.ActiveVersion.fullPath, NewPackageFolder, NewPackageFolder));
+                    File.Create(Path.Combine(editor!.ActiveVersion.fullPath, NewPackageFolder, "do_not_copy_the_build_files_here")).Close();
+                    File.Create(Path.Combine(editor!.ActiveVersion.fullPath, NewPackageFolder, NewPackageFolder, "copy_the_build_files_here")).Close();
                     var newPkg = new ModPackage();
                     newPkg.folder = NewPackageFolder;
                     newPkg.name = NewPackageName;
@@ -384,9 +384,9 @@ namespace Knossos.NET.ViewModels
         {
             try
             {
-                if (editor != null)
+                if (editor != null && editorPackageItem.Package.folder != null)
                 {
-                    var folderPath = Path.Combine(editor.ActiveVersion.fullPath, editorPackageItem.Package.folder != null ? editorPackageItem.Package.folder : string.Empty);
+                    var folderPath = Path.Combine(editor.ActiveVersion.fullPath, editorPackageItem.Package.folder);
                     var resp = await MessageBox.Show(MainWindow.instance!, "This will delete the package: " + editorPackageItem.Package.name + " and ALL FILES on this folder: " + folderPath + " of the build and version " + editor.ActiveVersion + "\n Do you really want to do this? This action cannot be undone.", "Confirm package deletion", MessageBox.MessageBoxButtons.YesNo);
                     if (resp == MessageBox.MessageBoxResult.Yes)
                     {

@@ -173,9 +173,9 @@ namespace Knossos.NET.ViewModels
                 // Retail FS2 mods are stored on that same folder
                 if (parent!.id.ToLower() == "fs2")
                 {
-                    if(Directory.Exists(parent.fullPath+Path.DirectorySeparatorChar+ModId+"-"+ModVersion) || File.Exists(parent.fullPath + Path.DirectorySeparatorChar + ModId + "-" + ModVersion))
+                    if(Directory.Exists(Path.Combine(parent.fullPath, ModId)+"-"+ModVersion) || File.Exists(Path.Combine(parent.fullPath, ModId) + "-" + ModVersion))
                     {
-                        await MessageBox.Show(MainWindow.instance, "Folder or File already exists: "+ parent.fullPath + Path.DirectorySeparatorChar + ModId + "-" + ModVersion, "Validation error", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "Folder or File already exists: "+ Path.Combine(parent.fullPath, ModId) + "-" + ModVersion, "Validation error", MessageBox.MessageBoxButtons.OK);
                         return false;
                     }
                 }
@@ -184,9 +184,9 @@ namespace Knossos.NET.ViewModels
                     var parentParentFolder = new DirectoryInfo(parent.fullPath).Parent;
                     if (parentParentFolder != null)
                     {
-                        if (Directory.Exists(parentParentFolder.FullName + Path.DirectorySeparatorChar + ModId + "-" + ModVersion) || File.Exists(parentParentFolder.FullName + Path.DirectorySeparatorChar + ModId + "-" + ModVersion))
+                        if (Directory.Exists(Path.Combine(parentParentFolder.FullName, ModId) + "-" + ModVersion) || File.Exists(Path.Combine(parentParentFolder.FullName, ModId) + "-" + ModVersion))
                         {
-                            await MessageBox.Show(MainWindow.instance, "Folder or File already exists: " + parentParentFolder.FullName + Path.DirectorySeparatorChar + ModId + "-" + ModVersion, "Validation error", MessageBox.MessageBoxButtons.OK);
+                            await MessageBox.Show(MainWindow.instance, "Folder or File already exists: " + Path.Combine(parentParentFolder.FullName, ModId) + "-" + ModVersion, "Validation error", MessageBox.MessageBoxButtons.OK);
                             return false;
                         }
                     }
@@ -200,18 +200,18 @@ namespace Knossos.NET.ViewModels
             {
                 if (TypeSelectedIndex == 1) //Total Conversion
                 {
-                    if(Directory.Exists(Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + ModId ) || File.Exists(Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + ModId))
+                    if(Directory.Exists(Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", ModId)) || File.Exists(Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", ModId)))
                     {
-                        await MessageBox.Show(MainWindow.instance, "Folder or File already exists: " + Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + ModId, "Validation error", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "Folder or File already exists: " + Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", ModId), "Validation error", MessageBox.MessageBoxButtons.OK);
                         return false;
                     }
                 }
                 else
                 {
                     //FSO Build
-                    if (Directory.Exists(Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + ModId + "-" + ModVersion) || File.Exists(Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + ModId + "-" + ModVersion))
+                    if (Directory.Exists(Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", "bin", ModId + "-" + ModVersion)) || File.Exists(Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", "bin", ModId + "-" + ModVersion)))
                     {
-                        await MessageBox.Show(MainWindow.instance, "Folder or File already exists: " + Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + ModId + "-" + ModVersion, "Validation error", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "Folder or File already exists: " + Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", "bin", ModId + "-" + ModVersion), "Validation error", MessageBox.MessageBoxButtons.OK);
                         return false;
                     }
                 }
@@ -241,14 +241,14 @@ namespace Knossos.NET.ViewModels
                     // Retail FS2 mods are stored on that same folder
                     if (parent!.id.ToLower() == "fs2")
                     {
-                        folderPath = parent.fullPath + Path.DirectorySeparatorChar + ModId + "-" + ModVersion;
+                        folderPath = Path.Combine(parent.fullPath, ModId) + "-" + ModVersion;
                     }
                     else
                     {
                         var parentParentFolder = new DirectoryInfo(parent.fullPath).Parent;
                         if (parentParentFolder != null)
                         {
-                            folderPath = parentParentFolder.FullName + Path.DirectorySeparatorChar + ModId + "-" + ModVersion;
+                            folderPath = Path.Combine(parentParentFolder.FullName, ModId) + "-" + ModVersion;
                         }
                     }
                 }
@@ -256,12 +256,12 @@ namespace Knossos.NET.ViewModels
                 {
                     if (TypeSelectedIndex == 1) //Total Conversion
                     {
-                        folderPath = Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + ModId + Path.DirectorySeparatorChar + ModId + "-" + ModVersion;
+                        folderPath = Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", ModId, ModId + "-" + ModVersion);
                     }
                     else
                     {
                         //FSO Build
-                        folderPath = Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + ModId + "-" + ModVersion;
+                        folderPath = Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", "bin", ModId + "-" + ModVersion);
                     }
                 }
                 Directory.CreateDirectory(folderPath);

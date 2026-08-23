@@ -35,7 +35,7 @@ namespace Knossos.NET.ViewModels
                     {
                         if (!path.ToLower().Contains("http"))
                         {
-                            Bitmap = new Bitmap(modPath + Path.DirectorySeparatorChar + path);
+                            Bitmap = new Bitmap(Path.Combine(modPath, path));
                         }
                         else
                         {
@@ -218,14 +218,14 @@ namespace Knossos.NET.ViewModels
 
                         var extension = Path.GetExtension(filepath);
 
-                        using (FileStream? dest = new FileStream(editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + "kn_images" + Path.DirectorySeparatorChar + filename + extension, FileMode.Create, FileAccess.ReadWrite))
+                        using (FileStream? dest = new FileStream(Path.Combine(editor.ActiveVersion.fullPath, "kn_images", filename + extension), FileMode.Create, FileAccess.ReadWrite))
                         {
                             file.Position = 0;
                             await file.CopyToAsync(dest);
                             dest.Close();
                         }
                         file.Close();
-                        TileImagePath = "kn_images" + Path.DirectorySeparatorChar + filename + extension;
+                        TileImagePath = Path.Combine("kn_images", filename + extension);
                         LoadTileImage();
                     }
                 }
@@ -283,14 +283,14 @@ namespace Knossos.NET.ViewModels
 
                         var extension = Path.GetExtension(filepath);
 
-                        using (FileStream? dest = new FileStream(editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + "kn_images" + Path.DirectorySeparatorChar + filename + extension, FileMode.Create, FileAccess.ReadWrite))
+                        using (FileStream? dest = new FileStream(Path.Combine(editor.ActiveVersion.fullPath, "kn_images", filename + extension), FileMode.Create, FileAccess.ReadWrite))
                         {
                             file.Position = 0;
                             await file.CopyToAsync(dest);
                             dest.Close();
                         }
                         file.Close();
-                        BannerImagePath = "kn_images" + Path.DirectorySeparatorChar + filename + extension;
+                        BannerImagePath = Path.Combine("kn_images", filename + extension);
                         LoadBannerImage();
                     }
                 }
@@ -316,7 +316,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if (!BannerImagePath.ToLower().Contains("http") && editor != null)
                     {
-                        BannerImage = new Bitmap(editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + BannerImagePath);
+                        BannerImage = new Bitmap(Path.Combine(editor.ActiveVersion.fullPath, BannerImagePath));
                     }
                     else
                     {
@@ -349,7 +349,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if (!TileImagePath.ToLower().Contains("http") && editor != null)
                     {
-                        TileImage = new Bitmap(editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + TileImagePath);
+                        TileImage = new Bitmap(Path.Combine(editor.ActiveVersion.fullPath, TileImagePath));
                     }
                     else
                     {
@@ -418,14 +418,14 @@ namespace Knossos.NET.ViewModels
 
                         var extension = Path.GetExtension(filepath);
 
-                        using (FileStream? dest = new FileStream(editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + "kn_images" + Path.DirectorySeparatorChar + filename + extension, FileMode.Create, FileAccess.ReadWrite))
+                        using (FileStream? dest = new FileStream(Path.Combine(editor.ActiveVersion.fullPath, "kn_images", filename + extension), FileMode.Create, FileAccess.ReadWrite))
                         {
                             file.Position = 0;
                             await file.CopyToAsync(dest);
                             dest.Close();
                         }
                         file.Close();
-                        Screenshots.Add(new DevModScreenshot(editor.ActiveVersion.fullPath,"kn_images" + Path.DirectorySeparatorChar + filename + extension,this));
+                        Screenshots.Add(new DevModScreenshot(editor.ActiveVersion.fullPath, Path.Combine("kn_images", filename + extension), this));
                     }
                 }
             }

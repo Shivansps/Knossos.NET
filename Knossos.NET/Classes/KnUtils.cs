@@ -1402,7 +1402,7 @@ namespace Knossos.NET
                         Arguments = arguments
                     };
 
-                    shortcut.Save(@Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + Path.DirectorySeparatorChar + shortcutName + ".lnk");
+                    shortcut.Save(Path.Combine(@Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), shortcutName + ".lnk"));
                 }
             }catch(Exception ex)
             {

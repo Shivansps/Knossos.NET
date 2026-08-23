@@ -628,11 +628,11 @@ namespace Knossos.NET.ViewModels
                     return;
                 // Test if we can write to the new library directory
                 Directory.CreateDirectory(path);
-                using (StreamWriter writer = new StreamWriter(path + Path.DirectorySeparatorChar + "test.txt"))
+                using (StreamWriter writer = new StreamWriter(Path.Combine(path, "test.txt")))
                 {
                     writer.WriteLine("test");
                 }
-                File.Delete(Path.Combine(path + Path.DirectorySeparatorChar + "test.txt"));
+                File.Delete(Path.Combine(Path.Combine(path, "test.txt")));
 
                 Knossos.globalSettings.basePath = path;
                 Knossos.globalSettings.Save();
@@ -1247,11 +1247,11 @@ namespace Knossos.NET.ViewModels
                 if (result != null && result.Count > 0)
                 {
                       // Test if we can write to the new library directory
-                      using (StreamWriter writer = new StreamWriter(result[0].Path.LocalPath.ToString() + Path.DirectorySeparatorChar + "test.txt"))
+                      using (StreamWriter writer = new StreamWriter(Path.Combine(result[0].Path.LocalPath.ToString(), "test.txt")))
                       {
                           writer.WriteLine("test");
                       }
-                      File.Delete(Path.Combine(result[0].Path.LocalPath.ToString() + Path.DirectorySeparatorChar + "test.txt"));
+                      File.Delete(Path.Combine(Path.Combine(result[0].Path.LocalPath.ToString(), "test.txt")));
 
                       Knossos.globalSettings.basePath = result[0].Path.LocalPath.ToString();
                       Knossos.globalSettings.Save();

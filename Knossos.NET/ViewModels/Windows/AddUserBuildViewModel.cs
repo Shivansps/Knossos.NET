@@ -181,7 +181,7 @@ namespace Knossos.NET.ViewModels
                     }
                     Stage2 = true;
                     buildId = @"user_build_" + KnUtils.GetTimestamp(DateTime.Now);
-                    BuildNewPath = Knossos.GetKnossosLibraryPath()+ Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + buildId;
+                    BuildNewPath = Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", "bin", buildId);
                 }
             }catch(Exception ex)
             {

@@ -534,7 +534,7 @@ namespace Knossos.NET.Models
         {
             try
             {
-                using FileStream jsonFile = File.OpenRead(modPath + Path.DirectorySeparatorChar + "mod.json");
+                using FileStream jsonFile = File.OpenRead(Path.Combine(modPath, "mod.json"));
                 var tempMod = JsonSerializer.Deserialize<Mod>(jsonFile)!;
                 jsonFile.Close();
                 installed = tempMod.installed;
@@ -580,7 +580,7 @@ namespace Knossos.NET.Models
             try
             {
                 var iniParser = new FileIniDataParser();
-                var iniFile = iniParser.ReadFile(modPath + Path.DirectorySeparatorChar + "mod.ini");
+                var iniFile = iniParser.ReadFile(Path.Combine(modPath, "mod.ini"));
                 var dir = new DirectoryInfo(modPath);
                 
                 if(dir.Name.Contains(" "))
@@ -588,7 +588,7 @@ namespace Knossos.NET.Models
                     try
                     {
                         Log.Add(Log.LogSeverity.Warning, "Mod.ParseIni", "Local Mod Folder: " + dir.Name + ". Contains spaces in the folder name, this is not supported Knet will attempt to rename it to: " + dir.Name.Replace(" ", "_"));
-                        dir.MoveTo(dir.Parent!.FullName+Path.DirectorySeparatorChar+dir.Name.Replace(" ", "_"));
+                        dir.MoveTo(Path.Combine(dir.Parent!.FullName, dir.Name.Replace(" ", "_")));
                         fullPath = dir.FullName;
                         folderName = dir.Name;
                     }
@@ -751,8 +751,8 @@ namespace Knossos.NET.Models
                         WriteIndented = true
                     };
                     var json = JsonSerializer.Serialize(this, options);
-                    File.WriteAllText(fullPath + Path.DirectorySeparatorChar + "mod.json", json, new UTF8Encoding(false));
-                    Log.Add(Log.LogSeverity.Information, "ModJson.SaveJson", "mod.json has been saved to " + fullPath + Path.DirectorySeparatorChar + "mod.json");
+                    File.WriteAllText(Path.Combine(fullPath, "mod.json"), json, new UTF8Encoding(false));
+                    Log.Add(Log.LogSeverity.Information, "ModJson.SaveJson", "mod.json has been saved to " + Path.Combine(fullPath, "mod.json"));
                 }
                 else
                 {

@@ -102,6 +102,9 @@ namespace Knossos.NET.ViewModels
                     await Dispatcher.UIThread.InvokeAsync(() => TaskRoot.Add(this));
                     Info = "In Queue";
 
+                    if (Knossos.GetKnossosLibraryPath() == null)
+                        throw new TaskCanceledException("Knossos library path is not set!");
+
                     //Wait in Queue
                     while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
                     {
@@ -160,7 +163,7 @@ namespace Knossos.NET.ViewModels
 
                         List<ModFile> files = new List<ModFile>();
                         string modFolder = modJson.id + "-" + modJson.version;
-                        modPath = Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + modFolder;
+                        modPath = Path.Combine(Knossos.GetKnossosLibraryPath() ?? "", "bin", modFolder);
                         if (modifyPkgs != null)
                         {
                             //Modify Build
@@ -181,9 +184,9 @@ namespace Knossos.NET.ViewModels
                                         {
                                             foreach (var f in pkg.filelist)
                                             {
-                                                if (File.Exists(modPath + Path.DirectorySeparatorChar + f.filename))
+                                                if (!string.IsNullOrEmpty(f.filename) && File.Exists(Path.Combine(modPath, f.filename)))
                                                 {
-                                                    File.Delete(modPath + Path.DirectorySeparatorChar + f.filename);
+                                                    File.Delete(Path.Combine(modPath, f.filename));
                                                 }
                                             }
                                             deleteTask.IsCompleted = true;
@@ -257,7 +260,7 @@ namespace Knossos.NET.ViewModels
                                     CancelTaskCommand();
                                     return null;
                                 }
-                                Directory.CreateDirectory(modPath + Path.DirectorySeparatorChar + file.dest);
+                                Directory.CreateDirectory(Path.Combine(modPath, file.dest));
                             }
                         }
 
@@ -270,7 +273,7 @@ namespace Knossos.NET.ViewModels
 
                         try
                         {
-                            File.Create(modPath + Path.DirectorySeparatorChar + "knossos_net_download.token").Close();
+                            File.Create(Path.Combine(modPath, "knossos_net_download.token")).Close();
                         }
                         catch { }
 
@@ -308,7 +311,7 @@ namespace Knossos.NET.ViewModels
                                 CancelTaskCommand();
                                 throw new TaskCanceledException();
                             }
-                            var fileFullPath = modPath + Path.DirectorySeparatorChar + file.filename;
+                            var fileFullPath = Path.Combine(modPath, file.filename);
                             var result = await fileTask.DownloadFile(file.urls!, fileFullPath, "Downloading " + file.filename, false, null, cancellationTokenSource);
 
                             if (cancellationTokenSource.IsCancellationRequested)
@@ -375,7 +378,7 @@ namespace Knossos.NET.ViewModels
                             //Decompress
                             var decompressTask = new TaskItemViewModel();
                             await Dispatcher.UIThread.InvokeAsync(() => TaskList.Insert(0, decompressTask));
-                            var decompResult = await decompressTask.DecompressNebulaFile(fileFullPath, file.filename, modPath + Path.DirectorySeparatorChar + file.dest, cancellationTokenSource);
+                            var decompResult = await decompressTask.DecompressNebulaFile(fileFullPath, file.filename, Path.Combine(modPath, file.dest), cancellationTokenSource);
                             if (!decompResult)
                             {
                                 Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.InstallBuild()", "Error while decompressing the file " + fileFullPath);
@@ -406,7 +409,7 @@ namespace Knossos.NET.ViewModels
                         //Download Tile Image
                         if (!string.IsNullOrEmpty(modJson.tile) && modifyPkgs == null)
                         {
-                            Directory.CreateDirectory(modPath + Path.DirectorySeparatorChar + "kn_images");
+                            Directory.CreateDirectory(Path.Combine(modPath, "kn_images"));
                             var uri = new Uri(modJson.tile);
                             using (var fs = await KnUtils.GetRemoteResourceStream(modJson.tile))
                             {
@@ -415,7 +418,7 @@ namespace Knossos.NET.ViewModels
                                 tileTask.ShowMsg("Getting tile image", null);
                                 if (fs != null)
                                 {
-                                    using (var destImg = new FileStream(modPath + Path.DirectorySeparatorChar + "kn_images" + Path.DirectorySeparatorChar + Path.GetFileName(uri.LocalPath), FileMode.Create, FileAccess.Write))
+                                    using (var destImg = new FileStream(Path.Combine(modPath, "kn_images", Path.GetFileName(uri.LocalPath)), FileMode.Create, FileAccess.Write))
                                     {
                                         await fs.CopyToAsync(destImg);
                                         fs.Close();
@@ -423,7 +426,7 @@ namespace Knossos.NET.ViewModels
                                     }
                                 }
                             }
-                            modJson.tile = "kn_images" + Path.DirectorySeparatorChar + Path.GetFileName(uri.LocalPath);
+                            modJson.tile = Path.Combine("kn_images", Path.GetFileName(uri.LocalPath));
                         }
 
 
@@ -436,7 +439,7 @@ namespace Knossos.NET.ViewModels
                         //Download Banner Image
                         if (!string.IsNullOrEmpty(modJson.banner) && modifyPkgs == null)
                         {
-                            Directory.CreateDirectory(modPath + Path.DirectorySeparatorChar + "kn_images");
+                            Directory.CreateDirectory(Path.Combine(modPath, "kn_images"));
                             var uri = new Uri(modJson.banner);
                             using (var fs = await KnUtils.GetRemoteResourceStream(modJson.banner))
                             {
@@ -445,7 +448,7 @@ namespace Knossos.NET.ViewModels
                                 bannerTask.ShowMsg("Getting banner image", null);
                                 if (fs != null)
                                 {
-                                    using (var destImg = new FileStream(modPath + Path.DirectorySeparatorChar + "kn_images" + Path.DirectorySeparatorChar + Path.GetFileName(uri.LocalPath), FileMode.Create, FileAccess.Write))
+                                    using (var destImg = new FileStream(Path.Combine(modPath, "kn_images", Path.GetFileName(uri.LocalPath)), FileMode.Create, FileAccess.Write))
                                     {
                                         await fs.CopyToAsync(destImg);
                                         fs.Close();
@@ -453,7 +456,7 @@ namespace Knossos.NET.ViewModels
                                     }
                                 }
                             }
-                            modJson.banner = "kn_images" + Path.DirectorySeparatorChar + Path.GetFileName(uri.LocalPath);
+                            modJson.banner = Path.Combine("kn_images", Path.GetFileName(uri.LocalPath));
                         }
 
                         if (cancellationTokenSource.IsCancellationRequested)
@@ -464,7 +467,7 @@ namespace Knossos.NET.ViewModels
                         //Download Screenshots
                         if (modJson.screenshots != null && modJson.screenshots.Any() && modifyPkgs == null)
                         {
-                            Directory.CreateDirectory(modPath + Path.DirectorySeparatorChar + "kn_images");
+                            Directory.CreateDirectory(Path.Combine(modPath, "kn_images"));
                             var scList = new List<string>();
                             foreach (var sc in modJson.screenshots)
                             {
@@ -480,7 +483,7 @@ namespace Knossos.NET.ViewModels
                                     scTask.ShowMsg("Getting screenshot #" + scList.Count() + " image", null);
                                     if (fs != null)
                                     {
-                                        using (var destImg = new FileStream(modPath + Path.DirectorySeparatorChar + "kn_images" + Path.DirectorySeparatorChar + Path.GetFileName(uri.LocalPath), FileMode.Create, FileAccess.Write))
+                                        using (var destImg = new FileStream(Path.Combine(modPath, "kn_images", Path.GetFileName(uri.LocalPath)), FileMode.Create, FileAccess.Write))
                                         {
                                             await fs.CopyToAsync(destImg);
                                             fs.Close();
@@ -488,7 +491,7 @@ namespace Knossos.NET.ViewModels
                                         }
                                     }
                                 }
-                                scList.Add("kn_images" + Path.DirectorySeparatorChar + Path.GetFileName(uri.LocalPath));
+                                scList.Add(Path.Combine("kn_images", Path.GetFileName(uri.LocalPath)));
                             }
                             modJson.screenshots = scList.ToArray();
                         }
@@ -509,7 +512,7 @@ namespace Knossos.NET.ViewModels
                         modJson.SaveJson();
                         try
                         {
-                            File.Delete(modJson.fullPath + Path.DirectorySeparatorChar + "knossos_net_download.token");
+                            File.Delete(Path.Combine(modJson.fullPath, "knossos_net_download.token"));
                         }
                         catch (Exception ex)
                         {

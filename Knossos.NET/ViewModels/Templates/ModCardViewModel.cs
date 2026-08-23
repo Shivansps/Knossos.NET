@@ -309,9 +309,9 @@ namespace Knossos.NET.ViewModels
 
         private void OpenFS2Log()
         {
-            if (File.Exists(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log"))
+            if (File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log")))
             {
-                KnUtils.OpenFileInOS(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log");
+                KnUtils.OpenFileInOS(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log"));
             }
             else
             {
@@ -396,7 +396,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if (!tile.ToLower().Contains("http"))
                     {
-                        tileModBitmap = new Bitmap(modVersions[activeVersionIndex].fullPath + Path.DirectorySeparatorChar + tile);
+                        tileModBitmap = new Bitmap(Path.Combine(modVersions[activeVersionIndex].fullPath, tile));
                     }
                     else
                     {

@@ -283,7 +283,7 @@ namespace Knossos.NET.ViewModels
                 if (!string.IsNullOrEmpty(modVersions[selectedIndex].banner))
                 {
                     HasBanner = true;
-                    var bannerLocalPath = modVersions[selectedIndex].fullPath + Path.DirectorySeparatorChar + modVersions[selectedIndex].banner;
+                    var bannerLocalPath = Path.Combine(modVersions[selectedIndex].fullPath, modVersions[selectedIndex].banner ?? "");
                     if (System.IO.File.Exists(bannerLocalPath))
                     {
                         var isApng = false;
@@ -386,10 +386,10 @@ namespace Knossos.NET.ViewModels
                     {
                         try
                         {
-                            if (System.IO.File.Exists(modVersions[selectedIndex].fullPath + Path.DirectorySeparatorChar + scn))
+                            if (System.IO.File.Exists(Path.Combine(modVersions[selectedIndex].fullPath, scn)))
                             {
                                 Dispatcher.UIThread.Invoke(() => {
-                                    var item = new ScreenshotItem(modVersions[selectedIndex].fullPath + Path.DirectorySeparatorChar + scn);
+                                    var item = new ScreenshotItem(Path.Combine(modVersions[selectedIndex].fullPath, scn));
                                     Screenshots.Add(item);
                                 });
                             }

@@ -79,7 +79,7 @@ namespace Knossos.NET.Models
         public void SetInitialFilePath(string modFullPath)
         {
             if (filePath == null)
-                filePath = modFullPath + Path.DirectorySeparatorChar + "mod_settings.json";
+                filePath = Path.Combine(modFullPath, "mod_settings.json");
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Knossos.NET.Models
         {
             try
             {
-                this.filePath = modFolderPath + Path.DirectorySeparatorChar + "mod_settings.json";
+                this.filePath = Path.Combine(modFolderPath, "mod_settings.json");
                 if(File.Exists(filePath))
                 {
                     using FileStream jsonFile = File.OpenRead(filePath);

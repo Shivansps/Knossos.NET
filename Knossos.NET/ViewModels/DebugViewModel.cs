@@ -25,59 +25,59 @@ namespace Knossos.NET.ViewModels
         /* Debug Section */
         internal void OpenLog()
         {
-            if (File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "Knossos.log"))
+            if (File.Exists(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "Knossos.log")))
             {
-                KnUtils.OpenFileInOS(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "Knossos.log");
+                KnUtils.OpenFileInOS(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "Knossos.log"));
             }
             else
             {
-                MessageBox.Show(MainWindow.instance, "Log File " + KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "Knossos.log not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetKnossosDataFolderPath(), "Knossos.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
 
         internal void OpenSettings()
         {
-            if (File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "settings.json"))
+            if (File.Exists(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "settings.json")))
             {
-                KnUtils.OpenFileInOS(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "settings.json");
+                KnUtils.OpenFileInOS(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "settings.json"));
             }
             else
             {
-                MessageBox.Show(MainWindow.instance, "Log File " + KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "settings.json not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetKnossosDataFolderPath(), "settings.json") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
 
         internal void OpenFS2Log()
         {
-            if (File.Exists(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log"))
+            if (File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log")))
             {
-                KnUtils.OpenFileInOS(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log");
+                KnUtils.OpenFileInOS(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log"));
             }
             else
             {
-                MessageBox.Show(MainWindow.instance, "Log File " + KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
 
         internal void OpenFS2Ini()
         {
-            if (File.Exists(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "fs2_open.ini"))
+            if (File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "fs2_open.ini")))
             {
-                KnUtils.OpenFileInOS(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "fs2_open.ini");
+                KnUtils.OpenFileInOS(Path.Combine(KnUtils.GetFSODataFolderPath(), "fs2_open.ini"));
             }
             else
             {
-                MessageBox.Show(MainWindow.instance, "Log File " + KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "fs2_open.ini not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "fs2_open.ini") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
 
         internal async void UploadFS2Log()
         {
-            if (File.Exists(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log"))
+            if (File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log")))
             {
                 try
                 {
-                    var logString = File.ReadAllText(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log", System.Text.Encoding.UTF8);
+                    var logString = File.ReadAllText(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log"), System.Text.Encoding.UTF8);
                     if (logString.Trim() != string.Empty)
                     {
                         var status = await Nebula.UploadLog(logString);
@@ -98,7 +98,7 @@ namespace Knossos.NET.ViewModels
             }
             else
             {
-                await MessageBox.Show(MainWindow.instance, "Log File " + KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
         internal async void UploadKnossosConsole()

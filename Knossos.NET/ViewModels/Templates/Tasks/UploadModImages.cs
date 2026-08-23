@@ -45,7 +45,7 @@ namespace Knossos.NET.ViewModels
                         {
                             Info = $"Screenshot Image {i} / {mod.screenshots.Length}";
                             ProgressCurrent++;
-                            var checksum = await Nebula.UploadImage(mod.fullPath + Path.DirectorySeparatorChar + sc);
+                            var checksum = await Nebula.UploadImage(Path.Combine(mod.fullPath, sc));
 
                             if (checksum != null)
                             {
@@ -67,7 +67,7 @@ namespace Knossos.NET.ViewModels
                     if (!string.IsNullOrEmpty(mod.tile))
                     {
                         Info = "Tile Image";
-                        var checksum = await Nebula.UploadImage(mod.fullPath + Path.DirectorySeparatorChar + mod.tile);
+                        var checksum = await Nebula.UploadImage(Path.Combine(mod.fullPath, mod.tile));
 
                         if (checksum != null)
                         {
@@ -84,7 +84,7 @@ namespace Knossos.NET.ViewModels
                     if (!string.IsNullOrEmpty(mod.banner))
                     {
                         Info = "Banner Image";
-                        var checksum = await Nebula.UploadImage(mod.fullPath + Path.DirectorySeparatorChar + mod.banner);
+                        var checksum = await Nebula.UploadImage(Path.Combine(mod.fullPath, mod.banner));
 
                         if (checksum != null)
                         {

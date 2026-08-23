@@ -177,7 +177,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if (!tileString.ToLower().Contains("http"))
                     {
-                        tileModBitmap = new Bitmap(modFullPath + Path.DirectorySeparatorChar + tileString);
+                        tileModBitmap = new Bitmap(Path.Combine(modFullPath, tileString));
                     }
                     else
                     {

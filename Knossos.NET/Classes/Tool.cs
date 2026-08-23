@@ -44,7 +44,7 @@ namespace Knossos.NET.Classes
         {
             try
             {
-                using(var jsonFile = File.OpenRead(folderpath + Path.DirectorySeparatorChar + "tool.json"))
+                using(var jsonFile = File.OpenRead(Path.Combine(folderpath, "tool.json")))
                 {
                     var temptool = JsonSerializer.Deserialize<Tool>(jsonFile)!;
                     if (temptool != null) 
@@ -173,8 +173,8 @@ namespace Knossos.NET.Classes
                         WriteIndented = true
                     };
                     var json = JsonSerializer.Serialize(this, options);
-                    File.WriteAllText(folderpath + Path.DirectorySeparatorChar + "tool.json", json, new UTF8Encoding(false));
-                    Log.Add(Log.LogSeverity.Information, "Tool.SaveJson", "tool.json has been saved to " + folderpath + Path.DirectorySeparatorChar + "tool.json");
+                    File.WriteAllText(Path.Combine(folderpath, "tool.json"), json, new UTF8Encoding(false));
+                    Log.Add(Log.LogSeverity.Information, "Tool.SaveJson", "tool.json has been saved to " + Path.Combine(folderpath, "tool.json"));
                 }
                 else
                 {

@@ -43,32 +43,32 @@ namespace Knossos.NET.ViewModels
                     //Fill file.filename, file.checksum, file.dest, file.filesize
                     //Note: MacOSX builds must be compressed as tar.gz keeping symblinks as links
 
-                    if (!Directory.Exists(modFullPath + Path.DirectorySeparatorChar + pkg.folder))
+                    if (!Directory.Exists(Path.Combine(modFullPath, pkg.folder ?? "")))
                     {
                         Info = "Fail - No Dir";
                         IsCompleted = true;
                         CancelButtonVisible = false;
                         ProgressCurrent = ProgressBarMax;
-                        Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.PrepareModPkg()", "Package folder: " + modFullPath + Path.DirectorySeparatorChar + pkg.folder + " does not exist.");
+                        Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.PrepareModPkg()", "Package folder: " + Path.Combine(modFullPath, pkg.folder ?? "") + " does not exist.");
                         throw new TaskCanceledException();
                     }
 
-                    var allfiles = Directory.GetFiles(modFullPath + Path.DirectorySeparatorChar + pkg.folder, "*.*", SearchOption.AllDirectories);
+                    var allfiles = Directory.GetFiles(Path.Combine(modFullPath, pkg.folder ?? ""), "*.*", SearchOption.AllDirectories);
                     if (!allfiles.Any())
                     {
                         Info = "Fail - No Files";
                         IsCompleted = true;
                         CancelButtonVisible = false;
                         ProgressCurrent = ProgressBarMax;
-                        Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.PrepareModPkg()", "Package folder: " + modFullPath + Path.DirectorySeparatorChar + pkg.folder + " is empty.");
+                        Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.PrepareModPkg()", "Package folder: " + Path.Combine(modFullPath, pkg.folder ?? "") + " is empty.");
                         throw new TaskCanceledException();
                     }
 
 
-                    var zipPath = modFullPath + Path.DirectorySeparatorChar + "kn_upload" + Path.DirectorySeparatorChar + pkg.folder + ".7z";
+                    var zipPath = Path.Combine(modFullPath, "kn_upload", pkg.folder + ".7z");
                     if (pkg.environment != null && pkg.environment.ToLower().Contains("macos"))
                     {
-                        zipPath = modFullPath + Path.DirectorySeparatorChar + "kn_upload" + Path.DirectorySeparatorChar + pkg.folder;
+                        zipPath = Path.Combine(modFullPath, "kn_upload", pkg.folder ?? "");
                     }
                     if (File.Exists(zipPath))
                     {
@@ -84,14 +84,14 @@ namespace Knossos.NET.ViewModels
                         Info = "Creating VP";
                         ProgressBarMax = 100;
                         ProgressCurrent = 0;
-                        var vpPath = modFullPath + Path.DirectorySeparatorChar + "kn_upload" + Path.DirectorySeparatorChar + "vps" + Path.DirectorySeparatorChar + pkg.name + ".vp";
-                        Directory.CreateDirectory(modFullPath + Path.DirectorySeparatorChar + "kn_upload" + Path.DirectorySeparatorChar + "vps");
+                        var vpPath = Path.Combine(modFullPath, "kn_upload", "vps", pkg.name + ".vp");
+                        Directory.CreateDirectory(Path.Combine(modFullPath, "kn_upload", "vps"));
                         if (File.Exists(vpPath))
                         {
                             File.Delete(vpPath);
                         }
                         var vp = new VPContainer();
-                        vp.AddFolderToRoot(modFullPath + Path.DirectorySeparatorChar + pkg.folder);
+                        vp.AddFolderToRoot(Path.Combine(modFullPath, pkg.folder ?? ""));
                         vp.DisableCompression();
                         await vp.SaveAsAsync(vpPath, compressionCallback, cancellationTokenSource);
                         Info = "Get VP Checksum";
@@ -107,7 +107,7 @@ namespace Knossos.NET.ViewModels
                                 var crcResult = false;
                                 do
                                 {
-                                    if (!await compressor.CompressFile(vpPath, modFullPath + Path.DirectorySeparatorChar + "kn_upload" + Path.DirectorySeparatorChar + "vps", zipPath, true))
+                                    if (!await compressor.CompressFile(vpPath, Path.Combine(modFullPath, "kn_upload", "vps"), zipPath, true))
                                     {
                                         Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.PrepareModPkg()", "Error while compressing the package");
                                         //Disable failing and instead delete the file if it exists
@@ -161,7 +161,7 @@ namespace Knossos.NET.ViewModels
                             var fi = new FileInfo(file);
                             if (fi.LinkTarget == null)
                             {
-                                var relativePath = Path.GetRelativePath(modFullPath + Path.DirectorySeparatorChar + pkg.folder, file).Replace(@"\", @"/");
+                                var relativePath = Path.GetRelativePath(Path.Combine(modFullPath, pkg.folder ?? ""), file).Replace(@"\", @"/");
                                 var checksum = await KnUtils.GetFileHash(file);
                                 if (checksum != null)
                                 {
@@ -189,7 +189,7 @@ namespace Knossos.NET.ViewModels
                                 var crcResult = false;
                                 do
                                 {
-                                    if (!await compressor.CompressFolderTarGz(modFullPath + Path.DirectorySeparatorChar + pkg.folder, zipPath))
+                                    if (!await compressor.CompressFolderTarGz(Path.Combine(modFullPath, pkg.folder ?? ""), zipPath))
                                     {
                                         Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.PrepareModPkg()", "Error while compressing the package");
                                         //Disable failing and instead delete the file if it exists
@@ -228,7 +228,7 @@ namespace Knossos.NET.ViewModels
                                 var crcResult = false;
                                 do
                                 {
-                                    if (!await compressor.CompressFolder(modFullPath + Path.DirectorySeparatorChar + pkg.folder, zipPath))
+                                    if (!await compressor.CompressFolder(Path.Combine(modFullPath, pkg.folder ?? ""), zipPath))
                                     {
                                         Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.PrepareModPkg()", "Error while compressing the package");
                                         //Disable failing and instead delete the file if it exists

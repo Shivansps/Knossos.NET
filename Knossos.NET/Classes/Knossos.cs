@@ -97,11 +97,11 @@ namespace Knossos.NET
                     else
                     {
                         // Test if we can write to the data directory
-                        using (StreamWriter writer = new StreamWriter(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "test.txt"))
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "test.txt")))
                         {
                             writer.WriteLine("test");
                         }
-                        File.Delete(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "test.txt");
+                        File.Delete(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "test.txt"));
                     }
                 }
                 catch (Exception ex)
@@ -526,7 +526,7 @@ namespace Knossos.NET
                                 {
                                     extension = ".tar.gz";
                                 }
-                                var download = await Dispatcher.UIThread.InvokeAsync(async () => await TaskViewModel.Instance!.AddFileDownloadTask(releaseAsset.browser_download_url, KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update"+ extension, "Downloading "+latest.tag_name+" "+releaseAsset.name, true, "This is a Knossos.NET update"), DispatcherPriority.Background).ConfigureAwait(false);
+                                var download = await Dispatcher.UIThread.InvokeAsync(async () => await TaskViewModel.Instance!.AddFileDownloadTask(releaseAsset.browser_download_url, Path.Combine(KnUtils.GetKnossosDataFolderPath(), "update" + extension), "Downloading "+latest.tag_name+" "+releaseAsset.name, true, "This is a Knossos.NET update"), DispatcherPriority.Background).ConfigureAwait(false);
                                 if (download != null && download == true)
                                 {
                                     var appDirPath = Path.GetDirectoryName(Environment.ProcessPath);
@@ -557,7 +557,7 @@ namespace Knossos.NET
 
                                                 // set new filename to match old one, in case it was renamed by the user
                                                 var newFileFullPath = Path.Combine(appFolder, Path.GetFileName(execFullPath));
-                                                File.Move(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update" + extension, newFileFullPath);
+                                                File.Move(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "update" + extension), newFileFullPath);
 
                                                 //Start again
                                                 KnUtils.Chmod(newFileFullPath, "+x");
@@ -609,12 +609,12 @@ namespace Knossos.NET
 
                                                 await Dispatcher.UIThread.Invoke(async () =>
                                                 {
-                                                    result  = await TaskViewModel.Instance!.AddFileDecompressionTask( KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update" + extension, updateFilesFolder, false);
+                                                    result  = await TaskViewModel.Instance!.AddFileDecompressionTask(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "update" + extension), updateFilesFolder, false);
                                                 }).ConfigureAwait(false);
 
                                                 if (!result)
                                                 {
-                                                    throw new Exception("Error while decompressing update file: " + KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update" + extension);
+                                                    throw new Exception("Error while decompressing update file: " + Path.Combine(KnUtils.GetKnossosDataFolderPath(), "update" + extension));
                                                 }
 
                                                 if (forceUpdateDownload)
@@ -623,8 +623,8 @@ namespace Knossos.NET
                                                 //Cleanup file
                                                 try
                                                 {
-                                                    if (File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update" + extension))
-                                                        File.Delete(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update" + extension);
+                                                    if (File.Exists(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "update" + extension)))
+                                                        File.Delete(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "update" + extension));
                                                 }
                                                 catch { }
                                             }
@@ -1147,11 +1147,11 @@ namespace Knossos.NET
                             {
                                 if (modFlag.Length > 0)
                                 {
-                                    modFlag += "," + Path.GetRelativePath(rootPath, mod.fullPath + Path.DirectorySeparatorChar + pkg.folder).TrimEnd('/').TrimEnd('\\');
+                                    modFlag += "," + Path.GetRelativePath(rootPath, Path.Combine(mod.fullPath, pkg.folder ?? "")).TrimEnd('/').TrimEnd('\\');
                                 }
                                 else
                                 {
-                                    modFlag += Path.GetRelativePath(rootPath, mod.fullPath + Path.DirectorySeparatorChar + pkg.folder).TrimEnd('/').TrimEnd('\\');
+                                    modFlag += Path.GetRelativePath(rootPath, Path.Combine(mod.fullPath, pkg.folder ?? "")).TrimEnd('/').TrimEnd('\\');
                                 }
                             }
                         }
@@ -1198,11 +1198,11 @@ namespace Knossos.NET
                             {
                                 if (modFlag.Length > 0)
                                 {
-                                    modFlag += "," + Path.GetRelativePath(rootPath, depMod.fullPath + Path.DirectorySeparatorChar + pkg.folder).TrimEnd('/').TrimEnd('\\');
+                                    modFlag += "," + Path.GetRelativePath(rootPath, Path.Combine(depMod.fullPath, pkg.folder ?? "")).TrimEnd('/').TrimEnd('\\');
                                 }
                                 else
                                 {
-                                    modFlag += Path.GetRelativePath(rootPath, depMod.fullPath + Path.DirectorySeparatorChar + pkg.folder).TrimEnd('/').TrimEnd('\\');
+                                    modFlag += Path.GetRelativePath(rootPath, Path.Combine(depMod.fullPath, pkg.folder ?? "")).TrimEnd('/').TrimEnd('\\');
                                 }
                             }
                         }
@@ -1239,11 +1239,11 @@ namespace Knossos.NET
                                         {
                                             if (modFlag.Length > 0)
                                             {
-                                                modFlag += "," + Path.GetRelativePath(rootPath, newerOpt.fullPath + Path.DirectorySeparatorChar + pkg.folder).TrimEnd('/').TrimEnd('\\');
+                                                modFlag += "," + Path.GetRelativePath(rootPath, Path.Combine(newerOpt.fullPath, pkg.folder ?? "")).TrimEnd('/').TrimEnd('\\');
                                             }
                                             else
                                             {
-                                                modFlag += Path.GetRelativePath(rootPath, newerOpt.fullPath + Path.DirectorySeparatorChar + pkg.folder).TrimEnd('/').TrimEnd('\\');
+                                                modFlag += Path.GetRelativePath(rootPath, Path.Combine(newerOpt.fullPath, pkg.folder ?? "")).TrimEnd('/').TrimEnd('\\');
                                             }
                                         }
                                     }
@@ -1546,17 +1546,17 @@ namespace Knossos.NET
                     }
                 }
 
-                if(File.Exists(path + Path.DirectorySeparatorChar + "knossos_net_download.token"))
+                if(File.Exists(Path.Combine(path, "knossos_net_download.token")))
                 {
                     /* This is a incomplete download, delete the folder */
                     Log.Add(Log.LogSeverity.Warning, "Knossos.FolderSearchRecursive()", "Deleting incomplete download found at "+path);
                     Directory.Delete(path, true);
                 }
-                else if (File.Exists(path + Path.DirectorySeparatorChar + "tool.json"))
+                else if (File.Exists(Path.Combine(path, "tool.json")))
                 {
                     Knossos.AddTool(new Tool(path));
                 }
-                else if (File.Exists(path + Path.DirectorySeparatorChar + "mod.json"))
+                else if (File.Exists(Path.Combine(path, "mod.json")))
                 {
                     try
                     {
@@ -1597,7 +1597,7 @@ namespace Knossos.NET
                         Log.Add(Log.LogSeverity.Error, "Knossos.ModSearchRecursive", ex);
                     }
                 }
-                else if(File.Exists(path + Path.DirectorySeparatorChar + "mod.ini"))
+                else if(File.Exists(Path.Combine(path, "mod.ini")))
                 {
                     var modLegacy = new Mod(path, di.Name, ModType.modlegacy);
                     installedMods.Add(modLegacy);
@@ -1751,11 +1751,11 @@ namespace Knossos.NET
                         }
                         if (text != string.Empty)
                         {
-                            if (!File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe"))
+                            if (!File.Exists(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "KSapi.exe")))
                             {
                                 if (KnUtils.CpuArch == "X86")
                                 {
-                                    using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe"))
+                                    using (var fileStream = File.Create(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "KSapi.exe")))
                                     {
                                         AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/win/KSapi_x86.exe")).CopyTo(fileStream);
                                         fileStream.Close();
@@ -1763,7 +1763,7 @@ namespace Knossos.NET
                                 }
                                 else
                                 {
-                                    using (var fileStream = File.Create(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe"))
+                                    using (var fileStream = File.Create(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "KSapi.exe")))
                                     {
                                         AssetLoader.Open(new Uri("avares://Knossos.NET.Desktop/Assets/utils/win/KSapi.exe")).CopyTo(fileStream);
                                         fileStream.Close();
@@ -1785,7 +1785,7 @@ namespace Knossos.NET
                                 if (volume.HasValue)
                                     vol = volume.Value;
                                 using var ttsProcess = new Process();
-                                ttsProcess.StartInfo.FileName = KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "KSapi.exe";
+                                ttsProcess.StartInfo.FileName = Path.Combine(KnUtils.GetKnossosDataFolderPath(), "KSapi.exe");
                                 ttsProcess.StartInfo.Arguments = "-text \"" + text + "\" -voice " + voice + " -vol " + vol;
                                 ttsProcess.StartInfo.UseShellExecute = false;
                                 ttsProcess.StartInfo.CreateNoWindow = true;

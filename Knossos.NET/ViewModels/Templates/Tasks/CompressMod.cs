@@ -64,9 +64,9 @@ namespace Knossos.NET.ViewModels
                     ProgressBarMax = vpFiles.Count() + 1;
 
                     //Loose Files Compression
-                    if (Directory.Exists(mod.fullPath + Path.DirectorySeparatorChar + "data") || mod.devMode)
+                    if (Directory.Exists(Path.Combine(mod.fullPath, "data")) || mod.devMode)
                     {
-                        var searchDir = mod.devMode ? mod.fullPath : mod.fullPath + Path.DirectorySeparatorChar + "data";
+                        var searchDir = mod.devMode ? mod.fullPath : Path.Combine(mod.fullPath, "data");
                         var allFilesInDataFolder = Directory.GetFiles(searchDir, "*.*", SearchOption.AllDirectories).ToList();
                         int skipped = 0;
                         //Filter

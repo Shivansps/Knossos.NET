@@ -91,7 +91,7 @@ namespace Knossos.NET.ViewModels
                                     {
                                         try
                                         {
-                                            using (FileStream? filehash = new FileStream(mod.fullPath + Path.DirectorySeparatorChar + file.filename, FileMode.Open, FileAccess.Read))
+                                            using (FileStream? filehash = new FileStream(Path.Combine(mod.fullPath, file.filename ?? ""), FileMode.Open, FileAccess.Read))
                                             {
                                                 using (SHA256 checksum = SHA256.Create())
                                                 {

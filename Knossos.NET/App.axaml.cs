@@ -278,12 +278,12 @@ namespace Knossos.NET
 
         private void OpenLog()
         {
-            if (File.Exists(KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "Knossos.log"))
+            if (File.Exists(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "Knossos.log")))
             {
                 try
                 {
                     var cmd = new Process();
-                    cmd.StartInfo.FileName = KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "Knossos.log";
+                    cmd.StartInfo.FileName = Path.Combine(KnUtils.GetKnossosDataFolderPath(), "Knossos.log");
                     cmd.StartInfo.UseShellExecute = true;
                     cmd.Start();
                     cmd.Dispose();
@@ -296,18 +296,18 @@ namespace Knossos.NET
             else
             {
                 if (MainWindow.instance != null)
-                    MessageBox.Show(MainWindow.instance, "Log File " + KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "Knossos.log not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                    MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetKnossosDataFolderPath(), "Knossos.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
 
         private void OpenFS2Log()
         {
-            if (File.Exists(KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log"))
+            if (File.Exists(Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log")))
             {
                 try
                 {
                     var cmd = new Process();
-                    cmd.StartInfo.FileName = KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log";
+                    cmd.StartInfo.FileName = Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log");
                     cmd.StartInfo.UseShellExecute = true;
                     cmd.Start();
                     cmd.Dispose();
@@ -320,7 +320,7 @@ namespace Knossos.NET
             else
             {
                 if (MainWindow.instance != null)
-                    MessageBox.Show(MainWindow.instance, "Log File " + KnUtils.GetFSODataFolderPath() + Path.DirectorySeparatorChar + "data" + Path.DirectorySeparatorChar + "fs2_open.log not found.", "File not found", MessageBox.MessageBoxButtons.OK);
+                    MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
         }
     }

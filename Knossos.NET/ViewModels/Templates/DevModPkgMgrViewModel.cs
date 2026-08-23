@@ -429,9 +429,9 @@ namespace Knossos.NET.ViewModels
                     {
                         if (PkgMgr.editor != null)
                         {
-                            if (Directory.Exists(PkgMgr.editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + Package.folder))
+                            if (Directory.Exists(Path.Combine(PkgMgr.editor.ActiveVersion.fullPath, Package.folder ?? "")))
                             {
-                                long sizeInBytes = Directory.EnumerateFiles(PkgMgr.editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + Package.folder, "*", SearchOption.AllDirectories).Sum(fileInfo => new FileInfo(fileInfo).Length);
+                                long sizeInBytes = Directory.EnumerateFiles(Path.Combine(PkgMgr.editor.ActiveVersion.fullPath, Package.folder ?? ""), "*", SearchOption.AllDirectories).Sum(fileInfo => new FileInfo(fileInfo).Length);
                                 DiskSpace = KnUtils.FormatBytes(sizeInBytes);
                             }
                         }
@@ -544,7 +544,7 @@ namespace Knossos.NET.ViewModels
                 try
                 {
                     if(PkgMgr.editor != null)
-                        KnUtils.OpenFolder(PkgMgr.editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + Package.folder);
+                        KnUtils.OpenFolder(Path.Combine(PkgMgr.editor.ActiveVersion.fullPath, Package.folder ?? ""));
                 }
                 catch (Exception ex)
                 {
@@ -723,7 +723,7 @@ namespace Knossos.NET.ViewModels
                         MessageBox.Show(MainWindow.instance, NewPackageName + " is a reserved package folder name and cant be used", "Error creating new package", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
-                    Directory.CreateDirectory(editor!.ActiveVersion.fullPath + Path.DirectorySeparatorChar + NewPackageFolder + Path.DirectorySeparatorChar + "data");
+                    Directory.CreateDirectory(Path.Combine(editor!.ActiveVersion.fullPath, NewPackageFolder, "data"));
                     var newPkg = new ModPackage();
                     newPkg.folder = NewPackageFolder;
                     newPkg.name = NewPackageName;
@@ -742,9 +742,9 @@ namespace Knossos.NET.ViewModels
         {
             try
             {
-                if (editor != null)
+                if (editor != null && editorPackageItem.Package.folder != null)
                 {
-                    var folderPath = editor.ActiveVersion.fullPath + Path.DirectorySeparatorChar + editorPackageItem.Package.folder;
+                    var folderPath = Path.Combine(editor.ActiveVersion.fullPath, editorPackageItem.Package.folder);
                     var resp = await MessageBox.Show(MainWindow.instance!, "This will delete the package: " + editorPackageItem.Package.name + " and ALL FILES on this folder: " + folderPath + " of the mod and version " + editor.ActiveVersion + "\n Do you really want to do this? This action cannot be undone.","Confirm package deletion",MessageBox.MessageBoxButtons.YesNo);
                     if(resp == MessageBox.MessageBoxResult.Yes)
                     {

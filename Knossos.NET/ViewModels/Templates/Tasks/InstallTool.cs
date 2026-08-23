@@ -67,7 +67,7 @@ namespace Knossos.NET.ViewModels
 
                     try
                     {
-                        File.Create(toolPath + Path.DirectorySeparatorChar + "knossos_net_download.token").Close();
+                        File.Create(Path.Combine(toolPath, "knossos_net_download.token")).Close();
                     }
                     catch { }
 
@@ -90,7 +90,7 @@ namespace Knossos.NET.ViewModels
                         throw new TaskCanceledException("Tool download URL was null.");
 
                     var fileName = Path.GetFileName(url);
-                    var fileFullPath = toolPath + Path.DirectorySeparatorChar + fileName;
+                    var fileFullPath = Path.Combine(toolPath, fileName);
                     var result = await fileTask.DownloadFile(url, fileFullPath, "Downloading " + fileName, false, null, cancellationTokenSource);
 
                     if (cancellationTokenSource.IsCancellationRequested)
@@ -124,7 +124,7 @@ namespace Knossos.NET.ViewModels
 
                     try
                     {
-                        File.Delete(toolPath + Path.DirectorySeparatorChar + "knossos_net_download.token");
+                        File.Delete(Path.Combine(toolPath, "knossos_net_download.token"));
                     }
                     catch { }
 

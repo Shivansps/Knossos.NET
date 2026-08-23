@@ -200,10 +200,10 @@ namespace Knossos.NET.ViewModels
                 var mod = ActiveVersion;
                 Name = mod.title;
                 Version = mod.version;
-                if (!string.IsNullOrEmpty(mod.tile) && File.Exists(mod.fullPath + Path.DirectorySeparatorChar + mod.tile))
+                if (!string.IsNullOrEmpty(mod.tile) && File.Exists(Path.Combine(mod.fullPath, mod.tile)))
                 {
                     ModImage?.Dispose();
-                    ModImage = new Bitmap(mod.fullPath + Path.DirectorySeparatorChar + mod.tile);
+                    ModImage = new Bitmap(Path.Combine(mod.fullPath, mod.tile));
                 }
                 //Templated Elements
                 if (IsEngineBuild)

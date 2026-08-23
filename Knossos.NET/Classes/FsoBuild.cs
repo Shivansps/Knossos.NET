@@ -437,10 +437,10 @@ namespace Knossos.NET.Models
             catch (JsonException exJson)
             {
                 //json failed try to see if it exported a binary
-                if(File.Exists(folderPath+Path.DirectorySeparatorChar+"flags.lch"))
+                if(File.Exists(Path.Combine(folderPath, "flags.lch")))
                 {
                     Log.Add(Log.LogSeverity.Error, "FsoBuild.GetFlagsV1()", "FSO build "+ this +" seems to be below the minimum supported version (3.8.1) and does not support exporting flags as Json.");
-                    File.Delete(folderPath + Path.DirectorySeparatorChar + "flags.lch");
+                    File.Delete(Path.Combine(folderPath, "flags.lch"));
                 }
                 else
                 {
@@ -544,7 +544,7 @@ namespace Knossos.NET.Models
                                 FsoExecType type = GetExecType(exec.label);
                                 FsoExecArch arch = GetExecArch(exec.properties);
                                 if(modJson.devMode)
-                                    executables.Add(new FsoFile(package.folder+Path.DirectorySeparatorChar+exec.file.Replace(@"./",""), folderPath, type, arch, env));
+                                    executables.Add(new FsoFile(Path.Combine(package.folder ?? "", exec.file.Replace(@"./","")), folderPath, type, arch, env));
                                 else
                                     executables.Add(new FsoFile(exec.file, folderPath, type, arch, env));
                             }
