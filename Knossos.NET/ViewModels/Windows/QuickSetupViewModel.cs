@@ -1,9 +1,7 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Knossos.NET.Models;
 using Knossos.NET.Views;
-using System.Threading.Tasks;
 
 namespace Knossos.NET.ViewModels
 {
@@ -15,8 +13,6 @@ namespace Knossos.NET.ViewModels
     {
         private int pageNumber = 1;
 
-        [ObservableProperty]
-        internal bool repoDownloaded = false;
         [ObservableProperty]
         internal bool canGoBack = false;
         [ObservableProperty]
@@ -31,9 +27,23 @@ namespace Knossos.NET.ViewModels
         internal string? libraryPath = null;
 
         [ObservableProperty]
-        public string latestBuild = string.Empty;
-        [ObservableProperty]
-        internal bool buildAvailable = false;
+        internal string retailFs2Status = string.Empty;
+
+        private CompressionSettings modCompression = CompressionSettings.Manual;
+        internal CompressionSettings ModCompression
+        {
+            get { return modCompression; }
+            set
+            {
+                if (modCompression != value)
+                {
+                    this.SetProperty(ref modCompression, value);
+                    Knossos.globalSettings.modCompression = value;
+                    MainViewModel.Instance?.GlobalSettingsView?.UpdateModCompressionFromQuickSetup(value);
+                    Knossos.globalSettings.Save(false);
+                }
+            }
+        }
 
         [ObservableProperty]
         internal bool page1 = true;
@@ -45,44 +55,22 @@ namespace Knossos.NET.ViewModels
         internal bool page4 = false;
         [ObservableProperty]
         internal bool page5 = false;
-        [ObservableProperty]
-        internal bool page6 = false;
 
         private Window? dialog;
-
-        public static QuickSetupViewModel? Instance;
 
         public QuickSetupViewModel() 
         {
             isPortableMode = Knossos.inPortableMode;
+            libraryPath = Knossos.globalSettings.basePath;
+            modCompression = Knossos.globalSettings.modCompression;
         }
 
         public QuickSetupViewModel(Window dialog) 
         {
             this.dialog = dialog;
             isPortableMode = Knossos.inPortableMode;
-            Instance = this;
-            UpdateBuildName(MainWindowViewModel.Instance!.LatestStable);
-            TrackRepoStatus();
-        }
-
-        /// <summary>
-        /// Wait until repo_minimal.json has been parsed
-        /// </summary>
-        private void TrackRepoStatus()
-        {
-            Task.Run(async () =>
-            {
-                do
-                {
-                    await Task.Delay(1000);
-                } while (!Nebula.repoLoaded);
-
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    RepoDownloaded = Nebula.repoLoaded;
-                });
-            });
+            libraryPath = Knossos.globalSettings.basePath;
+            modCompression = MainViewModel.Instance?.GlobalSettingsView?.ModCompression ?? Knossos.globalSettings.modCompression;
         }
 
         internal void OpenDiscordQuickSetup()
@@ -90,48 +78,16 @@ namespace Knossos.NET.ViewModels
             KnUtils.OpenBrowserURL(@"https://discord.gg/raSEhVeTGw");
         }
 
-        /// <summary>
-        /// Wait until the Knossos library path is set
-        /// </summary>
         private void EnterPage2()
         {
-            Task.Run(() => 
-            {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    LibraryPath = Knossos.globalSettings.basePath;
-
-                    if (Page2)
-                    {
-                        CanContinue = true;
-                    }
-                });
-            });
+            LibraryPath = Knossos.globalSettings.basePath;
         }
 
-        /// <summary>
-        /// Wait until FSO flags has been loaded
-        /// </summary>
-        private void EnterPage3()
+        private void EnterPage4()
         {
-            Task.Run(() =>
-            {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    if (Page3)
-                    {
-                        if (!Knossos.flagDataLoaded)
-                        {
-                            await Task.Delay(1000);
-                            EnterPage3();
-                        }
-                        else
-                        {
-                            CanContinue = true;
-                        }
-                    }
-                });
-            });
+            RetailFs2Status = Knossos.retailFs2RootFound
+                ? "Current Status: Freespace 2 Game Data is Installed"
+                : "Current Status: Freespace 2 Game Data is NOT Installed";
         }
 
         internal void GoBackCommand()
@@ -157,69 +113,17 @@ namespace Knossos.NET.ViewModels
             switch(pageNumber)
             {
                 case 1: CanGoBack = false; CanContinue = true; Page1 = true; Page2 = false; LastPage = false;  break;
-                case 2: CanGoBack = true; CanContinue = false; Page1 = false; Page2 = true; Page3 = false; EnterPage2(); LastPage = false;  break;
-                case 3: CanGoBack = true; CanContinue = false; Page2 = false; Page3 = true; Page4 = false; EnterPage3(); LastPage = false;  break;
-                case 4: CanGoBack = true; CanContinue = true; Page3 = false; Page4 = true; Page5 = false; LastPage = false; break;
-                case 5: CanGoBack = true; CanContinue = true; Page4 = false; Page5 = true; Page6 = false; LastPage = false; break;
-                case 6: CanGoBack = true; CanContinue = false; Page5 = false; Page6 = true; LastPage = true; break;
-            }
-        }
-
-        public void UpdateBuildName(string stableIn){
-            LatestBuild = stableIn;
-            UpdateBuildInstallButton();
-        }
-
-        public void UpdateBuildInstallButton()
-        {
-            if (LatestBuild == "")
-            {
-                BuildAvailable = false;
-            }
-            else 
-            {
-                var installed = Knossos.GetInstalledBuild("FSO", LatestBuild);
-                if (installed != null)
-                {
-                    LatestBuild = "";
-                    BuildAvailable = false;
-                } 
-                else 
-                {
-                    BuildAvailable = true;
-                }
-            } 
-        }
-
-        public void DownloadLatestStable()
-        {
-            if (LatestBuild != ""){
-                var stable = new Mod();
-                stable.id = "FSO";
-                stable.version = LatestBuild;
-                stable.type = ModType.engine;
-                stable.stability = "stable";
-
-                MainWindowViewModel.Instance!.FsoBuildsView!.RelayInstallBuild(stable);
-
-                var installed = Knossos.GetInstalledBuild("FSO", LatestBuild);
-                if (installed != null){
-                    LatestBuild = "";
-                    UpdateBuildInstallButton();
-                }
+                case 2: CanGoBack = true; CanContinue = true; Page1 = false; Page2 = true; Page3 = false; EnterPage2(); LastPage = false;  break;
+                case 3: CanGoBack = true; CanContinue = true; Page2 = false; Page3 = true; Page4 = false; LastPage = false;  break;
+                case 4: CanGoBack = true; CanContinue = true; Page3 = false; Page4 = true; Page5 = false; EnterPage4(); LastPage = false; break;
+                case 5: CanGoBack = true; CanContinue = true; Page4 = false; Page5 = true; LastPage = true; break;
             }
         }
         
         public void ClickSettingsButton()
         {
-            MainWindowViewModel.Instance?.ClickOnMenuButton("Settings");
-            MainWindowViewModel.Instance?.GlobalSettingsView?.ExpandKnossosSection();
+            MainViewModel.Instance?.ClickOnMenuButton("Settings");
+            MainViewModel.Instance?.GlobalSettingsView?.ExpandKnossosSection();
         }
-
-        public void ClickEngineButton()
-        {
-            MainWindowViewModel.Instance?.ClickOnMenuButton("Engine");
-        }
-
     }
 }

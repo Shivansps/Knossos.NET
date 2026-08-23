@@ -17,7 +17,7 @@ namespace Knossos.NET.Models
 {
     /// <summary>
     /// Disabled = No option to compress is ever show
-    /// Manual = User can select to compress mods manually during install and in mod settings
+    /// Manual = Mods are not compressed during install; the user can compress them later in mod settings
     /// Always = Always compress all mods during install, no matter what.
     /// ModSupport = Compress only if the mod depends on a FSO verson that is higher or equal than the minimal required (23.2.0)
     /// </summary>
