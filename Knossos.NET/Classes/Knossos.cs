@@ -408,13 +408,10 @@ namespace Knossos.NET
                 Log.Add(Log.LogSeverity.Error, "Knossos.QuickLaunch", "Quick launch was used but the modid was not detected.");
             }
             await Task.Delay(2000);
-            if (MainWindow.instance != null)
+            Dispatcher.UIThread.Invoke(() =>
             {
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    MainWindow.instance.Close();
-                });
-            }
+                MainWindow.instance?.Close();
+            });
         }
 
         /// <summary>
@@ -575,7 +572,7 @@ namespace Knossos.NET
                                                 //Close App
                                                 Dispatcher.UIThread.Invoke(() =>
                                                 {
-                                                    MainWindow.instance!.Close();
+                                                    MainWindow.instance?.Close();
                                                 });
                                             }
                                             catch (Exception ex)
@@ -700,7 +697,7 @@ namespace Knossos.NET
                                             //Close App
                                             Dispatcher.UIThread.Invoke(() =>
                                             {
-                                                MainWindow.instance!.Close();
+                                                MainWindow.instance?.Close();
                                             });
                                         }
                                     }
@@ -752,7 +749,10 @@ namespace Knossos.NET
             {
                 var dialog = new QuickSetupView();
                 dialog.DataContext = new QuickSetupViewModel(dialog);
-                dialog.Show(MainWindow.instance!);
+                if(MainWindow.instance != null)
+                    dialog.Show(MainWindow.instance);
+                else
+                    dialog.Show();
             });
         }
 
@@ -938,7 +938,7 @@ namespace Knossos.NET
         {
             if (TaskViewModel.Instance?.IsSafeState() == false)
             {
-                var result = await MessageBox.Show(MainWindow.instance!, "Other important tasks are running, it is recommended that you wait until they finish before launching the game because it may cause them to fail.\nIf you are absolutely sure those tasks cannot interfere you can continue.", "Tasks are running", MessageBox.MessageBoxButtons.ContinueCancel);
+                var result = await MessageBox.Show(MainWindow.instance, "Other important tasks are running, it is recommended that you wait until they finish before launching the game because it may cause them to fail.\nIf you are absolutely sure those tasks cannot interfere you can continue.", "Tasks are running", MessageBox.MessageBoxButtons.ContinueCancel);
                 if(result != MessageBox.MessageBoxResult.Continue)
                     return;
             }
@@ -982,11 +982,7 @@ namespace Knossos.NET
 
             if(missingDeps.Count > 0)
             {
-                if (MainWindow.instance != null)
-                {
-                    await MessageBox.Show(MainWindow.instance, errorMsg, "Unable to resolve dependencies", MessageBox.MessageBoxButtons.OK);
-                }
-
+                await MessageBox.Show(MainWindow.instance, errorMsg, "Unable to resolve dependencies", MessageBox.MessageBoxButtons.OK);
                 return;
             }
 
@@ -1053,12 +1049,9 @@ namespace Knossos.NET
                         }
                     }
                     Log.Add(Log.LogSeverity.Warning, "Knossos.PlayMod()", outputString);
-                    if (MainWindow.instance != null)
-                    {
-                        var result = await MessageBox.Show(MainWindow.instance, outputString, "Dependency Conflict!", MessageBox.MessageBoxButtons.ContinueCancel);
-                        if (result != MessageBox.MessageBoxResult.Continue)
-                            return;
-                    }
+                    var result = await MessageBox.Show(MainWindow.instance, outputString, "Dependency Conflict!", MessageBox.MessageBoxButtons.ContinueCancel);
+                    if (result != MessageBox.MessageBoxResult.Continue)
+                        return;
                 }
             }
 
@@ -1121,10 +1114,7 @@ namespace Knossos.NET
             if(rootPath == string.Empty)
             {
                 Log.Add(Log.LogSeverity.Error, "Knossos.PlayMod()", "Unable to determine working folder for mod: " + mod.folderName);
-                if (MainWindow.instance != null)
-                {
-                    await MessageBox.Show(MainWindow.instance, "Unable to determine working folder for mod: " + mod.folderName, "Error launching mod", MessageBox.MessageBoxButtons.OK);
-                }
+                await MessageBox.Show(MainWindow.instance, "Unable to determine working folder for mod: " + mod.folderName, "Error launching mod", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             else
@@ -1276,16 +1266,13 @@ namespace Knossos.NET
             if (fsoBuild == null)
             {
                 Log.Add(Log.LogSeverity.Error, "Knossos.PlayMod()", "Unable to find a valid FSO build for this mod!");
-                if (MainWindow.instance != null)
+                if (hasBuildDependency)
                 {
-                    if (hasBuildDependency)
-                    {
-                        await MessageBox.Show(MainWindow.instance!, "Unable to find a valid FSO build for this mod!", "Error launching mod", MessageBox.MessageBoxButtons.OK);
-                    }
-                    else
-                    {
-                        await MessageBox.Show(MainWindow.instance!, "This mod does not specify an engine build to use, you should select one in the mod settings.", "Error launching mod", MessageBox.MessageBoxButtons.OK);
-                    }
+                    await MessageBox.Show(MainWindow.instance, "Unable to find a valid FSO build for this mod!", "Error launching mod", MessageBox.MessageBoxButtons.OK);
+                }
+                else
+                {
+                    await MessageBox.Show(MainWindow.instance, "This mod does not specify an engine build to use, you should select one in the mod settings.", "Error launching mod", MessageBox.MessageBoxButtons.OK);
                 }
                 return;
             }
@@ -1298,12 +1285,9 @@ namespace Knossos.NET
                     {
                         if (mod.modSettings.isCompressed)
                         {
-                            if (MainWindow.instance != null)
-                            {
-                                var result = await MessageBox.Show(MainWindow.instance!, "This mod currently resolves to FSO build: " + fsoBuild.version + " and it is compressed, the minimum to fully support all compression features is: " + VPCompression.MinimumFSOVersion + ".\n23.0.0 may work if the mod do not have loose files, older versions are not going to work. Use a newer FSO version or uncompress this mod.", "FSO Version below minimum for compression", MessageBox.MessageBoxButtons.ContinueCancel);
-                                if (result != MessageBox.MessageBoxResult.Continue)
-                                    return;
-                            }
+                            var result = await MessageBox.Show(MainWindow.instance, "This mod currently resolves to FSO build: " + fsoBuild.version + " and it is compressed, the minimum to fully support all compression features is: " + VPCompression.MinimumFSOVersion + ".\n23.0.0 may work if the mod do not have loose files, older versions are not going to work. Use a newer FSO version or uncompress this mod.", "FSO Version below minimum for compression", MessageBox.MessageBoxButtons.ContinueCancel);
+                            if (result != MessageBox.MessageBoxResult.Continue)
+                                return;
                         }
                         else
                         {
@@ -1330,12 +1314,9 @@ namespace Knossos.NET
                             }
                             if (compressedMods != string.Empty)
                             {
-                                if (MainWindow.instance != null)
-                                {
-                                    var result = await MessageBox.Show(MainWindow.instance!, "This mod currently resolves to FSO build: " + fsoBuild.version + " and depends on mods: " + compressedMods + " that are currently compressed, the minimum to fully support all compression features is: " + VPCompression.MinimumFSOVersion + ".\n23.0.0 may work if the mod do not have loose files, older versions are not going to work. Use a newer FSO version or uncompress those mods.", "FSO Version below minimum for compression", MessageBox.MessageBoxButtons.ContinueCancel);
-                                    if (result != MessageBox.MessageBoxResult.Continue)
-                                        return;
-                                }
+                                var result = await MessageBox.Show(MainWindow.instance, "This mod currently resolves to FSO build: " + fsoBuild.version + " and depends on mods: " + compressedMods + " that are currently compressed, the minimum to fully support all compression features is: " + VPCompression.MinimumFSOVersion + ".\n23.0.0 may work if the mod do not have loose files, older versions are not going to work. Use a newer FSO version or uncompress those mods.", "FSO Version below minimum for compression", MessageBox.MessageBoxButtons.ContinueCancel);
+                                if (result != MessageBox.MessageBoxResult.Continue)
+                                    return;
                             }
                         }
                     }
@@ -1388,7 +1369,7 @@ namespace Knossos.NET
 
             
 
-            if (MainWindow.instance != null && globalSettings.warnNewSettingsSystem && !CustomLauncher.IsCustomMode)
+            if (!KnUtils.IsAndroid && globalSettings.warnNewSettingsSystem && !CustomLauncher.IsCustomMode)
             {
                 try
                 {
@@ -1450,10 +1431,7 @@ namespace Knossos.NET
             if (!fsoResult.IsSuccess)
             {
                 Log.Add(Log.LogSeverity.Error, "Knossos.PlayMod()", fsoResult.ErrorMessage);
-                if (MainWindow.instance != null)
-                {
-                    await MessageBox.Show(MainWindow.instance, fsoResult.ErrorMessage, "Error launching mod", MessageBox.MessageBoxButtons.OK);
-                }
+                await MessageBox.Show(MainWindow.instance, fsoResult.ErrorMessage, "Error launching mod", MessageBox.MessageBoxButtons.OK);
             }
         }
 
@@ -1610,12 +1588,9 @@ namespace Knossos.NET
 
                 if (folderLevel == 0 )
                 {
-                    if (MainWindow.instance != null)
-                    {
-                        Dispatcher.UIThread.Invoke(() => {
-                            MessageBox.Show(MainWindow.instance!, "KnossosNET either cannot find or does not have permission to read a previously selected Library Folder.\nEither select a new Library Folder in KnossosNET's settings, or check if the folder is now protected.", "Knossos.NET Library Folder Error" , MessageBox.MessageBoxButtons.OK);
-                        });
-                    }
+                    Dispatcher.UIThread.Invoke(() => {
+                        MessageBox.Show(MainWindow.instance, "KnossosNET either cannot find or does not have permission to read a previously selected Library Folder.\nEither select a new Library Folder in KnossosNET's settings, or check if the folder is now protected.", "Knossos.NET Library Folder Error" , MessageBox.MessageBoxButtons.OK);
+                    });
                 }
             }
         }

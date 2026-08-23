@@ -375,7 +375,7 @@ namespace Knossos.NET.ViewModels
                 installedNL.ForEach( x => fsoVersionString += "\n" + x.ToString() );
                 Dispatcher.UIThread.Invoke(async() =>
                 {
-                    var reply = await MessageBox.Show(MainWindow.instance!, "You are about to delete the following FSO builds:" + fsoVersionString, "Deleting nightlies", MessageBox.MessageBoxButtons.ContinueCancel);
+                    var reply = await MessageBox.Show(MainWindow.instance, "You are about to delete the following FSO builds:" + fsoVersionString, "Deleting nightlies", MessageBox.MessageBoxButtons.ContinueCancel);
                     if(reply == MessageBox.MessageBoxResult.Continue)
                     {
                         foreach (var build in installedNL)
@@ -407,7 +407,7 @@ namespace Knossos.NET.ViewModels
             {
                 Dispatcher.UIThread.Invoke(() =>
                 {
-                    MessageBox.Show(MainWindow.instance!, "There are not installed FSO nightlies to delete", "Error deleting nightlies", MessageBox.MessageBoxButtons.OK);
+                    MessageBox.Show(MainWindow.instance, "There are not installed FSO nightlies to delete", "Error deleting nightlies", MessageBox.MessageBoxButtons.OK);
                 });
             }
         }

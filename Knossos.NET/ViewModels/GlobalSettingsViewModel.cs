@@ -1573,13 +1573,9 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void OpenGetVoices()
         {
-            if (MainWindow.instance != null)
-            {
-                var dialog = new AddSapiVoicesView();
-                dialog.DataContext = new AddSapiVoicesViewModel();
-
-                await dialog.ShowDialog<AddSapiVoicesView?>(MainWindow.instance);
-            }
+            var dialog = new AddSapiVoicesView();
+            dialog.DataContext = new AddSapiVoicesViewModel();
+            await dialog.ShowDialog<AddSapiVoicesView?>(MainWindow.instance!);
         }
 
         /// <summary>
@@ -1667,7 +1663,7 @@ namespace Knossos.NET.ViewModels
         {
             var dialog = new Views.DebugFiltersView();
             dialog.DataContext = new DebugFiltersViewModel();
-            await dialog.ShowDialog<DebugFiltersView?>(MainWindow.instance!);
+            await dialog.ShowDialog<DebugFiltersView?>(MainWindow.instance);
         }
 
         internal void ToggleDeveloperOptions()

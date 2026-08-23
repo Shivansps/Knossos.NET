@@ -124,7 +124,7 @@ namespace Knossos.NET.ViewModels
         {
             var dialog = new Views.DebugFiltersView();
             dialog.DataContext = new DebugFiltersViewModel();
-            await dialog.ShowDialog<DebugFiltersView?>(MainWindow.instance!);
+            await dialog.ShowDialog<DebugFiltersView?>(MainWindow.instance);
         }
     }
 }

@@ -165,7 +165,7 @@ namespace Knossos.NET.ViewModels
                 {
                     var dialog = new ModInstallView();
                     dialog.DataContext = new ModInstallViewModel(editor.ActiveVersion, dialog, editor.ActiveVersion.version, true);
-                    await dialog.ShowDialog<ModInstallView?>(MainWindow.instance!);
+                    await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
                 }
             }
             catch(Exception ex)
@@ -181,12 +181,12 @@ namespace Knossos.NET.ViewModels
             //Validate new version string
             if(!VerifyNewVersion())
             {
-                await MessageBox.Show(MainWindow.instance!, "'" + NewVersion + "' is not a valid semantic version.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "'" + NewVersion + "' is not a valid semantic version.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             if (Mods.FirstOrDefault(m => m.version == NewVersion) != null)
             {
-                await MessageBox.Show(MainWindow.instance!, "'" + NewVersion + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "'" + NewVersion + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             var parentDir = new DirectoryInfo(editor.ActiveVersion.fullPath).Parent;
@@ -198,7 +198,7 @@ namespace Knossos.NET.ViewModels
             var newDir = parentDir.FullName + Path.DirectorySeparatorChar + editor.ActiveVersion.id + "-" + NewVersion;
             if (Directory.Exists(newDir))
             {
-                await MessageBox.Show(MainWindow.instance!, "The directory '"+ newDir + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "The directory '"+ newDir + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
 
@@ -229,16 +229,16 @@ namespace Knossos.NET.ViewModels
                     {
                         var dialog = new DevModAdvancedUploadView();
                         dialog.DataContext = new DevModAdvancedUploadViewModel(mod, dialog, this);
-                        await dialog.ShowDialog<DevModAdvancedUploadView?>(MainWindow.instance!);
+                        await dialog.ShowDialog<DevModAdvancedUploadView?>(MainWindow.instance);
                     }
                     else
                     {
-                        _ = MessageBox.Show(MainWindow.instance!, "Advanced uploading is only available for Mods and TCs.", "Unsupported for type: " + mod.type, MessageBox.MessageBoxButtons.OK);
+                        _ = MessageBox.Show(MainWindow.instance, "Advanced uploading is only available for Mods and TCs.", "Unsupported for type: " + mod.type, MessageBox.MessageBoxButtons.OK);
                     }
                 }
                 else
                 {
-                    _ = MessageBox.Show(MainWindow.instance!, "This mod version is already uploaded to nebula, if you want to update the metadata use the basic upload", "Mod already uploaded", MessageBox.MessageBoxButtons.OK);
+                    _ = MessageBox.Show(MainWindow.instance, "This mod version is already uploaded to nebula, if you want to update the metadata use the basic upload", "Mod already uploaded", MessageBox.MessageBoxButtons.OK);
                 }
             }
         }
@@ -298,7 +298,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if(!TaskViewModel.Instance!.IsSafeState())
                     {
-                        await MessageBox.Show(MainWindow.instance!, "You must wait for other tasks to finish before uploading a new mod.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "You must wait for other tasks to finish before uploading a new mod.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                         ButtonsEnabled = true;
                         return;
                     }
@@ -309,7 +309,7 @@ namespace Knossos.NET.ViewModels
                         //Packages exist? && One requiered Package
                         if (mod.packages == null || !mod.packages.Any() || mod.packages.FirstOrDefault(x => x.status == "required") == null)
                         {
-                            await MessageBox.Show(MainWindow.instance!, "The mod must include at least one required package.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                            await MessageBox.Show(MainWindow.instance, "The mod must include at least one required package.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                             ButtonsEnabled = true;
                             return;
                         }
@@ -329,12 +329,12 @@ namespace Knossos.NET.ViewModels
                                         {
                                             if (mod.type == ModType.mod)
                                             {
-                                                await MessageBox.Show(MainWindow.instance!, "This mod depends on: " + depMod + ". That mod has a diferent parent mod: "
+                                                await MessageBox.Show(MainWindow.instance, "This mod depends on: " + depMod + ". That mod has a diferent parent mod: "
                                                     + depMod.parent + ". And it is not intended to be used with your TC mod: " + mod.id, "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                             }
                                             if (mod.type == ModType.tc)
                                             {
-                                                await MessageBox.Show(MainWindow.instance!, "This mod depends on: " + depMod + ". Thats a different TC mod. Your TC mod cant depend on another TC mod."
+                                                await MessageBox.Show(MainWindow.instance, "This mod depends on: " + depMod + ". Thats a different TC mod. Your TC mod cant depend on another TC mod."
                                                     , "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                             }
                                             return;
@@ -363,7 +363,7 @@ namespace Knossos.NET.ViewModels
                             }
                             if(!found)
                             {
-                                await MessageBox.Show(MainWindow.instance!, "Mods for TC other than 'FS2' must also include a dependency to that TC mod.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                                await MessageBox.Show(MainWindow.instance, "Mods for TC other than 'FS2' must also include a dependency to that TC mod.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                 ButtonsEnabled = true;
                                 return;
                             }
@@ -372,7 +372,7 @@ namespace Knossos.NET.ViewModels
                         //if the tile image size is over the maximum allowed (300kb)
                         if (!string.IsNullOrEmpty(mod.tile) && File.Exists(Path.Combine(mod.fullPath,mod.tile)) && new FileInfo(Path.Combine(mod.fullPath, mod.tile)).Length > 307200)
                         {
-                            await MessageBox.Show(MainWindow.instance!, "The mod tile image is over the maximum of 300kb allowed.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                            await MessageBox.Show(MainWindow.instance, "The mod tile image is over the maximum of 300kb allowed.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                             ButtonsEnabled = true;
                             return;
                         }
@@ -384,7 +384,7 @@ namespace Knossos.NET.ViewModels
                             {
                                 if(string.IsNullOrEmpty(pkg.environment))
                                 {
-                                    await MessageBox.Show(MainWindow.instance!, "Package " + pkg.name + " has a empty environment string.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                                    await MessageBox.Show(MainWindow.instance, "Package " + pkg.name + " has a empty environment string.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                     ButtonsEnabled = true;
                                     return;
                                 }
@@ -412,7 +412,7 @@ namespace Knossos.NET.ViewModels
                             }
                             if (!found)
                             {
-                                await MessageBox.Show(MainWindow.instance!, "Mods and TCs must include a FSO engine dependency in one of the required packages.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                                await MessageBox.Show(MainWindow.instance, "Mods and TCs must include a FSO engine dependency in one of the required packages.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                 ButtonsEnabled = true;
                                 return;
                             }
@@ -431,7 +431,7 @@ namespace Knossos.NET.ViewModels
                                         var modlist = await Nebula.GetAllModsWithID(dep.id);
                                         if(modlist == null || !modlist.Any())
                                         {
-                                            await MessageBox.Show(MainWindow.instance!, "Your mod depends on mod id: " + dep.id + " that was not found in Nebula.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                                            await MessageBox.Show(MainWindow.instance, "Your mod depends on mod id: " + dep.id + " that was not found in Nebula.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                             ButtonsEnabled = true;
                                             return;
                                         }
@@ -446,7 +446,7 @@ namespace Knossos.NET.ViewModels
                                         }
                                         if(!found)
                                         {
-                                            await MessageBox.Show(MainWindow.instance!, "Your mod depends on mod id: " + dep.id + " Condition: " + dep.version + " we cant find " +
+                                            await MessageBox.Show(MainWindow.instance, "Your mod depends on mod id: " + dep.id + " Condition: " + dep.version + " we cant find " +
                                                 "a candidate in Nebula that satisfies the condition with a compatible mod visibility.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                             ButtonsEnabled = true;
                                             return;
@@ -459,7 +459,7 @@ namespace Knossos.NET.ViewModels
                         //User must be logged in nebula.
                         if (!await Nebula.Login())
                         {
-                            await MessageBox.Show(MainWindow.instance!, "You must be logged in to nebula in order to upload mods.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                            await MessageBox.Show(MainWindow.instance, "You must be logged in to nebula in order to upload mods.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                             ButtonsEnabled = true;
                             return;
                         }
@@ -470,7 +470,7 @@ namespace Knossos.NET.ViewModels
                         {
                             if(!await Nebula.IsModEditable(mod.id))
                             {
-                                await MessageBox.Show(MainWindow.instance!, "You do not have write permissions to this mod.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
+                                await MessageBox.Show(MainWindow.instance, "You do not have write permissions to this mod.", "Basic Check Fail", MessageBox.MessageBoxButtons.OK);
                                 ButtonsEnabled = true;
                                 return;
                             }
@@ -480,7 +480,7 @@ namespace Knossos.NET.ViewModels
                         //if there is no tile image (for type != engine) or description.
                         if (string.IsNullOrEmpty(mod.description) && mod.type != ModType.engine)
                         {
-                            if(await MessageBox.Show(MainWindow.instance!, "Your mod does not include a description, it is recomended you set a description for users. " +
+                            if(await MessageBox.Show(MainWindow.instance, "Your mod does not include a description, it is recomended you set a description for users. " +
                                 "This is only a warning and you can continue the upload if you want.", "Basic Check Warning", MessageBox.MessageBoxButtons.ContinueCancel) != MessageBox.MessageBoxResult.Continue)
                             {
                                 ButtonsEnabled = true;
@@ -489,7 +489,7 @@ namespace Knossos.NET.ViewModels
                         }
                         if (string.IsNullOrEmpty(mod.tile) && mod.type != ModType.engine)
                         {
-                            if (await MessageBox.Show(MainWindow.instance!, "Your mod does not include a tile image, it is recomended you set a tile image for users. " +
+                            if (await MessageBox.Show(MainWindow.instance, "Your mod does not include a tile image, it is recomended you set a tile image for users. " +
                                 "This is only a warning and you can continue the upload if you want.", "Basic Check Warning", MessageBox.MessageBoxButtons.ContinueCancel) != MessageBox.MessageBoxResult.Continue)
                             {
                                 ButtonsEnabled = true;
@@ -500,7 +500,7 @@ namespace Knossos.NET.ViewModels
                         //Warn about the mod visibility before upload, for both private and public, and what it means.
                         if(mod.isPrivate)
                         {
-                            if (await MessageBox.Show(MainWindow.instance!, "The mod version you are uploading is set to 'PRIVATE'. " +
+                            if (await MessageBox.Show(MainWindow.instance, "The mod version you are uploading is set to 'PRIVATE'. " +
                                 "This means only the mod members will be able to see it. Do you want to continue?", "Basic Check Warning", MessageBox.MessageBoxButtons.ContinueCancel) != MessageBox.MessageBoxResult.Continue)
                             {
                                 ButtonsEnabled = true;
@@ -509,7 +509,7 @@ namespace Knossos.NET.ViewModels
                         }
                         else
                         {
-                            if (await MessageBox.Show(MainWindow.instance!, "The mod version you are uploading is set to 'PUBLIC'. " +
+                            if (await MessageBox.Show(MainWindow.instance, "The mod version you are uploading is set to 'PUBLIC'. " +
                                 "This means the mod will be available for everyone. Do you want to continue?", "Basic Check Warning", MessageBox.MessageBoxButtons.ContinueCancel) != MessageBox.MessageBoxResult.Continue)
                             {
                                 ButtonsEnabled = true;
@@ -522,7 +522,7 @@ namespace Knossos.NET.ViewModels
                         if(await Nebula.GetModData(mod.id,mod.version) != null)
                         {
                             metaUpdOnly = true;
-                            var res = await MessageBox.Show(MainWindow.instance!, "This mod and version '" + mod + "' is already uploaded to Nebula, if you continue only the metadata will be updated.", "Version already uploaded", MessageBox.MessageBoxButtons.ContinueCancel);
+                            var res = await MessageBox.Show(MainWindow.instance, "This mod and version '" + mod + "' is already uploaded to Nebula, if you continue only the metadata will be updated.", "Version already uploaded", MessageBox.MessageBoxButtons.ContinueCancel);
                             if(res == MessageBox.MessageBoxResult.Cancel)
                             {
                                 ButtonsEnabled = true;
@@ -554,7 +554,7 @@ namespace Knossos.NET.ViewModels
         {
             if (editor != null)
             {
-                var response = await MessageBox.Show(MainWindow.instance!, "This is going to complete delete the mod " + editor.ActiveVersion.title + " from your library." +
+                var response = await MessageBox.Show(MainWindow.instance, "This is going to complete delete the mod " + editor.ActiveVersion.title + " from your library." +
                     " All versions will be deleted. This is not going to affect any version already uploaded to Nebula.", "Delete ALL mod versions", MessageBox.MessageBoxButtons.OKCancel);
                 if (response == MessageBox.MessageBoxResult.OK)
                 {
@@ -569,7 +569,7 @@ namespace Knossos.NET.ViewModels
             {
                 if(editor.ActiveVersion.inNebula)
                 {
-                    var response = await MessageBox.Show(MainWindow.instance!, "Do you really want to remove mod " + editor.ActiveVersion + " from Nebula? " +
+                    var response = await MessageBox.Show(MainWindow.instance, "Do you really want to remove mod " + editor.ActiveVersion + " from Nebula? " +
                         "this is not going to affect local files. ", "Delete mod from Nebula", MessageBox.MessageBoxButtons.OKCancel);
                     if (response == MessageBox.MessageBoxResult.OK)
                     {
@@ -582,16 +582,16 @@ namespace Knossos.NET.ViewModels
                             {
                                 editor.ActiveVersion.inNebula = false;
                                 HackUpdateModList();
-                                await MessageBox.Show(MainWindow.instance!, "The mod " + editor.ActiveVersion + " was deleted from Nebula.", "Mod deleted", MessageBox.MessageBoxButtons.OK);
+                                await MessageBox.Show(MainWindow.instance, "The mod " + editor.ActiveVersion + " was deleted from Nebula.", "Mod deleted", MessageBox.MessageBoxButtons.OK);
                             }
                             else
                             {
-                                await MessageBox.Show(MainWindow.instance!, "An error has ocurred while trying to remove mod " + editor.ActiveVersion + " from Nebula. Reason: " + result, "Mod delete error", MessageBox.MessageBoxButtons.OK);
+                                await MessageBox.Show(MainWindow.instance, "An error has ocurred while trying to remove mod " + editor.ActiveVersion + " from Nebula. Reason: " + result, "Mod delete error", MessageBox.MessageBoxButtons.OK);
                             }
                         }
                         else
                         {
-                            await MessageBox.Show(MainWindow.instance!, "An error has ocurred while trying to remove mod " + editor.ActiveVersion + " from Nebula. Reason: unknown error", "Mod delete error", MessageBox.MessageBoxButtons.OK);
+                            await MessageBox.Show(MainWindow.instance, "An error has ocurred while trying to remove mod " + editor.ActiveVersion + " from Nebula. Reason: unknown error", "Mod delete error", MessageBox.MessageBoxButtons.OK);
                         }
                         ButtonsEnabled = true;
                     }
@@ -603,7 +603,7 @@ namespace Knossos.NET.ViewModels
         {
             if (editor != null)
             {
-                var response = await MessageBox.Show(MainWindow.instance!, "This is going to delete the mod/version " + editor.ActiveVersion + " from your library." +
+                var response = await MessageBox.Show(MainWindow.instance, "This is going to delete the mod/version " + editor.ActiveVersion + " from your library." +
                     " This is not going to affect anything uploaded to Nebula.", "Delete mod version", MessageBox.MessageBoxButtons.OKCancel);
                 if (response == MessageBox.MessageBoxResult.OK)
                 {
@@ -645,13 +645,13 @@ namespace Knossos.NET.ViewModels
             string explanation = "A DevEnv version is a mod version intended to be used for continuous local development process, and it can't be uploaded to Nebula.\nThis version will always be the default active version every time you start Knet, and" +
                             " provides a static folder you can always work on.\nWhen you want to release a new version you can create a new version from the DevEnv one and release it.";
 
-            if(await MessageBox.Show(MainWindow.instance!, explanation, "Creating Dev Environment version", MessageBox.MessageBoxButtons.ContinueCancel) != MessageBox.MessageBoxResult.Continue)
+            if(await MessageBox.Show(MainWindow.instance, explanation, "Creating Dev Environment version", MessageBox.MessageBoxButtons.ContinueCancel) != MessageBox.MessageBoxResult.Continue)
             {
                 return;
             }
             if (Mods.FirstOrDefault(m => m.version == devVersion) != null)
             {
-                await MessageBox.Show(MainWindow.instance!, "'" + devVersion + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "'" + devVersion + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             var parentDir = new DirectoryInfo(editor.ActiveVersion.fullPath).Parent;
@@ -663,7 +663,7 @@ namespace Knossos.NET.ViewModels
             var newDir = parentDir.FullName + Path.DirectorySeparatorChar + editor.ActiveVersion.id + "-" + devVersion;
             if (Directory.Exists(newDir))
             {
-                await MessageBox.Show(MainWindow.instance!, "The directory '" + newDir + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "The directory '" + newDir + "' already exists.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
 

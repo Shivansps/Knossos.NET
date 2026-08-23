@@ -70,13 +70,11 @@ namespace Knossos.NET.ViewModels
                 File.Delete(KnUtils.GetKnossosDataFolderPath() + @"\one_core.reg");
                 File.Delete(KnUtils.GetKnossosDataFolderPath() + @"\one_core_modified.reg");
 
-                if (MainWindow.instance != null)
-                    MessageBox.Show(MainWindow.instance, "Process completed. A backup of the original SAPI keys is saved here: "+KnUtils.GetKnossosDataFolderPath() + @"\sapi_tokens_backup.reg", "Registry keys copy", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "Process completed. A backup of the original SAPI keys is saved here: "+KnUtils.GetKnossosDataFolderPath() + @"\sapi_tokens_backup.reg", "Registry keys copy", MessageBox.MessageBoxButtons.OK);
             }
             catch (Exception ex)
             {
-                if(MainWindow.instance != null)
-                    MessageBox.Show(MainWindow.instance,ex.Message.ToString(),"An error has ocurred",MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance,ex.Message.ToString(),"An error has ocurred",MessageBox.MessageBoxButtons.OK);
             }
         }
     }

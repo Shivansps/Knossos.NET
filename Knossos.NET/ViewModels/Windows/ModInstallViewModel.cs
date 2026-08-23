@@ -143,7 +143,7 @@ namespace Knossos.NET.ViewModels
             else
             {
                 Log.Add(Log.LogSeverity.Warning, "ModInstallViewModel.InitialLoad()", "Unable to find this mod id: "+ id +" on repo.json");
-                await MessageBox.Show(MainWindow.instance!,"Unable to find this mod ID on nebula repo, maybe the mod was removed from nebula.","Unable to find mod on repo",MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance,"Unable to find this mod ID on nebula repo, maybe the mod was removed from nebula.","Unable to find mod on repo",MessageBox.MessageBoxButtons.OK);
             }
         }
 
@@ -562,10 +562,10 @@ namespace Knossos.NET.ViewModels
                 SelectedMod.modSettings.Load(SelectedMod.fullPath);
                 if (SelectedMod.modSettings.isCompressed)
                 {
-                    MessageBox.Show(MainWindow.instance!, "This mod is compressed, mod verify is not available for compressed mods, uncompress it and try again.", "Verify error", MessageBox.MessageBoxButtons.OK);
+                    MessageBox.Show(MainWindow.instance, "This mod is compressed, mod verify is not available for compressed mods, uncompress it and try again.", "Verify error", MessageBox.MessageBoxButtons.OK);
                     return;
                 }
-                MessageBox.Show(MainWindow.instance!, "The verify process has started.", "Verify", MessageBox.MessageBoxButtons.OK);
+                MessageBox.Show(MainWindow.instance, "The verify process has started.", "Verify", MessageBox.MessageBoxButtons.OK);
                 TaskViewModel.Instance!.VerifyMod(SelectedMod);
             }
         }

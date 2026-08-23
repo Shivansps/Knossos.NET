@@ -293,7 +293,7 @@ namespace Knossos.NET.ViewModels
         {
             var dialog = new DevModCreateNewView();
             dialog.DataContext = new DevModCreateNewViewModel(dialog);
-            await dialog.ShowDialog<DevModCreateNewView?>(MainWindow.instance!);
+            await dialog.ShowDialog<DevModCreateNewView?>(MainWindow.instance);
         }
 
         public void UpdateBuildNames(string stableIn, string nightlyIn)

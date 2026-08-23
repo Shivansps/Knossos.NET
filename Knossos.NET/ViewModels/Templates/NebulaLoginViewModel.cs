@@ -86,7 +86,7 @@ namespace Knossos.NET.ViewModels
                     }
                     var dialog = new ModInstallView();
                     dialog.DataContext = new ModInstallViewModel(mod, dialog, mod.version);
-                    await dialog.ShowDialog<ModInstallView?>(MainWindow.instance!);
+                    await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
                 }
             }
             else
@@ -102,13 +102,13 @@ namespace Knossos.NET.ViewModels
 
             if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(UserPass))
             {
-                await MessageBox.Show(MainWindow.instance!, "Username and password are required fields.", "Login error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Username and password are required fields.", "Login error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             var result = await Nebula.Login(UserName, UserPass);
             if (!result)
             {
-                await MessageBox.Show(MainWindow.instance!, "Login failed, the user or password may be incorrect.", "Login error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Login failed, the user or password may be incorrect.", "Login error", MessageBox.MessageBoxButtons.OK);
             }
             else
             {
@@ -143,29 +143,29 @@ namespace Knossos.NET.ViewModels
 
             if(string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(UserPass) || string.IsNullOrEmpty(UserEmail))
             {
-                await MessageBox.Show(MainWindow.instance!, "Username, password and email are all required fields.", "Register error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Username, password and email are all required fields.", "Register error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             if(UserPass.Length < 5 || UserName.Length < 5)
             {
-                await MessageBox.Show(MainWindow.instance!, "The mininum length for password and username is 6.", "Register error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "The mininum length for password and username is 6.", "Register error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             if(!KnUtils.IsValidEmail(UserEmail))
             {
-                await MessageBox.Show(MainWindow.instance!, "Email: "+UserEmail+ " is not a valid email.", "Register error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Email: "+UserEmail+ " is not a valid email.", "Register error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             var result = await Nebula.Register(UserName, UserPass, UserEmail);
             if (result == "ok")
             {
-                await MessageBox.Show(MainWindow.instance!, "You need to activate your user before you can log in. An an account activation email has sent to your email address.", "Register successfull", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "You need to activate your user before you can log in. An an account activation email has sent to your email address.", "Register successfull", MessageBox.MessageBoxButtons.OK);
                 UpdateUI();
             }
             else
             {
                 //The only way this can fail at this point is username
-                await MessageBox.Show(MainWindow.instance!, "An error has ocurred while registering a new username. Reason: "+result, "Register error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "An error has ocurred while registering a new username. Reason: "+result, "Register error", MessageBox.MessageBoxButtons.OK);
             }
         }
 
@@ -175,19 +175,19 @@ namespace Knossos.NET.ViewModels
 
             if (string.IsNullOrEmpty(UserName))
             {
-                await MessageBox.Show(MainWindow.instance!, "Username is a required field.", "Reset password", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Username is a required field.", "Reset password", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             var result = await Nebula.Reset(UserName);
             if (result == "ok")
             {
-                await MessageBox.Show(MainWindow.instance!, "A password reset link has been sent to your email.", "Reset password", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "A password reset link has been sent to your email.", "Reset password", MessageBox.MessageBoxButtons.OK);
                 UpdateUI();
             }
             else
             {
                 //The only way this can fail at this point is username
-                await MessageBox.Show(MainWindow.instance!, "An error has ocurred while requesting password reset. Reason: " + result, "Reset password", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "An error has ocurred while requesting password reset. Reason: " + result, "Reset password", MessageBox.MessageBoxButtons.OK);
             }
         }
     }

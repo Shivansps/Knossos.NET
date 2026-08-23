@@ -123,7 +123,7 @@ namespace Knossos.NET.ViewModels
             {
                 var dialog = new ModInstallView();
                 dialog.DataContext = new ModInstallViewModel(modJson, dialog);
-                await dialog.ShowDialog<ModInstallView?>(MainWindow.instance!);
+                await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
             }
         }
 

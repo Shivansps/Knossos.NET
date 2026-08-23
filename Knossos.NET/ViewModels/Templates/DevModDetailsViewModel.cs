@@ -204,7 +204,7 @@ namespace Knossos.NET.ViewModels
                             var length = file.Length;
                             file.Close();
                             Dispatcher.UIThread.Invoke(() => {
-                                MessageBox.Show(MainWindow.instance!, "The image file size (" + length + " bytes) is over the max limit allowed (307200 bytes)", "Selected image file too is too big", MessageBox.MessageBoxButtons.OK);
+                                MessageBox.Show(MainWindow.instance, "The image file size (" + length + " bytes) is over the max limit allowed (307200 bytes)", "Selected image file too is too big", MessageBox.MessageBoxButtons.OK);
                             });
                             throw new Exception("The image file size (" + length + " bytes) is over the max limit allowed (307200 bytes)");
                         }
@@ -269,7 +269,7 @@ namespace Knossos.NET.ViewModels
                             var length = file.Length;
                             file.Close();
                             Dispatcher.UIThread.Invoke(() => {
-                                MessageBox.Show(MainWindow.instance!, "The image file size (" + length + " bytes) is over the max limit allowed (10485760 bytes)", "Selected image file too is too big", MessageBox.MessageBoxButtons.OK);
+                                MessageBox.Show(MainWindow.instance, "The image file size (" + length + " bytes) is over the max limit allowed (10485760 bytes)", "Selected image file too is too big", MessageBox.MessageBoxButtons.OK);
                             });
                             throw new Exception("The image file size (" + length + " bytes) is over the max limit allowed (10485760 bytes)");
                         }
@@ -404,7 +404,7 @@ namespace Knossos.NET.ViewModels
                             var length = file.Length;
                             file.Close();
                             Dispatcher.UIThread.Invoke(() => {
-                                MessageBox.Show(MainWindow.instance!, "The image file size (" + length + " bytes) is over the max limit allowed (10485760 bytes)", "Selected image file too is too big", MessageBox.MessageBoxButtons.OK);
+                                MessageBox.Show(MainWindow.instance, "The image file size (" + length + " bytes) is over the max limit allowed (10485760 bytes)", "Selected image file too is too big", MessageBox.MessageBoxButtons.OK);
                             });
                             throw new Exception("The image file size (" + length + " bytes) is over the max limit allowed (10485760 bytes)");
                         }

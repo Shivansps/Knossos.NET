@@ -323,14 +323,14 @@ namespace Knossos.NET.ViewModels
         {
             var dialog = new ModInstallView();
             dialog.DataContext = new ModInstallViewModel(modVersions[activeVersionIndex], dialog);
-            await dialog.ShowDialog<ModInstallView?>(MainWindow.instance!);
+            await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
         }
 
         internal async void ButtonCommandModify()
         {
             var dialog = new ModInstallView();
             dialog.DataContext = new ModInstallViewModel(modVersions[activeVersionIndex], dialog, modVersions[activeVersionIndex].version);
-            await dialog.ShowDialog<ModInstallView?>(MainWindow.instance!);
+            await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
         }
 
         internal async void ButtonCommandDelete()
@@ -339,7 +339,7 @@ namespace Knossos.NET.ViewModels
             {
                 if (TaskViewModel.Instance!.IsSafeState())
                 {
-                    var result = await MessageBox.Show(MainWindow.instance!, "You are going to remove mod " + Name + " .This will delete ALL versions of the mod. If you only want to delete a specific version you can do it from mod details.\n Do you really want to delete the mod?", "Delete mod", MessageBox.MessageBoxButtons.OKCancel);
+                    var result = await MessageBox.Show(MainWindow.instance, "You are going to remove mod " + Name + " .This will delete ALL versions of the mod. If you only want to delete a specific version you can do it from mod details.\n Do you really want to delete the mod?", "Delete mod", MessageBox.MessageBoxButtons.OKCancel);
                     if (result == MessageBox.MessageBoxResult.OK)
                     {
                         modVersions[modVersions.Count - 1].installed = false;
@@ -359,12 +359,12 @@ namespace Knossos.NET.ViewModels
                 }
                 else
                 {
-                    await MessageBox.Show(MainWindow.instance!, "You can not delete a mod while other install tasks are running, wait until they finish and try again.", "Tasks are running", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(MainWindow.instance, "You can not delete a mod while other install tasks are running, wait until they finish and try again.", "Tasks are running", MessageBox.MessageBoxButtons.OK);
                 }
             }
             else
             {
-                await MessageBox.Show(MainWindow.instance!, "Dev mode mods can not be delated from the main view, go to the Development section.", "Mod is dev mode", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Dev mode mods can not be delated from the main view, go to the Development section.", "Mod is dev mode", MessageBox.MessageBoxButtons.OK);
             }
         }
 

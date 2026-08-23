@@ -112,7 +112,7 @@ namespace Knossos.NET.ViewModels
                 {
                     await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        await MessageBox.Show(MainWindow.instance!, "Unable to get flag data from build " + fsoBuild + " It might be below the minimal version supported (3.8.1) or some other error ocurred.", "Invalid flag data", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "Unable to get flag data from build " + fsoBuild + " It might be below the minimal version supported (3.8.1) or some other error ocurred.", "Invalid flag data", MessageBox.MessageBoxButtons.OK);
                     });
 
                 }
@@ -122,7 +122,7 @@ namespace Knossos.NET.ViewModels
                 /* No valid build found, send message */
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await MessageBox.Show(MainWindow.instance!, "Unable to resolve FSO build dependency, download the correct one or manually select a FSO version. ", "Not engine build found", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(MainWindow.instance, "Unable to resolve FSO build dependency, download the correct one or manually select a FSO version. ", "Not engine build found", MessageBox.MessageBoxButtons.OK);
                 });
             }
         }

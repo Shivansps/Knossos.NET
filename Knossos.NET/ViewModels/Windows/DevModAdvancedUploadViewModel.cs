@@ -236,7 +236,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if (String.IsNullOrWhiteSpace(data.CustomHash) || data.CustomHash.Length == 0)
                     {
-                        _ = MessageBox.Show(MainWindow.instance!, "Package: " + data.PackageName + " is not set to upload but it lacks a defined sha256. Operation cancelled.", "Missing hash data", MessageBox.MessageBoxButtons.OK);
+                        _ = MessageBox.Show(MainWindow.instance, "Package: " + data.PackageName + " is not set to upload but it lacks a defined sha256. Operation cancelled.", "Missing hash data", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
                     else
@@ -247,7 +247,7 @@ namespace Knossos.NET.ViewModels
 
                     if(data.packageInNebula == null)
                     {
-                        _ = MessageBox.Show(MainWindow.instance!, "Package: " + data.PackageName + " is not set to upload but it lacks the package data from Nebula. Operation cancelled.", "Missing package data", MessageBox.MessageBoxButtons.OK);
+                        _ = MessageBox.Show(MainWindow.instance, "Package: " + data.PackageName + " is not set to upload but it lacks the package data from Nebula. Operation cancelled.", "Missing package data", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
                 }
@@ -262,7 +262,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if(await Nebula.IsFileUploaded(data.CustomHash) == false)
                     {
-                        _ = MessageBox.Show(MainWindow.instance!, "The provided sha256 hash for package: " + data.PackageName + " is not valid or not uploaded to Nebula, operation cancelled. Passed hash:" + data.CustomHash, "File hash is not uploaded to nebula (or it is incorrect)", MessageBox.MessageBoxButtons.OK);
+                        _ = MessageBox.Show(MainWindow.instance, "The provided sha256 hash for package: " + data.PackageName + " is not valid or not uploaded to Nebula, operation cancelled. Passed hash:" + data.CustomHash, "File hash is not uploaded to nebula (or it is incorrect)", MessageBox.MessageBoxButtons.OK);
                         Log.Add(Log.LogSeverity.Error,"DevModAdvancedUploadViewModel.UploadMod", "The provided sha256 hash for package: " + data.PackageName + " is not valid or not uploaded to Nebula, operation cancelled. Passed hash:"+data.CustomHash);
                         return;
                     }

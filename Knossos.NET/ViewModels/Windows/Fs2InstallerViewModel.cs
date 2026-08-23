@@ -82,7 +82,7 @@ namespace Knossos.NET.ViewModels
         {
             if(Knossos.GetKnossosLibraryPath() == null)
             {
-                await MessageBox.Show(MainWindow.instance!, "The KnossosNET library path is not set, first set the library path in the settings tab before installing FS2 Retail.", "Library path is null", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "The KnossosNET library path is not set, first set the library path in the settings tab before installing FS2 Retail.", "Library path is null", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             
@@ -174,7 +174,7 @@ namespace Knossos.NET.ViewModels
 
             if (!filePaths.Any())
             {
-                await MessageBox.Show(MainWindow.instance!, "Filepaths list is empty, something happened, if you are reading a gog exe it may be because its internal folder structure is different than the expected.", "Error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Filepaths list is empty, something happened, if you are reading a gog exe it may be because its internal folder structure is different than the expected.", "Error", MessageBox.MessageBoxButtons.OK);
                 if (gogExe != null)
                 {
                     try
@@ -468,7 +468,7 @@ namespace Knossos.NET.ViewModels
                     {
                         //Missing files
                         gogExe = null;
-                        await MessageBox.Show(MainWindow.instance!, "Unable to find all the required Freespace 2 files in gog exe.", "Files not found", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "Unable to find all the required Freespace 2 files in gog exe.", "Files not found", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
                     ProgressMax = innoOutput.Split('\n').Length-2;
@@ -544,7 +544,7 @@ namespace Knossos.NET.ViewModels
                     if (reqFilesFound < 9)
                     {
                         //Missing files
-                        await MessageBox.Show(MainWindow.instance!, "Unable to find all the required Freespace 2 files in this directory.", "Files not found", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "Unable to find all the required Freespace 2 files in this directory.", "Files not found", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
                     CanInstall = true;

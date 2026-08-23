@@ -803,7 +803,7 @@ namespace Knossos.NET.ViewModels
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     //Messagebox is not thread safe!
-                    await MessageBox.Show(MainWindow.instance!, "An error was ocurred during the download of the mod: " + mod.ToString() + ". Error: " + ex.Message, "Error", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(MainWindow.instance, "An error was ocurred during the download of the mod: " + mod.ToString() + ". Error: " + ex.Message, "Error", MessageBox.MessageBoxButtons.OK);
                 });
                 while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
                 {

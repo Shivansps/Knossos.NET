@@ -420,7 +420,7 @@ namespace Knossos.NET.ViewModels
                 {
                     await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        await MessageBox.Show(MainWindow.instance!, "Unable to get flag data from build " + fsoBuild + " It might be below the minimal version supported (3.8.1) or some other error ocurred.", "Invalid flag data", MessageBox.MessageBoxButtons.OK);
+                        await MessageBox.Show(MainWindow.instance, "Unable to get flag data from build " + fsoBuild + " It might be below the minimal version supported (3.8.1) or some other error ocurred.", "Invalid flag data", MessageBox.MessageBoxButtons.OK);
                     });
 
                 }
@@ -430,7 +430,7 @@ namespace Knossos.NET.ViewModels
                 /* No valid build found, send message */
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await MessageBox.Show(MainWindow.instance!, "Unable to resolve FSO build dependency, download the correct one or manually select a FSO version. ", "Not engine build found", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(MainWindow.instance, "Unable to resolve FSO build dependency, download the correct one or manually select a FSO version. ", "Not engine build found", MessageBox.MessageBoxButtons.OK);
                 });
             }
         }
@@ -491,7 +491,7 @@ namespace Knossos.NET.ViewModels
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    var result = await MessageBox.Show(MainWindow.instance!, "This mod is in devmode, do not compress a mod that have not been uploaded to nebula yet! This increases upload size and disk space on nebula. It is ok if you compress old versions that are already uploaded.", "Mod is in devmode", MessageBox.MessageBoxButtons.ContinueCancel);
+                    var result = await MessageBox.Show(MainWindow.instance, "This mod is in devmode, do not compress a mod that have not been uploaded to nebula yet! This increases upload size and disk space on nebula. It is ok if you compress old versions that are already uploaded.", "Mod is in devmode", MessageBox.MessageBoxButtons.ContinueCancel);
                     if (result != MessageBox.MessageBoxResult.Continue)
                         cancel = true;
                 });
@@ -519,7 +519,7 @@ namespace Knossos.NET.ViewModels
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    var result = await MessageBox.Show(MainWindow.instance!, "This mod currently resolves to FSO build: "+fsoBuild.version+" the minimum to fully support all features is: "+VPCompression.MinimumFSOVersion + ".\n 23.0.0 may work if the mod do not have loose files, older versions are not going to work.", "FSO Version below minimum", MessageBox.MessageBoxButtons.ContinueCancel);
+                    var result = await MessageBox.Show(MainWindow.instance, "This mod currently resolves to FSO build: "+fsoBuild.version+" the minimum to fully support all features is: "+VPCompression.MinimumFSOVersion + ".\n 23.0.0 may work if the mod do not have loose files, older versions are not going to work.", "FSO Version below minimum", MessageBox.MessageBoxButtons.ContinueCancel);
                     if (result != MessageBox.MessageBoxResult.Continue)
                         cancel = true;
                 });

@@ -107,7 +107,7 @@ namespace Knossos.NET.ViewModels
                     //verify if the modid is already uploaded to nebula
                     if(await Nebula.IsModIdInNebula(editor.ActiveVersion.id) == false)
                     {
-                        _ = MessageBox.Show(MainWindow.instance!, "The mod id: " + editor.ActiveVersion.id + ", was not found in Nebula's database. This likely means your mod was never uploaded to Nebula.\nYou need to upload at least one version to Nebula (public or private) in order to manage mod members.\nIt can also be caused by a network error.", "Mod ID not in Nebula", MessageBox.MessageBoxButtons.OK);
+                        _ = MessageBox.Show(MainWindow.instance, "The mod id: " + editor.ActiveVersion.id + ", was not found in Nebula's database. This likely means your mod was never uploaded to Nebula.\nYou need to upload at least one version to Nebula (public or private) in order to manage mod members.\nIt can also be caused by a network error.", "Mod ID not in Nebula", MessageBox.MessageBoxButtons.OK);
                         ButtonsEnabled = false;
                         return;
                     }
@@ -125,7 +125,7 @@ namespace Knossos.NET.ViewModels
                         }
                         else
                         {
-                            _ = MessageBox.Show(MainWindow.instance!, "An error has ocurred while retrieving the mod member list. The log may provide more information.", "Error", MessageBox.MessageBoxButtons.OK);
+                            _ = MessageBox.Show(MainWindow.instance, "An error has ocurred while retrieving the mod member list. The log may provide more information.", "Error", MessageBox.MessageBoxButtons.OK);
                         }
                     });
                 } else {
@@ -165,7 +165,7 @@ namespace Knossos.NET.ViewModels
                     }
                     if (!currentUserIsFound)
                     {
-                        _ = MessageBox.Show(MainWindow.instance!, "For some reason your nebula user name: " + Nebula.userName + ". Was not found in this mod team member list. You cant save changes in this condition.", "Error", MessageBox.MessageBoxButtons.OK);
+                        _ = MessageBox.Show(MainWindow.instance, "For some reason your nebula user name: " + Nebula.userName + ". Was not found in this mod team member list. You cant save changes in this condition.", "Error", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
                     ButtonsEnabled = false;
@@ -175,16 +175,16 @@ namespace Knossos.NET.ViewModels
                         {
                             if(result == "ok")
                             {
-                                await MessageBox.Show(MainWindow.instance!, "Mod members updated successfully!", "Save Changes", MessageBox.MessageBoxButtons.OK);
+                                await MessageBox.Show(MainWindow.instance, "Mod members updated successfully!", "Save Changes", MessageBox.MessageBoxButtons.OK);
                             }
                             else
                             {
-                                await MessageBox.Show(MainWindow.instance!, "An error has ocurred while updating members, no changes were saved. Reason: " + result, "Error", MessageBox.MessageBoxButtons.OK);
+                                await MessageBox.Show(MainWindow.instance, "An error has ocurred while updating members, no changes were saved. Reason: " + result, "Error", MessageBox.MessageBoxButtons.OK);
                             }
                         }
                         else
                         {
-                            await MessageBox.Show(MainWindow.instance!, "An error has ocurred while updating members, no changes were saved. Reason: Unknown", "Error", MessageBox.MessageBoxButtons.OK);
+                            await MessageBox.Show(MainWindow.instance, "An error has ocurred while updating members, no changes were saved. Reason: Unknown", "Error", MessageBox.MessageBoxButtons.OK);
                         }
                         ButtonsEnabled = true;
                     }).ConfigureAwait(false);

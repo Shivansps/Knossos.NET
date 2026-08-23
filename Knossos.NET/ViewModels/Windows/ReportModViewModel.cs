@@ -47,7 +47,7 @@ namespace Knossos.NET.ViewModels
                 var reply = await Nebula.ReportMod(mod, ReasonString);
                 if(reply)
                 {
-                    await MessageBox.Show(MainWindow.instance!, "Your report has been submitted to fsnebula, we will act as soon as possible.", "Mod Report OK", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(MainWindow.instance, "Your report has been submitted to fsnebula, we will act as soon as possible.", "Mod Report OK", MessageBox.MessageBoxButtons.OK);
                     if(dialog != null)
                     {
                         dialog.Close();
@@ -55,12 +55,12 @@ namespace Knossos.NET.ViewModels
                 }
                 else
                 {
-                    await MessageBox.Show(MainWindow.instance!, "An error has ocurred while reporting a mod.", "Mod Report Error", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(MainWindow.instance, "An error has ocurred while reporting a mod.", "Mod Report Error", MessageBox.MessageBoxButtons.OK);
                 }
             }
             else
             {
-                await MessageBox.Show(MainWindow.instance!, "Please provide a reason for your report.", "Reason is empty", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Please provide a reason for your report.", "Reason is empty", MessageBox.MessageBoxButtons.OK);
             }
         }
 

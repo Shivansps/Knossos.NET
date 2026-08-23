@@ -534,7 +534,7 @@ namespace Knossos.NET.ViewModels
                 {
                     if (modVersions.Count > 1)
                     {
-                        var resp = await MessageBox.Show(MainWindow.instance!, "You are about to delete version " + modVersions[ItemSelectedIndex].version + " of this mod, this will remove this version only. Do you want to continue?", "Delete mod version", MessageBox.MessageBoxButtons.YesNo);
+                        var resp = await MessageBox.Show(MainWindow.instance, "You are about to delete version " + modVersions[ItemSelectedIndex].version + " of this mod, this will remove this version only. Do you want to continue?", "Delete mod version", MessageBox.MessageBoxButtons.YesNo);
                         if (resp == MessageBox.MessageBoxResult.Yes)
                         {
                             var delete = modVersions[ItemSelectedIndex];
@@ -548,7 +548,7 @@ namespace Knossos.NET.ViewModels
                     }
                     else
                     {
-                        var resp = await MessageBox.Show(MainWindow.instance!, "You are about to delete the last installed version of this mod. Do you want to continue?", "Delete mod version", MessageBox.MessageBoxButtons.YesNo);
+                        var resp = await MessageBox.Show(MainWindow.instance, "You are about to delete the last installed version of this mod. Do you want to continue?", "Delete mod version", MessageBox.MessageBoxButtons.YesNo);
                         if (resp == MessageBox.MessageBoxResult.Yes)
                         {
                             //Last version
@@ -574,12 +574,12 @@ namespace Knossos.NET.ViewModels
                 }
                 else
                 {
-                    await MessageBox.Show(MainWindow.instance!, "You can not delete a mod while other install tasks are running, wait until they finish and try again.", "Tasks are running", MessageBox.MessageBoxButtons.OK);
+                    await MessageBox.Show(MainWindow.instance, "You can not delete a mod while other install tasks are running, wait until they finish and try again.", "Tasks are running", MessageBox.MessageBoxButtons.OK);
                 }
             }
             else
             {
-                await MessageBox.Show(MainWindow.instance!, "Dev mode mods can not be delated from the main view, go to the Development section.", "Mod is dev mode", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "Dev mode mods can not be delated from the main view, go to the Development section.", "Mod is dev mode", MessageBox.MessageBoxButtons.OK);
             }
         }
 
@@ -596,12 +596,12 @@ namespace Knossos.NET.ViewModels
         {
             if (!Nebula.userIsLoggedIn)
             {
-                await MessageBox.Show(MainWindow.instance!, "You need to be logged to Nebula (in the Develop tab) to upload a report.", "Nebula loggin needed", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "You need to be logged to Nebula (in the Develop tab) to upload a report.", "Nebula loggin needed", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             var dialog = new ReportModView();
             dialog.DataContext = new ReportModViewModel(modVersions[ItemSelectedIndex], dialog);
-            await dialog.ShowDialog<ReportModView?>(MainWindow.instance!);
+            await dialog.ShowDialog<ReportModView?>(MainWindow.instance);
         }
     }
 }

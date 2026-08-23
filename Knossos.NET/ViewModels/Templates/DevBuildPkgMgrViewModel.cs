@@ -387,7 +387,7 @@ namespace Knossos.NET.ViewModels
                 if (editor != null)
                 {
                     var folderPath = Path.Combine(editor.ActiveVersion.fullPath, editorPackageItem.Package.folder != null ? editorPackageItem.Package.folder : string.Empty);
-                    var resp = await MessageBox.Show(MainWindow.instance!, "This will delete the package: " + editorPackageItem.Package.name + " and ALL FILES on this folder: " + folderPath + " of the build and version " + editor.ActiveVersion + "\n Do you really want to do this? This action cannot be undone.", "Confirm package deletion", MessageBox.MessageBoxButtons.YesNo);
+                    var resp = await MessageBox.Show(MainWindow.instance, "This will delete the package: " + editorPackageItem.Package.name + " and ALL FILES on this folder: " + folderPath + " of the build and version " + editor.ActiveVersion + "\n Do you really want to do this? This action cannot be undone.", "Confirm package deletion", MessageBox.MessageBoxButtons.YesNo);
                     if (resp == MessageBox.MessageBoxResult.Yes)
                     {
                         Directory.Delete(folderPath, true);

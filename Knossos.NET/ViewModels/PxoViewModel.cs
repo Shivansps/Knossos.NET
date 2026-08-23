@@ -100,19 +100,19 @@ namespace Knossos.NET.ViewModels
             Password = Password.Replace(" ", "");
             if (Login == string.Empty || Password == string.Empty)
             {
-                await MessageBox.Show(MainWindow.instance!, "The PXO Login and Password cant be empty.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "The PXO Login and Password cant be empty.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
 
             if (!Login.All(char.IsDigit) || Login.Length > 8)
             {
-                await MessageBox.Show(MainWindow.instance!, "The PXO Login can only contain digits and have a max length of 8.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "The PXO Login can only contain digits and have a max length of 8.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
 
             if (Password.All(char.IsDigit) || !Password.All(char.IsLower) || Password.Length != 12)
             {
-                await MessageBox.Show(MainWindow.instance!, "The PXO Password can only contain 12 lowercase letters.", "Validation error", MessageBox.MessageBoxButtons.OK);
+                await MessageBox.Show(MainWindow.instance, "The PXO Password can only contain 12 lowercase letters.", "Validation error", MessageBox.MessageBoxButtons.OK);
                 return;
             }
 
