@@ -26,6 +26,9 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal string? libraryPath = null;
 
+        [ObservableProperty]
+        internal string retailFs2Status = string.Empty;
+
         private CompressionSettings modCompression = CompressionSettings.Manual;
         internal CompressionSettings ModCompression
         {
@@ -80,6 +83,13 @@ namespace Knossos.NET.ViewModels
             LibraryPath = Knossos.globalSettings.basePath;
         }
 
+        private void EnterPage4()
+        {
+            RetailFs2Status = Knossos.retailFs2RootFound
+                ? "Current Status: Freespace 2 Game Data is Installed"
+                : "Current Status: Freespace 2 Game Data is NOT Installed";
+        }
+
         internal void GoBackCommand()
         {
             pageNumber--;
@@ -105,7 +115,7 @@ namespace Knossos.NET.ViewModels
                 case 1: CanGoBack = false; CanContinue = true; Page1 = true; Page2 = false; LastPage = false;  break;
                 case 2: CanGoBack = true; CanContinue = true; Page1 = false; Page2 = true; Page3 = false; EnterPage2(); LastPage = false;  break;
                 case 3: CanGoBack = true; CanContinue = true; Page2 = false; Page3 = true; Page4 = false; LastPage = false;  break;
-                case 4: CanGoBack = true; CanContinue = true; Page3 = false; Page4 = true; Page5 = false; LastPage = false; break;
+                case 4: CanGoBack = true; CanContinue = true; Page3 = false; Page4 = true; Page5 = false; EnterPage4(); LastPage = false; break;
                 case 5: CanGoBack = true; CanContinue = true; Page4 = false; Page5 = true; LastPage = true; break;
             }
         }
