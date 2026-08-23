@@ -36,13 +36,12 @@
 		<!--Page2-->
 		<StackPanel IsVisible="{Binding Page2}" Grid.Row="0" >
 			<StackPanel IsVisible="{Binding !IsPortableMode}">
-				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >Setting up the Library Folder</TextBlock>
-				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">First, you must set a Library Folder. Go to the "Settings" tab and under the "KnossosNET" section click on the "Browse" button and choose or create a folder for KnossosNET to use. It is highly recommended to set this as an empty folder in a location with a large amount of available storage. Do not set your Library Folder to a shared or cloud drive (such as OneDrive or Google Drive) because syncing issues will prevent Knossos from downloading mod files correctly.</TextBlock>
+				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >Knossos Library Folder</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The KnossosNET Library Folder is where all game and mod data will be saved to. Make sure you always have space available on this drive before installing a new mod or update.</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Current Library Folder</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left" Text="{Binding LibraryPath}"></TextBlock>
-				<TextBlock IsVisible="{Binding !CanContinue}" Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Go to the "Settings" tab and set the Library Folder to continue.</TextBlock>
-				<Button IsVisible="{Binding !CanContinue}" Command="{Binding ClickSettingsButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
+				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">This is the current library folder path, if you want to change its location you can go to "Settings" and change it.</TextBlock>
+				<Button Command="{Binding ClickSettingsButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
 			</StackPanel>
 			<StackPanel IsVisible="{Binding IsPortableMode}">
 				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >KnossosNET is running in portable mode</TextBlock>
@@ -88,7 +87,7 @@
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">&#8226; Freespace Upgrade MediaVPs - Visual improvements for Freespace 2. It is also used by most, if not all, other FS related mods. This mod has optional visual improvements components (like MV_AdvancedX) and it is recommended to select them all during install.</TextBlock>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">&#8226; FreeSpace Port MediaVPs - Visual improvements for the Freespace 1 port. This will also install the Freespace 1 port mod, which gives you access to the full Freespace 1 missions and story.</TextBlock>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">&#8226; Silent Threat: Reborn - Fan made replacement and improvement of the original Silent Threat FS1 expansion. The story elements happen after the main FS1 story and before FS2.</TextBlock>
-			<TextBlock Margin="20,20,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Remember that you can always play total conversion mods, which do not require Freespace 2 Retail files. There are many great options, such as Wing Commander Saga, Diaspora, Solaris and more.</TextBlock>
+			<TextBlock Margin="20,20,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Remember that you can always play total conversion mods, which do not require Freespace 2 Retail files. There are many great options, such as Event Horizon, Wing Commander Saga, Diaspora, Solaris and more.</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">This step is optional and you can continue at any time.</TextBlock>
 		</StackPanel>
 

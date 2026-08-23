@@ -103,15 +103,7 @@ namespace Knossos.NET.ViewModels
 
                     if (Page2)
                     {
-                        if (LibraryPath == null)
-                        {
-                            await Task.Delay(1000);
-                            EnterPage2();
-                        }
-                        else
-                        {
-                            CanContinue = true;
-                        }
+                        CanContinue = true;
                     }
                 });
             });
