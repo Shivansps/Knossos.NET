@@ -79,6 +79,129 @@ namespace Knossos.NET
         }
 
         /// <summary>
+        /// Run only on first installs, determines the default first library path by OS
+        /// </summary>
+        private static void DetermineDefaultBasePath()
+        {
+            //Load base path from knossos legacy, if it exists
+            var legacyBasePath = KnUtils.GetBasePathFromKnossosLegacy();
+            if (Directory.Exists(legacyBasePath) && TrySetDefaultBasePath(legacyBasePath))
+            {
+                Log.Add(Log.LogSeverity.Information, "Knossos.DetermineDefaultBasePath()", $"Loading library path '{globalSettings.basePath}' from Knossos Legacy.");
+                globalSettings.Save(false);
+                return;
+            }
+
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (KnUtils.IsAndroid)
+            {
+                TrySetDefaultBasePath(AndroidHelper.GetDefaultLibraryDir());
+            }
+            else if (KnUtils.IsWindows)
+            {
+                var systemRoot = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+                if (string.IsNullOrWhiteSpace(systemRoot))
+                    systemRoot = @"C:\";
+
+                TrySetDefaultBasePath(Path.Combine(systemRoot, "Games", "KnossosNET", "FreespaceOpen"));
+
+                if (globalSettings.basePath == null)
+                {
+                    var publicProfile = Environment.GetEnvironmentVariable("PUBLIC");
+                    if (string.IsNullOrWhiteSpace(publicProfile))
+                    {
+                        var commonDocuments = Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments);
+                        if (!string.IsNullOrWhiteSpace(commonDocuments))
+                            publicProfile = Directory.GetParent(commonDocuments)?.FullName;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(publicProfile))
+                        TrySetDefaultBasePath(Path.Combine(publicProfile, "KnossosNET", "FreespaceOpen"));
+                }
+            }
+            else if (KnUtils.IsMacOS)
+            {
+                TrySetDefaultBasePath(Path.Combine(userProfile, "Library", "Application Support", "io.github.KnossosNET.Knossos_NET", "FreespaceOpen"));
+            }
+            else if (KnUtils.IsLinux)
+            {
+                TrySetDefaultBasePath(Path.Combine(userProfile, "KnossosNET", "FreespaceOpen"));
+            }
+
+            // General fallbacks for an unknown OS, or when the preferred OS path is not writable.
+            if (globalSettings.basePath == null && !string.IsNullOrWhiteSpace(userProfile))
+                TrySetDefaultBasePath(Path.Combine(userProfile, "KnossosNET", "FreespaceOpen"));
+
+            if (globalSettings.basePath == null)
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                if (!string.IsNullOrWhiteSpace(localAppData))
+                    TrySetDefaultBasePath(Path.Combine(localAppData, "KnossosNET", "FreespaceOpen"));
+            }
+
+            if (globalSettings.basePath == null)
+                TrySetDefaultBasePath(Path.Combine(KnUtils.GetKnossosDataFolderPath(), "FreespaceOpen"));
+
+            if (globalSettings.basePath != null)
+            {
+                Log.Add(Log.LogSeverity.Information, "Knossos.DetermineDefaultBasePath()", $"Choosing '{globalSettings.basePath}' as default library path.");
+                globalSettings.Save(false);
+            }
+            else
+            {
+                Log.Add(Log.LogSeverity.Error, "Knossos.DetermineDefaultBasePath()", "Unable to find a writable default library path.");
+            }
+        }
+
+        /// <summary>
+        /// Creates and verifies a possible default library path before selecting it.
+        /// </summary>
+        private static bool TrySetDefaultBasePath(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            string? writeTestPath = null;
+            try
+            {
+                var fullPath = Path.GetFullPath(path);
+                Directory.CreateDirectory(fullPath);
+
+                writeTestPath = Path.Combine(fullPath, $".knossos_write_test_{Guid.NewGuid():N}.tmp");
+                using (var writeTest = new FileStream(writeTestPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    writeTest.WriteByte(0);
+                    writeTest.Flush(true);
+                }
+
+                File.Delete(writeTestPath);
+                writeTestPath = null;
+                globalSettings.basePath = fullPath;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Add(Log.LogSeverity.Warning, "Knossos.TrySetDefaultBasePath()", $"Cannot use '{path}' as the default library path: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                if (writeTestPath != null)
+                {
+                    try
+                    {
+                        File.Delete(writeTestPath);
+                    }
+                    catch
+                    {
+                        // Best-effort cleanup of the temporary write test.
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// StartUp sequence
         /// </summary>
         /// <param name="isQuickLaunch"></param>
@@ -153,20 +276,14 @@ namespace Knossos.NET
                     }
                 }
 
-                //Load base path from knossos legacy
-                if (globalSettings.basePath == null && KnUtils.IsAndroid)
-                {
-                    globalSettings.basePath = AndroidHelper.GetDefaultLibraryDir();
-                } 
                 if (globalSettings.basePath == null && !inSingleTCMode)
                 {
-                    globalSettings.basePath = KnUtils.GetBasePathFromKnossosLegacy();
+                    DetermineDefaultBasePath();
+                    if (!isQuickLaunch)
+                        OpenQuickSetup();
                 }
 
                 LoadBasePath(isQuickLaunch);
-
-                if (globalSettings.basePath == null && !isQuickLaunch && !inSingleTCMode)
-                    OpenQuickSetup();
             }
             catch(Exception ex)
             {
