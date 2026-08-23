@@ -629,7 +629,10 @@ namespace Knossos.NET.Classes.Inno
             if (!IsExternal)
             {
                 long start = checked((long)(_dataOffset + part.ChunkOffset));
-                return new WindowStream(_stream, start, span, _io);
+                // SharpCompress's LZMA decoder pulls compressed input one byte at a time.
+                // Buffer the bounded window so Android content streams do not perform a
+                // managed-to-Java read + seek round trip for every compressed byte.
+                return new BufferedStream(new WindowStream(_stream, start, span, _io), 1 << 16);
             }
             return new SliceStream(EnsureSlices(), part.FirstSlice, (long)part.ChunkOffset, span);
         }
