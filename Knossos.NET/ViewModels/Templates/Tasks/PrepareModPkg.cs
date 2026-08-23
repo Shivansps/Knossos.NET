@@ -5,12 +5,47 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using Avalonia.Threading;
+using Knossos.NET.Views;
 using VP.NET;
 
 namespace Knossos.NET.ViewModels
 {
     public partial class TaskItemViewModel : ViewModelBase
     {
+        private static readonly SemaphoreSlim uploadRetryPromptLock = new(1, 1);
+
+        private async Task ConfirmPackageCompressionRetry(string archivePath, string modFullPath)
+        {
+            await uploadRetryPromptLock.WaitAsync(cancellationTokenSource!.Token);
+            try
+            {
+                if (cancellationTokenSource.IsCancellationRequested)
+                    throw new TaskCanceledException();
+
+                var libraryPath = Knossos.GetKnossosLibraryPath() ?? modFullPath;
+                var result = MessageBox.MessageBoxResult.Cancel;
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    result = await MessageBox.Show(MainWindow.instance,
+                        "The package archive could not be created or failed its integrity check. " +
+                        "This may mean that the drive containing the Knossos.NET library has run out of free space.\n\n" +
+                        "Free some space in the library, then select Continue to retry.\n\n" +
+                        "Library path:\n" + libraryPath + "\n\n" +
+                        "Archive path:\n" + archivePath,
+                        "Package creation failed",
+                        MessageBox.MessageBoxButtons.ContinueCancel);
+                });
+
+                if (result != MessageBox.MessageBoxResult.Continue)
+                    throw new TaskCanceledException();
+            }
+            finally
+            {
+                uploadRetryPromptLock.Release();
+            }
+        }
+
         private async Task<bool> PrepareModPkg(ModPackage pkg, string modFullPath, CancellationTokenSource? cancelSource = null)
         {
             try
@@ -113,6 +148,7 @@ namespace Knossos.NET.ViewModels
                                         //Disable failing and instead delete the file if it exists
                                         //throw new TaskCanceledException();
                                         await KnUtils.DeleteFileSafe(zipPath, cancellationTokenSource);
+                                        await ConfirmPackageCompressionRetry(zipPath, modFullPath);
                                     }
                                     else
                                     {
@@ -132,7 +168,7 @@ namespace Knossos.NET.ViewModels
                                             Info = "Retry: Compressing (7z)";
                                             await KnUtils.DeleteFileSafe(zipPath, cancellationTokenSource);
                                             crcAttempt++;
-                                            await Task.Delay(1000);
+                                            await ConfirmPackageCompressionRetry(zipPath, modFullPath);
                                         }
                                     }
                                     if (cancellationTokenSource.IsCancellationRequested)
@@ -195,6 +231,7 @@ namespace Knossos.NET.ViewModels
                                         //Disable failing and instead delete the file if it exists
                                         //throw new TaskCanceledException();
                                         await KnUtils.DeleteFileSafe(zipPath + ".tar.gz", cancellationTokenSource);
+                                        await ConfirmPackageCompressionRetry(zipPath + ".tar.gz", modFullPath);
                                     }
                                     else
                                     {
@@ -216,6 +253,7 @@ namespace Knossos.NET.ViewModels
                                             Info = "Retry: Compressing (.tar.gz)";
                                             await KnUtils.DeleteFileSafe(zipPath + ".tar.gz", cancellationTokenSource);
                                             crcAttempt++;
+                                            await ConfirmPackageCompressionRetry(zipPath + ".tar.gz", modFullPath);
                                         }
                                     }
                                 } while (!crcResult);
@@ -234,6 +272,7 @@ namespace Knossos.NET.ViewModels
                                         //Disable failing and instead delete the file if it exists
                                         //throw new TaskCanceledException();
                                         await KnUtils.DeleteFileSafe(zipPath, cancellationTokenSource);
+                                        await ConfirmPackageCompressionRetry(zipPath, modFullPath);
                                     }
                                     else
                                     {
@@ -255,6 +294,7 @@ namespace Knossos.NET.ViewModels
                                             Info = "Retry: Compressing (7z)";
                                             await KnUtils.DeleteFileSafe(zipPath, cancellationTokenSource);
                                             crcAttempt++;
+                                            await ConfirmPackageCompressionRetry(zipPath, modFullPath);
                                         }
                                     }
                                 } while (!crcResult);
