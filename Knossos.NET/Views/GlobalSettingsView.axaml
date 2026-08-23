@@ -56,7 +56,7 @@
 								<ComboBoxItem Tag="0">Disabled</ComboBoxItem>
 								<ComboBoxItem Tag="1">Manual</ComboBoxItem>
 								<ComboBoxItem Tag="2">Forced On</ComboBoxItem>
-								<ComboBoxItem Tag="3">Automatic (Recommended)</ComboBoxItem>
+								<ComboBoxItem Tag="3">Automatic</ComboBoxItem>
 							</ComboBox>
 							<NumericUpDown IsEnabled="{Binding ModCompression}" Margin="10,0,0,0" Width="120" Grid.Column="2" Minimum="1" Maximum="8" Value="{Binding CompressionMaxParallelism}" ToolTip.Tip="Max number of parallel compression tasks"></NumericUpDown>
 						</WrapPanel>

@@ -37,7 +37,7 @@
 		<!--Page2-->
 		<StackPanel IsVisible="{Binding Page2}" Grid.Row="0" >
 			<StackPanel IsVisible="{Binding !IsPortableMode}">
-				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >Knossos Library Folder (Optional)</TextBlock>
+				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >Knossos Library Folder</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The KnossosNET Library Folder is where all game and mod data will be saved to. Make sure you always have space available on this drive before installing a new mod or update.</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Current Library Folder</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left" Text="{Binding LibraryPath}"></TextBlock>
@@ -55,18 +55,18 @@
 		
 		<!--Page3-->
 		<StackPanel IsVisible="{Binding Page3}" Grid.Row="0" >
-			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Mod Compression (Optional)</TextBlock>
+			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Mod Compression</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">KnossosNET can compress supported mod files in your library as mods are installed. This can reduce their size on disk, but compression requires additional processing and can make installations take longer.</TextBlock>
 			<TextBlock Margin="20,10,20,5" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Choose how KnossosNET handles mod compression:</TextBlock>
 			<ComboBox SelectedIndex="{Binding ModCompression}" HorizontalAlignment="Left" Width="230" Margin="20,0,20,10">
 				<ComboBoxItem Tag="0">Disabled</ComboBoxItem>
 				<ComboBoxItem Tag="1">Manual</ComboBoxItem>
 				<ComboBoxItem Tag="2">Forced On</ComboBoxItem>
-				<ComboBoxItem Tag="3">Automatic (Recommended)</ComboBoxItem>
+				<ComboBoxItem Tag="3">Automatic</ComboBoxItem>
 			</ComboBox>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Disabled:</Run> Mod compression is unavailable.</TextBlock>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Manual:</Run> Mods are not compressed during installation. To compress a mod, install it first, open its individual Mod Settings, and use the compression option there.</TextBlock>
-			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Automatic (Recommended):</Run> Mods are compressed during installation only when they meet the minimum FSO build requirements for mod compression.</TextBlock>
+			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Automatic:</Run> Mods are compressed during installation only when they meet the minimum FSO build requirements for mod compression.</TextBlock>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Forced On:</Run> All non-developer mods are compressed during installation.</TextBlock>
 			<TextBlock Margin="20,20,20,5" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">You can change this option at any time in "Settings" under the "KnossosNET Settings" section.</TextBlock>
 			<Button Command="{Binding ClickSettingsButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
@@ -74,7 +74,8 @@
 
 		<!--Page4-->
 		<StackPanel IsVisible="{Binding Page4}" Grid.Row="0" >
-			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Freespace 2 Retail (Optional)</TextBlock>
+			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Installing Freespace 2 Retail</TextBlock>
+			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left" Text="{Binding RetailFs2Status}"/>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">In order to have access to Freespace 1 and 2 content and visual improvements you need to install Freespace 2 Retail game data in KnossosNET. If you do not install Freespace 2 Retail, then any content that needs the full Freespace 2 retail files will not be displayed on the "Explore" tab.</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">If you do not have the retail FS2 installed into KnossosNET you can still play total conversion mods, which are mods that are completely standalone and do not depend on any of the Freespace content.</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">To install Freespace 2 go to the "Settings" tab and open the "FS2 Retail Installer" button under the "KnossosNET Settings" section. Then follow the instructions there. If you already have FS2 installed this button is not available.</TextBlock>
@@ -83,7 +84,7 @@
 
 		<!--Page5-->
 		<StackPanel IsVisible="{Binding Page5}" Grid.Row="0"  >
-			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Installing mods (Optional)</TextBlock>
+			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Installing mods and total conversions</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The "Freespace" tab is where the most relevant mods to Freespace, including Freespace 2 retail, Freespace 1 and their graphics upgrades are listed for easy access. If you are just starting to KnossosNET we recommend you start there. </TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The "Play" tab is where all your installed mods are displayed, while the "Explore" tab shows only uninstalled mods. If you have installed Freespace 2 Retail, the FS2 retail mod card will already be added to your "Play" tab, but if you click "Play" right now you will be playing Freespace 2 in only its original 1999 glory. At this point you are probably looking for the visual improvements, so go to the "Explore" tab and lets download and install some mods!</TextBlock>
 			<TextBlock Margin="20,0,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The following mods are some of the main projects related to improving visuals and Freespace story:</TextBlock>
