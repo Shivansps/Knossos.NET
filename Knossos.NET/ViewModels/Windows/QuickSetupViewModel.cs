@@ -39,7 +39,7 @@ namespace Knossos.NET.ViewModels
                 {
                     this.SetProperty(ref modCompression, value);
                     Knossos.globalSettings.modCompression = value;
-                    MainViewModel.Instance?.GlobalSettingsView?.UpdateModCompressionFromQuickSetup(value);
+                    MainWindowViewModel.Instance?.GlobalSettingsView?.UpdateModCompressionFromQuickSetup(value);
                     Knossos.globalSettings.Save(false);
                 }
             }
@@ -70,7 +70,7 @@ namespace Knossos.NET.ViewModels
             this.dialog = dialog;
             isPortableMode = Knossos.inPortableMode;
             libraryPath = Knossos.globalSettings.basePath;
-            modCompression = MainViewModel.Instance?.GlobalSettingsView?.ModCompression ?? Knossos.globalSettings.modCompression;
+            modCompression = MainWindowViewModel.Instance?.GlobalSettingsView?.ModCompression ?? Knossos.globalSettings.modCompression;
         }
 
         internal void OpenDiscordQuickSetup()
@@ -122,8 +122,8 @@ namespace Knossos.NET.ViewModels
         
         public void ClickSettingsButton()
         {
-            MainViewModel.Instance?.ClickOnMenuButton("Settings");
-            MainViewModel.Instance?.GlobalSettingsView?.ExpandKnossosSection();
+            MainWindowViewModel.Instance?.ClickOnMenuButton("Settings");
+            MainWindowViewModel.Instance?.GlobalSettingsView?.ExpandKnossosSection();
         }
     }
 }

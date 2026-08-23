@@ -102,11 +102,7 @@ namespace Knossos.NET
 
             var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            if (KnUtils.IsAndroid)
-            {
-                TrySetDefaultBasePath(AndroidHelper.GetDefaultLibraryDir());
-            }
-            else if (KnUtils.IsWindows)
+            if (KnUtils.IsWindows)
             {
                 var systemRoot = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
                 if (string.IsNullOrWhiteSpace(systemRoot))
