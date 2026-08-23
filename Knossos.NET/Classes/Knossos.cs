@@ -78,7 +78,16 @@ namespace Knossos.NET
         }
 
         /// <summary>
-        /// Run only on first installs, determines the default first library path by OS
+        /// Run only on first install, determines the default first library path by OS
+        /// Write checks are done to make sure we can write to this folder
+        /// 
+        /// Rutes:
+        /// -First try to look and use a library from Knossos Legacy
+        /// -Windows: C:\Games\KnossosNET\FreespaceOpen; If not writtable: %PUBLIC%\KnossosNET\FreespaceOpen
+        /// -MacOS: ~/Library/Application Support/io.github.KnossosNET.Knossos_NET/FreespaceOpen
+        /// -Linux: ~/KnossosNET/FreespaceOpen
+        /// -Android: {internal storage}/Android/data/com.knossosnet.knossosnet/files/library
+        /// Fallbacks: {user profile}\KnossosNET\FreespaceOpen, then {LocalApplicationData}\KnossosNET\FreespaceOpen
         /// </summary>
         private static void DetermineDefaultBasePath()
         {
@@ -290,6 +299,15 @@ namespace Knossos.NET
                             CleanUpdateFiles();
                         });
                     }
+                }
+
+                if(globalSettings.basePath != null && !isQuickLaunch && !Directory.Exists(globalSettings.basePath))
+                {
+                    //Reset and warn
+                    Dispatcher.UIThread.Invoke(() => {
+                        MessageBox.Show(MainWindow.instance, $"The previusly selected library folder:\n\n'{globalSettings.basePath}'\n\nNot longer exists, the library folder will be reset back to default.", "Library folder not found" , MessageBox.MessageBoxButtons.OK);
+                    });
+                    globalSettings.basePath = null;
                 }
 
                 if (globalSettings.basePath == null && !inSingleTCMode)
