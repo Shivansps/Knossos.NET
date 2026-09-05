@@ -14,7 +14,7 @@
 
 	<Grid RowDefinitions="Auto,*">
 		<WrapPanel Margin="5,5,0,5" Grid.Row="0" VerticalAlignment="Center">
-			<Button Margin="0,5,30,0" IsVisible="{Binding QuickStartButtonVisibility}" Command="{Binding QuickSetupCommand}" FontSize="20" ToolTip.Tip="Open the initial 'Getting Started' guide window" Classes="Quaternary">Quick Setup Guide</Button>
+			<Button Margin="0,5,30,0" IsVisible="{Binding QuickStartButtonVisibility}" Command="{Binding QuickSetupCommand}" FontSize="20" ToolTip.Tip="Open the initial 'Getting Started' guide window" Classes="Quaternary">Quick Start Guide</Button>
 			<Button Margin="0,5,30,0" Command="{Binding ResetCommand}" FontWeight="Bold" FontSize="20" ToolTip.Tip="Reset all settings to defaults" Classes="Cancel">Reset to defaults</Button>
 			<Button Margin="0,5,30,0" Command="{Binding ReloadFlagData}" FontSize="20" ToolTip.Tip="Reload all settings from the configuration file and reload system data.">Reload Data</Button>
 		</WrapPanel>
@@ -52,11 +52,11 @@
 						</WrapPanel>
 						<WrapPanel Margin="8,10,0,0">
 							<TextBlock VerticalAlignment="Center" Width="200">Mod Compression</TextBlock>
-							<ComboBox SelectedIndex="{Binding ModCompression}" ToolTip.Tip="KnossosNET can try to compress mod files in order to save disk space, and in some cases reduce loading times. 'Manual' means you will have to change a modpack's compression from mod settings or during installation. 'Always' means KnossosNET will compress all mods during install. 'Mod Support' means KnossosNET will compress the files only if the mod FSO engine dependency set by the mod is over the minimum, and if the mod uses an official build." Grid.Column="1" Width="150" Margin="10,0,0,0">
+							<ComboBox SelectedIndex="{Binding ModCompression}" ToolTip.Tip="KnossosNET can compress supported mod files to save disk space, although installations may take longer. 'Manual' only allows compression from an installed mod's individual settings. 'Forced On' compresses all non-developer mods during installation. 'Automatic' compresses mods during installation only when they meet the minimum FSO build requirements." Grid.Column="1" Width="210" Margin="10,0,0,0">
 								<ComboBoxItem Tag="0">Disabled</ComboBoxItem>
 								<ComboBoxItem Tag="1">Manual</ComboBoxItem>
-								<ComboBoxItem Tag="2">Always</ComboBoxItem>
-								<ComboBoxItem Tag="3">Mod Support</ComboBoxItem>
+								<ComboBoxItem Tag="2">Forced On</ComboBoxItem>
+								<ComboBoxItem Tag="3">Automatic</ComboBoxItem>
 							</ComboBox>
 							<NumericUpDown IsEnabled="{Binding ModCompression}" Margin="10,0,0,0" Width="120" Grid.Column="2" Minimum="1" Maximum="8" Value="{Binding CompressionMaxParallelism}" ToolTip.Tip="Max number of parallel compression tasks"></NumericUpDown>
 						</WrapPanel>

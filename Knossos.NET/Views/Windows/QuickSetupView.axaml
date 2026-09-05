@@ -10,8 +10,8 @@
 		x:DataType="vm:QuickSetupViewModel"
 		Icon="/Assets/knossos-icon.ico"
 		Topmost="True"
-		WindowStartupLocation="CenterScreen"
-		Title="Quick Setup Guide" 
+		WindowStartupLocation="CenterOwner"
+		Title="Quick Start Guide" 
 		SizeToContent="WidthAndHeight"
 		MaxWidth="800"
 		MinHeight="400"
@@ -28,6 +28,7 @@
 		<StackPanel IsVisible="{Binding Page1}" Grid.Row="0">
 			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >Welcome To Knossos.NET</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left" >This quick setup guide will help you through the basics of configuring the KnossosNET launcher for the first time. If you already know how to configure the launcher you can close this window.</TextBlock>
+			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Every step in this guide is optional, so you can continue or close the guide at any time.</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left" >Note, you can reopen this guide at any time, just go to the "Settings" tab and click the "Quick Setup Guide" button.</TextBlock>
       <TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left" >If you ever need assistance with KnossosNET please ask on the Discord channel linked below.</TextBlock>
       <Button Margin="20, 10" Command="{Binding OpenDiscordQuickSetup}">Discord Help for KnossosNET</Button>
@@ -36,13 +37,12 @@
 		<!--Page2-->
 		<StackPanel IsVisible="{Binding Page2}" Grid.Row="0" >
 			<StackPanel IsVisible="{Binding !IsPortableMode}">
-				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >Setting up the Library Folder</TextBlock>
-				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">First, you must set a Library Folder. Go to the "Settings" tab and under the "KnossosNET" section click on the "Browse" button and choose or create a folder for KnossosNET to use. It is highly recommended to set this as an empty folder in a location with a large amount of available storage. Do not set your Library Folder to a shared or cloud drive (such as OneDrive or Google Drive) because syncing issues will prevent Knossos from downloading mod files correctly.</TextBlock>
+				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >Knossos Library Folder</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The KnossosNET Library Folder is where all game and mod data will be saved to. Make sure you always have space available on this drive before installing a new mod or update.</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Current Library Folder</TextBlock>
 				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left" Text="{Binding LibraryPath}"></TextBlock>
-				<TextBlock IsVisible="{Binding !CanContinue}" Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Go to the "Settings" tab and set the Library Folder to continue.</TextBlock>
-				<Button IsVisible="{Binding !CanContinue}" Command="{Binding ClickSettingsButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
+				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">This is the current library folder path, if you want to change its location you can go to "Settings" and change it.</TextBlock>
+				<Button Command="{Binding ClickSettingsButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
 			</StackPanel>
 			<StackPanel IsVisible="{Binding IsPortableMode}">
 				<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left" >KnossosNET is running in portable mode</TextBlock>
@@ -55,55 +55,50 @@
 		
 		<!--Page3-->
 		<StackPanel IsVisible="{Binding Page3}" Grid.Row="0" >
-			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Download an FSO engine build</TextBlock>
-			<TextBlock IsVisible="{Binding !RepoDownloaded}" Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Wait for repo_minimal.json to finish downloading before you continue...</TextBlock>
-			<StackPanel IsVisible="{Binding RepoDownloaded}">
-				<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Now you need a game engine build, which are known as "FSO Builds". These builds are what mods run on, and KnossosNET also uses it to get and display system data. This is why you are not going to be able to set most of the settings in the "Settings" tab before downloading one. </TextBlock>
-				<TextBlock IsVisible="{Binding BuildAvailable}" Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Click the button below to download the latest stable build, which is what most casual players use. You can also go to the "Engine" tab, and pick a specific build. The most recent build should be always the top one on the list.</TextBlock>
-				<TextBlock IsVisible="{Binding !BuildAvailable}" Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Go to the "Engine" tab, select "Stable Builds" and download the newest stable, it should be always the top one on the list.</TextBlock>
-				<Button IsVisible="{Binding BuildAvailable}" Margin="0,10,0,10" HorizontalAlignment="Center" Classes="Primary" Content="Download Latest Stable Build" Command="{Binding DownloadLatestStable}"/>
-				<TextBlock IsVisible="{Binding !CanContinue}" Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">A FSO build must be downloaded before you continue...</TextBlock>
-				<Button IsVisible="{Binding !CanContinue}" Command="{Binding ClickEngineButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
-				<TextBlock IsVisible="{Binding CanContinue}" Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Engine build detected!</TextBlock>
-				<TextBlock IsVisible="{Binding CanContinue}" Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Keep in mind that some mods may download and run on different versions of the FSO engine. This is because some mods cannot run on newer builds or they require a specific FSO build version. You can always change the FSO build used by a mod by opening the "Mod Settings" on the mod card, but keep in mind not all mods can run on all engine builds.</TextBlock>
-			</StackPanel>
+			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Mod Compression</TextBlock>
+			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">KnossosNET can compress supported mod files in your library as mods are installed. This can reduce their size on disk, but compression requires additional processing and can make installations take longer.</TextBlock>
+			<TextBlock Margin="20,10,20,5" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">Choose how KnossosNET handles mod compression:</TextBlock>
+			<ComboBox SelectedIndex="{Binding ModCompression}" HorizontalAlignment="Left" Width="230" Margin="20,0,20,10">
+				<ComboBoxItem Tag="0">Disabled</ComboBoxItem>
+				<ComboBoxItem Tag="1">Manual</ComboBoxItem>
+				<ComboBoxItem Tag="2">Forced On</ComboBoxItem>
+				<ComboBoxItem Tag="3">Automatic</ComboBoxItem>
+			</ComboBox>
+			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Disabled:</Run> Mod compression is unavailable.</TextBlock>
+			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Manual:</Run> Mods are not compressed during installation. To compress a mod, install it first, open its individual Mod Settings, and use the compression option there.</TextBlock>
+			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Automatic:</Run> Mods are compressed during installation only when they meet the minimum FSO build requirements for mod compression.</TextBlock>
+			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left"><Run FontWeight="Bold">Forced On:</Run> All non-developer mods are compressed during installation.</TextBlock>
+			<TextBlock Margin="20,20,20,5" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">You can change this option at any time in "Settings" under the "KnossosNET Settings" section.</TextBlock>
+			<Button Command="{Binding ClickSettingsButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
 		</StackPanel>
 
 		<!--Page4-->
 		<StackPanel IsVisible="{Binding Page4}" Grid.Row="0" >
-			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Freespace 2 Retail (Optional)</TextBlock>
-			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">In order to have access to Freespace 1 and 2 content and visual improvements you need to install Freespace 2 Retail in KnossosNET. If you do not install Freespace 2 Retail, then any content that needs the full Freespace 2 retail files will not be displayed on the "Explore" tab.</TextBlock>
+			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Installing Freespace 2 Retail</TextBlock>
+			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left" Text="{Binding RetailFs2Status}"/>
+			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">In order to have access to Freespace 1 and 2 content and visual improvements you need to install Freespace 2 Retail game data in KnossosNET. If you do not install Freespace 2 Retail, then any content that needs the full Freespace 2 retail files will not be displayed on the "Explore" tab.</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">If you do not have the retail FS2 installed into KnossosNET you can still play total conversion mods, which are mods that are completely standalone and do not depend on any of the Freespace content.</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">To install Freespace 2 go to the "Settings" tab and open the "FS2 Retail Installer" button under the "KnossosNET Settings" section. Then follow the instructions there. If you already have FS2 installed this button is not available.</TextBlock>
 			<Button Command="{Binding ClickSettingsButton}" Margin="20,0,0,0" Classes="Quaternary">Show me where</Button>
-			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">This step is optional and you can continue at any time.</TextBlock>
 		</StackPanel>
 
 		<!--Page5-->
 		<StackPanel IsVisible="{Binding Page5}" Grid.Row="0"  >
-			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Installing mods (Optional)</TextBlock>
+			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Installing mods and total conversions</TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The "Freespace" tab is where the most relevant mods to Freespace, including Freespace 2 retail, Freespace 1 and their graphics upgrades are listed for easy access. If you are just starting to KnossosNET we recommend you start there. </TextBlock>
 			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The "Play" tab is where all your installed mods are displayed, while the "Explore" tab shows only uninstalled mods. If you have installed Freespace 2 Retail, the FS2 retail mod card will already be added to your "Play" tab, but if you click "Play" right now you will be playing Freespace 2 in only its original 1999 glory. At this point you are probably looking for the visual improvements, so go to the "Explore" tab and lets download and install some mods!</TextBlock>
 			<TextBlock Margin="20,0,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">The following mods are some of the main projects related to improving visuals and Freespace story:</TextBlock>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">&#8226; Freespace Upgrade MediaVPs - Visual improvements for Freespace 2. It is also used by most, if not all, other FS related mods. This mod has optional visual improvements components (like MV_AdvancedX) and it is recommended to select them all during install.</TextBlock>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">&#8226; FreeSpace Port MediaVPs - Visual improvements for the Freespace 1 port. This will also install the Freespace 1 port mod, which gives you access to the full Freespace 1 missions and story.</TextBlock>
 			<TextBlock Margin="30,5,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">&#8226; Silent Threat: Reborn - Fan made replacement and improvement of the original Silent Threat FS1 expansion. The story elements happen after the main FS1 story and before FS2.</TextBlock>
-			<TextBlock Margin="20,20,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Remember that you can always play total conversion mods, which do not require Freespace 2 Retail files. There are many great options, such as Wing Commander Saga, Diaspora, Solaris and more.</TextBlock>
-			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left">This step is optional and you can continue at any time.</TextBlock>
-		</StackPanel>
-
-		<!--Page6-->
-		<StackPanel IsVisible="{Binding Page6}" Grid.Row="0" >
-			<TextBlock Margin="10" TextWrapping="Wrap" FontWeight="Bold" FontSize="36" HorizontalAlignment="Left">Finishing</TextBlock>
-			<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Finally, before launching a mod go to the "Settings" tab and configure video and audio settings, as well as any joysticks you may have installed.</TextBlock>
-      <!--<TextBlock Margin="20" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">It is recommended to run in windowed mode at the same resolution as your system display. There is no need to enable the borderless mode, as windowed mode is already borderless at native resolution.</TextBlock>-->
+			<TextBlock Margin="20,20,20,0" TextWrapping="Wrap" FontSize="15" HorizontalAlignment="Left">Remember that you can always play total conversion mods, which do not require Freespace 2 Retail files. There are many great options, such as Event Horizon, Wing Commander Saga, Diaspora, Solaris and more.</TextBlock>
 		</StackPanel>
 		
 		<!--Navigation-->
 		<WrapPanel Grid.Row="1" HorizontalAlignment="Center">
 			<Button Command="{Binding GoBackCommand}" IsVisible="{Binding CanGoBack}" Margin="5" Classes="Secondary">Back</Button>
 			<Button Command="{Binding ContinueCommand}" IsEnabled="{Binding CanContinue}" IsVisible="{Binding !LastPage}" Margin="5" Classes="Accept">Next</Button>
-			<Button Command="{Binding Finish}" IsVisible="{Binding LastPage}" Margin="5" Classes="Accept">Finish</Button>
+			<Button Command="{Binding Finish}" IsVisible="{Binding LastPage}" Margin="5" Classes="Accept">Finish and close</Button>
 		</WrapPanel>
 	</Grid>
 	</ScrollViewer>
