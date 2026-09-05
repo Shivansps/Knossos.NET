@@ -69,7 +69,9 @@
 		<StackPanel IsVisible="{Binding CompressVisible}" Grid.Row="3" HorizontalAlignment="Center">
 			<StackPanel IsVisible="{Binding !IsInstalled}">
 				<StackPanel IsVisible="{Binding DataLoaded}">
-					<CheckBox IsVisible="{Binding !InstallInDevMode}" IsChecked="{Binding Compress}" ToolTip.Tip="Compression mode is on Manual. If you compress the mods you are installing they will use less space on disk. But installing time is longer and the minimum FSO version to support mod compression is 23.2.0.">Compress mods during install</CheckBox>
+					<StackPanel IsVisible="{Binding CompressVisible}">
+						<CheckBox IsVisible="{Binding !InstallInDevMode}" IsChecked="{Binding Compress}" ToolTip.Tip="Compression mode is on Manual. If you compress the mods you are installing they will use less space on disk. But installing time is longer and the minimum FSO version to support mod compression is 23.2.0.">Compress mods during install</CheckBox>
+					</StackPanel>
 					<CheckBox IsVisible="{Binding HasWriteAccess}" IsChecked="{Binding InstallInDevMode}" IsEnabled="{Binding !ForceDevMode}" ToolTip.Tip="This is for mod developers ONLY. Enable only if you know what you are doing. If you enable this all packages for this mod will be installed regardless of your selection. If you, for some reason, have both devmode versions and non-devmode versions for this mod and you are modifying a non-devmode version this option will have no effect. Mod compression can not be enabled with this mode.">Install Mod in Developer Mode</CheckBox>
 				</StackPanel>
 			</StackPanel>

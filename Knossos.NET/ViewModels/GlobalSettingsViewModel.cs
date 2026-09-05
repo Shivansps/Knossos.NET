@@ -166,6 +166,14 @@ namespace Knossos.NET.ViewModels
             set { if (modCompression != value) { this.SetProperty(ref modCompression, value); UnCommitedChanges = true; } }
         }
 
+        internal void UpdateModCompressionFromQuickSetup(CompressionSettings value)
+        {
+            if (modCompression != value)
+            {
+                this.SetProperty(ref modCompression, value, nameof(ModCompression));
+            }
+        }
+
         private int compressionMaxParallelism = 2;
         internal int CompressionMaxParallelism
         {

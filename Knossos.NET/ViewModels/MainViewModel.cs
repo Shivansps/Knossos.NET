@@ -497,7 +497,6 @@ namespace Knossos.NET.ViewModels
         public void UpdateBuildInstallButtons()
         {
             DeveloperModView?.UpdateBuildNames(LatestStable, LatestNightly);
-            QuickSetupViewModel.Instance?.UpdateBuildName(LatestStable);
         }
 
         /// <summary>
