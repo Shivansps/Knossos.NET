@@ -337,6 +337,7 @@ namespace Knossos.NET.ViewModels
                     Knossos.globalSettings.Load();
                     GlobalSettingsView?.LoadDataAsync();
                     GlobalSettingsView?.UpdateImgCacheSize();
+                    GlobalSettingsView?.UpdateFSOCacheSize();
                 }
 
                 //Custom Views

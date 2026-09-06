@@ -6,21 +6,35 @@ import java.util.Comparator;
 import java.util.List;
 
 import android.content.Context;
+import android.hardware.lights.Light;
+import android.hardware.lights.LightsRequest;
+import android.hardware.lights.LightsManager;
+import android.hardware.lights.LightState;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-
 public class SDLHapticHandler_API26 extends SDLHapticHandler {
     @Override
-    public void run(int device_id, float intensity, int length) {
+    void run(int device_id, float intensity, int length) {
+
+        if (Build.VERSION.SDK_INT < 26 /* Android 8.0 (O) */) {
+            /* Silence 'lint' warning */
+            return;
+        }
+
         SDLHaptic haptic = getHaptic(device_id);
         if (haptic != null) {
-            Log.d("SDL", "Rtest: Vibe with intensity " + intensity + " for " + length);
             if (intensity == 0.0f) {
                 stop(device_id);
                 return;

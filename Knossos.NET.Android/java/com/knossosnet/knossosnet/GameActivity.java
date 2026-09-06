@@ -90,14 +90,26 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
     }
 
     private void hideSystemUI() {
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        Window window = getWindow();
+        View decorView = window.getDecorView();
+
+        if (Build.VERSION.SDK_INT >= 30) {
+            window.setDecorFitsSystemWindows(false);
+            WindowInsetsController c = window.getInsetsController();
+            if (c != null) {
+                c.hide(WindowInsets.Type.systemBars());
+                c.setSystemBarsBehavior(
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+        } else {
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                  | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                  | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                  | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                  | View.SYSTEM_UI_FLAG_FULLSCREEN
+                  | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
     }
 
     @Override
@@ -140,6 +152,12 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } catch (Throwable ignored) {
         }
+		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) 
+		{ // API 28+
+			getWindow().getAttributes().layoutInDisplayCutoutMode =
+			WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+		}
 
         hideSystemUI();
 
@@ -162,8 +180,8 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
     }
 
     private static final String[] PREFERRED_ORDER = new String[] {
-        "libSDL2.so",
-        "libshaderc.so",
+        "libSDL3.so",
+        "libshaderc_shared.so",
         "libopenal.so",
         "libavutil.so",
         "libswresample.so",
@@ -215,6 +233,10 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
     private boolean tryLoad(File so) 
     {
         try {
+            String name = so.getName();
+            if (name.equals("libSDL2.so")) {
+                return true;
+            }
             if (so != null && so.isFile()) {
                 System.load(so.getAbsolutePath());
                 return true;
@@ -238,7 +260,24 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
         if (name == null) return false;
         return name.startsWith("libfso") || name.contains("libfs2");
     }
-   
+	
+	@Override public boolean dispatchKeyEvent(KeyEvent e) {
+        int k = e.getKeyCode();
+        if (k == KeyEvent.KEYCODE_ESCAPE || k == KeyEvent.KEYCODE_BACK) {
+            switch (e.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    if (e.getRepeatCount() == 0) {
+                        NativeBridge.onButton(NativeBridge.CODE_ESC, true);
+                    }
+                    return true;
+                case KeyEvent.ACTION_UP:
+                    NativeBridge.onButton(NativeBridge.CODE_ESC, false);
+                    return true;
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
 
     @Override protected void onPause() 
     {
