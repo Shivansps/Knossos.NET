@@ -1464,7 +1464,8 @@ namespace Knossos.NET
                 Log.Add(Log.LogSeverity.Warning, "KnUtils.OpenFileInOS", "File does not exist:  " + fullpath);
             }
         }
-      
+		
+        /// <summary>
         /// Determines if the current OS meets the requirements for .NET 10 / "latest" channel updates.
         /// Windows 10+ or macOS 12.0+ qualify.
         /// </summary>
