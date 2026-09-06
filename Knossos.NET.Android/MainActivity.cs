@@ -100,16 +100,34 @@ public class MainActivity : AvaloniaMainActivity<App>
 
     private static async Task OpenFileExternalApp(string fullPath, string mimetype)
     {
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            if (!System.IO.File.Exists(fullPath) || Instance == null)
+        if (!System.IO.File.Exists(fullPath) || Instance == null)
             return;
 
-            try
-            {
-                var javaFile = new Java.IO.File(fullPath);
-                string authority = $"{Instance.PackageName}.fileprovider";
+        try
+        {
+            var cacheDir = Instance.CacheDir?.AbsolutePath;
+            if (string.IsNullOrEmpty(cacheDir))
+                throw new InvalidOperationException("Unable to resolve the Android cache directory.");
 
+            var fileName = Path.GetFileName(fullPath);
+            if (string.IsNullOrEmpty(fileName))
+                throw new InvalidOperationException($"Unable to resolve the file name for '{fullPath}'.");
+
+            var shareDir = Path.Combine(cacheDir, "shared-files", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(shareDir);
+            var cachedFilePath = Path.Combine(shareDir, fileName);
+
+            await using (var source = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true))
+            await using (var destination = new FileStream(cachedFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
+                await source.CopyToAsync(destination);
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (Instance == null)
+                    return;
+
+                var javaFile = new Java.IO.File(cachedFilePath);
+                string authority = $"{Instance.PackageName}.fileprovider";
                 var uri = FileProvider.GetUriForFile(Instance, authority, javaFile);
 
                 var intent = new Intent(Intent.ActionView);
@@ -118,12 +136,12 @@ public class MainActivity : AvaloniaMainActivity<App>
                 intent.AddFlags(ActivityFlags.NewTask);
 
                 Instance.StartActivity(Intent.CreateChooser(intent, "Open file with..."));
-            }
-            catch (Exception ex)
-            {
-                Log.Add(Log.LogSeverity.Error, "MainActivity.OpenFileExternalApp", ex);
-            }
-        });
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Add(Log.LogSeverity.Error, "MainActivity.OpenFileExternalApp", ex);
+        }
     }
 
     private static async Task OpenExternalURLAsync(string url)

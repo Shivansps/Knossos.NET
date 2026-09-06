@@ -45,14 +45,14 @@ public static class AndroidHelper
     /// <summary>
     /// Open a file with a external android app
     /// </summary>
-    /// <param name="text"></param>
+    /// <param name="path"></param>
     /// <param name="mimeType"></param>
     /// <returns>task</returns>
-    public static Task ShareFileAsync(string text, string mimeType = "text/plain")
+    public static Task ShareFileAsync(string path, string mimeType = "text/plain")
     {
-        if (text.Length == 0 || ShareFileAsyncFunc == null)
+        if (path.Length == 0 || ShareFileAsyncFunc == null)
             return Task.CompletedTask;
-        return ShareFileAsyncFunc.Invoke(text, mimeType);
+        return ShareFileAsyncFunc.Invoke(path, mimeType);
     }
 
 #if ANDROID

@@ -1437,15 +1437,7 @@ namespace Knossos.NET
                 try
                 {
 #if ANDROID
-                    if(mimetype.ToLower() == "text/plain")
-                    {
-                        var text = File.ReadAllText(fullpath);
-                        _ = AndroidHelper.ShareTextAsync(text);
-                    }
-                    else
-                    {
-                        _ = AndroidHelper.ShareFileAsync(fullpath, mimetype);
-                    }
+                    _ = AndroidHelper.ShareFileAsync(fullpath, mimetype);
 #else
                     var cmd = new Process();
                     cmd.StartInfo.FileName = fullpath;
