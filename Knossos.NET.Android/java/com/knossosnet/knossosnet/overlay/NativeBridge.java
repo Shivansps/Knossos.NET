@@ -10,6 +10,12 @@ public class NativeBridge {
     public static final int CODE_ALT_H = 4;
     public static final int CODE_ALT_J = 5;
     public static final int CODE_ALT_A = 6;
+    public static final int CODE_F1 = 7;
+    public static final int CODE_F2 = 8;
+    public static final int CODE_F4 = 9;
+    public static final int CODE_KEY_0 = 10;
+    public static final int CODE_KEY_ALT = 11;
+    public static final int CODE_KEY_J = 12;
 
     //Weapons Area
     public static final int CODE_KEY_SPACE = 20;
@@ -28,6 +34,18 @@ public class NativeBridge {
     public static final int CODE_KEY_Z = 47;
     public static final int CODE_KEY_BACKSLASH = 48;
     public static final int CODE_KEY_BACKSPACE = 49;
+
+    // Communications
+    public static final int CODE_KEY_C = 50;
+    public static final int CODE_KEY_1 = 51;
+    public static final int CODE_KEY_2 = 52;
+    public static final int CODE_KEY_3 = 53;
+    public static final int CODE_KEY_4 = 54;
+    public static final int CODE_KEY_5 = 55;
+    public static final int CODE_KEY_6 = 56;
+    public static final int CODE_KEY_7 = 57;
+    public static final int CODE_KEY_8 = 58;
+    public static final int CODE_KEY_9 = 59;
 
     //Targeting
     public static final int CODE_KEY_Y = 30;

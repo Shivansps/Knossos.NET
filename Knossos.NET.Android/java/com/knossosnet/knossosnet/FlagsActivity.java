@@ -24,6 +24,9 @@ public class FlagsActivity extends org.libsdl.app.SDLActivity {
         if (act != null) act.deliver(json);
     }
 
+    public static void setOverlayOpacity(float opacity) {
+    }
+
     public static void enableOverlay() {
     }
 

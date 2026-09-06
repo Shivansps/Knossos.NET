@@ -1,440 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/overlay_root"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:clickable="false"
-android:focusable="false">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="false"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:focusable="false"
+    android:layoutDirection="ltr"
+    android:splitMotionEvents="true">
 
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_gravity="top"
+        android:clipChildren="false"
+        android:gravity="top"
+        android:orientation="horizontal">
 
-	<Button
-		android:id="@+id/btnToggle"
-		android:layout_width="35dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginStart="0dp"
-		android:layout_marginTop="0dp"
-		android:alpha="0.2"
-		android:text="≡"
-		android:textAllCaps="false" />
+        <HorizontalScrollView
+            android:id="@+id/topBarLeftScroller"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:scrollbars="none">
 
-	<Button
-		android:id="@+id/btnC31"
-		android:layout_width="70dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginTop="0dp"
-		android:layout_marginEnd="120dp"
-		android:alpha="0.2"
-		android:text="C-3-1"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+            <LinearLayout
+                android:id="@+id/topBarLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="end|top"
+                android:orientation="horizontal">
 
-	<Button
-		android:id="@+id/btnC39"
-		android:layout_width="70dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginTop="0dp"
-		android:layout_marginEnd="200dp"
-		android:alpha="0.2"
-		android:text="C-3-9"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btn0"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="0" />
 
-	<Button
-		android:id="@+id/btnC35"
-		android:layout_width="70dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginTop="0dp"
-		android:layout_marginEnd="280dp"
-		android:alpha="0.2"
-		android:text="C-3-5"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnF1"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="F1" />
 
-	<Button
-		android:id="@+id/btnC5"
-		android:layout_width="70dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginTop="0dp"
-		android:layout_marginEnd="360dp"
-		android:alpha="0.2"
-		android:text="C-5"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnF2"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="F2" />
 
+                <Button
+                    android:id="@+id/btnF3"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="F3" />
 
-	<Button
-		android:id="@+id/btnEsc"
-		android:layout_width="48dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginTop="0dp"
-		android:layout_marginEnd="50dp"
-		android:alpha="0.2"
-		android:text="ESC"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnF4"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="F4" />
 
-	<Button
-		android:id="@+id/btnF3"
-		android:layout_width="40dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginStart="42dp"
-		android:layout_marginBottom="0dp"
-		android:alpha="0.2"
-		android:text="F3"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-		
-	<Button
-		android:id="@+id/btnKyb"
-		android:layout_width="40dp"
-		android:layout_height="40dp"
-		android:layout_gravity="center|top"
-		android:layout_marginStart="86dp"
-		android:layout_marginBottom="0dp"
-		android:alpha="0.2"
-		android:text="KB"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnEsc"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:minWidth="52dp"
+                    android:text="ESC" />
+            </LinearLayout>
+        </HorizontalScrollView>
 
-	<Button
-		android:id="@+id/btnAltH"
-		android:layout_width="60dp"
-		android:layout_height="40dp"
-		android:layout_gravity="right|top|end"
-		android:layout_marginEnd="20dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Alt+H"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+        <Button
+            android:id="@+id/btnToggle"
+            style="@style/Widget.KnossosNET.HudButton"
+            android:contentDescription="Show or hide touch control groups"
+            android:minWidth="38dp"
+            android:text="≡"
+            android:textSize="18sp" />
 
-	<Button
-		android:id="@+id/btnAltM"
-		android:layout_width="60dp"
-		android:layout_height="40dp"
-		android:layout_gravity="right|top|end"
-		android:layout_marginEnd="85dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Alt+M"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+        <HorizontalScrollView
+            android:id="@+id/topBarRightScroller"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:scrollbars="none">
 
-	<Button
-		android:id="@+id/btnAltJ"
-		android:layout_width="60dp"
-		android:layout_height="40dp"
-		android:layout_gravity="right|top|end"
-		android:layout_marginEnd="150dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Alt+J"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+            <LinearLayout
+                android:id="@+id/topBarRight"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|top"
+                android:orientation="horizontal">
 
-	<Button
-		android:id="@+id/btnAltA"
-		android:layout_width="60dp"
-		android:layout_height="40dp"
-		android:layout_gravity="right|top|end"
-		android:layout_marginEnd="215dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Alt+A"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnKyb"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:minWidth="56dp"
+                    android:text="KEYB" />
 
-	<Button
-		android:id="@+id/btnBackSlash"
-		android:layout_width="35dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="0dp"
-		android:layout_marginBottom="240dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="\\"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnAltJ"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="ALT+J" />
 
-	<Button
-		android:id="@+id/btnRet"
-		android:layout_width="45dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="40dp"
-		android:layout_marginBottom="240dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Bks"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnAltM"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="ALT-M" />
 
-	<Button
-		android:id="@+id/btnA"
-		android:layout_width="35dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="35dp"
-		android:layout_marginBottom="210dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="A"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnAltH"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="ALT-H" />
 
+                <Button
+                    android:id="@+id/btnAltA"
+                    style="@style/Widget.KnossosNET.HudButton"
+                    android:text="ALT-A" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
 
-	<Button
-		android:id="@+id/btnZ"
-		android:layout_width="35dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="0dp"
-		android:layout_marginBottom="210dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Z"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+    <com.knossosnet.knossosnet.overlay.RadialActionView
+        android:id="@+id/communicationWheel"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="top|start"
+        android:contentDescription="Communication controls" />
 
+    <com.knossosnet.knossosnet.overlay.RadialActionView
+        android:id="@+id/targetWheel"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="top|start"
+        android:contentDescription="Targeting controls" />
 
-	<Button
-		android:id="@+id/btnTab"
-		android:layout_width="60dp"
-		android:layout_height="50dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="95dp"
-		android:layout_marginBottom="175dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Tab"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
+    <com.knossosnet.knossosnet.overlay.RadialDpadView
+        android:id="@+id/dpad"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="top|start"
+        android:clickable="true"
+        android:contentDescription="Direction control with TAB outer ring"
+        android:focusable="false" />
 
-	<Button
-		android:id="@+id/btnPlus"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="65dp"
-		android:layout_marginBottom="175dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="+"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnMinus"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="35dp"
-		android:layout_marginBottom="175dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="-"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnM"
-		android:layout_width="35dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="0dp"
-		android:layout_marginBottom="175dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="M"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnFireP"
-		android:layout_width="120dp"
-		android:layout_height="60dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="35dp"
-		android:layout_marginBottom="120dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Fire Primaries"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnFireS"
-		android:layout_width="120dp"
-		android:layout_height="60dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="35dp"
-		android:layout_marginBottom="60dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Fire Secondaries"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnCycleS"
-		android:layout_width="25dp"
-		android:layout_height="60dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="5dp"
-		android:layout_marginBottom="60dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="CS"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnCycleP"
-		android:layout_width="25dp"
-		android:layout_height="60dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="5dp"
-		android:layout_marginBottom="120dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="CP"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnQ"
-		android:layout_width="70dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="85dp"
-		android:layout_marginBottom="20dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Q"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnX"
-		android:layout_width="70dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="10dp"
-		android:layout_marginBottom="20dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="X"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnS"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="160dp"
-		android:layout_marginBottom="5dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="S"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnT"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="160dp"
-		android:layout_marginBottom="35dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="T"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnF"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="160dp"
-		android:layout_marginBottom="65dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="F"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnE"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="160dp"
-		android:layout_marginBottom="95dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="E"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnB"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="160dp"
-		android:layout_marginBottom="125dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="B"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnH"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="160dp"
-		android:layout_marginBottom="155dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="H"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<Button
-		android:id="@+id/btnY"
-		android:layout_width="30dp"
-		android:layout_height="40dp"
-		android:layout_gravity="bottom|right|end"
-		android:layout_marginEnd="160dp"
-		android:layout_marginBottom="185dp"
-		android:alpha="0.2"
-		android:insetRight="0dp"
-		android:text="Y"
-		android:textAllCaps="false"
-		android:textSize="12sp" />
-
-	<com.knossosnet.knossosnet.overlay.RadialDpadView
-		android:id="@+id/dpad"
-		android:layout_width="170dp"
-		android:layout_height="170dp"
-		android:layout_gravity="bottom|start"
-		android:layout_marginStart="60dp"
-		android:layout_marginBottom="60dp"
-		android:clickable="true"
-		android:focusable="false" />
+    <com.knossosnet.knossosnet.overlay.RadialActionView
+        android:id="@+id/weaponWheel"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="top|start"
+        android:contentDescription="Weapon and ship controls" />
 
 </FrameLayout>
