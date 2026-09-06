@@ -63,6 +63,8 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal string imgCacheSize = "0 MB";
         [ObservableProperty]
+        internal string fsoCacheSize = "0 MB";
+        [ObservableProperty]
         internal bool fs2RootPack = false;
         [ObservableProperty]
         internal string numberOfMods = string.Empty;
@@ -164,6 +166,14 @@ namespace Knossos.NET.ViewModels
         {
             get { return modCompression; }
             set { if (modCompression != value) { this.SetProperty(ref modCompression, value); UnCommitedChanges = true; } }
+        }
+
+        internal void UpdateModCompressionFromQuickSetup(CompressionSettings value)
+        {
+            if (modCompression != value)
+            {
+                this.SetProperty(ref modCompression, value, nameof(ModCompression));
+            }
         }
 
         private int compressionMaxParallelism = 2;
@@ -1656,6 +1666,57 @@ namespace Knossos.NET.ViewModels
                 catch (Exception ex)
                 {
                     Log.Add(Log.LogSeverity.Error, "GlobalSettingsViewModel.ClearImageCache()", ex);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Clears the knet image cache folder
+        /// </summary>
+        internal async void ClearFSOCache()
+        {
+            await Task.Run(() => {
+                try
+                {
+                    var path = Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "cache");
+                    if (Directory.Exists(path))
+                        Directory.Delete(path, true);
+                    UpdateFSOCacheSize();
+
+                }
+                catch (Exception ex)
+                {
+                    Log.Add(Log.LogSeverity.Error, "GlobalSettingsViewModel.ClearFSOCache()", ex);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Update the size of the Knet image cache folder into UI
+        /// </summary>
+        public void UpdateFSOCacheSize()
+        {
+            Task.Run(async () => {
+                try
+                {
+                    var path = Path.Combine(KnUtils.GetFSODataFolderPath(),"data", "cache");
+                    if (Directory.Exists(path))
+                    {
+                        var sizeInBytes = await KnUtils.GetSizeOfFolderInBytes(path).ConfigureAwait(false);
+                        Dispatcher.UIThread.Invoke(() => {
+                            FsoCacheSize = KnUtils.FormatBytes(sizeInBytes);
+                        });
+                    }
+                    else
+                    {
+                        Dispatcher.UIThread.Invoke(() => {
+                            FsoCacheSize = "0 MB";
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Add(Log.LogSeverity.Error, "GlobalSettingsViewModel.UpdateFSOCacheSize()", ex);
                 }
             }).ConfigureAwait(false);
         }

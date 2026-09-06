@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="com.knossosnet.knossosnet">
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-feature android:glEsVersion="0x00030002" android:required="false" />
@@ -39,6 +39,7 @@
 		
         <activity
             android:name=".GameActivity"
+            android:theme="@style/MyTheme.NoActionBar"
             android:exported="false"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:screenOrientation="sensorLandscape"

@@ -337,6 +337,7 @@ namespace Knossos.NET.ViewModels
                     Knossos.globalSettings.Load();
                     GlobalSettingsView?.LoadDataAsync();
                     GlobalSettingsView?.UpdateImgCacheSize();
+                    GlobalSettingsView?.UpdateFSOCacheSize();
                 }
 
                 //Custom Views
@@ -497,7 +498,6 @@ namespace Knossos.NET.ViewModels
         public void UpdateBuildInstallButtons()
         {
             DeveloperModView?.UpdateBuildNames(LatestStable, LatestNightly);
-            QuickSetupViewModel.Instance?.UpdateBuildName(LatestStable);
         }
 
         /// <summary>
