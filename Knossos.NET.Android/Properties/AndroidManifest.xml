@@ -47,5 +47,12 @@
             android:process=":game"
             android:launchMode="singleTask">
         </activity>
+		<activity
+            android:name=".FlagsActivity"
+            android:process=":flags"
+            android:exported="false"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
 	</application>
 </manifest>

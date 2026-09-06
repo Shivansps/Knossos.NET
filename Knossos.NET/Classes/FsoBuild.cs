@@ -330,10 +330,6 @@ namespace Knossos.NET.Models
         /// <returns>A FlagsJsonV1 structure or null if failed</returns>
         public async Task<FlagsJsonV1?> GetFlagsV1Async()
         {
-#if ANDROID
-                // no flags on android
-                return null;
-#else
             var executable = GetExecutable(FsoExecType.Flags);
             var fullpath = GetExecutablePath(executable);
             if (fullpath == null)
@@ -353,16 +349,21 @@ namespace Knossos.NET.Models
             }
 
             Log.Add(Log.LogSeverity.Information, "FsoBuild.GetFlags()", "Getting FSO Flags from file: " + fullpath);
-
-            if(KnUtils.IsLinux || KnUtils.IsMacOS)
-            {
-                KnUtils.Chmod(fullpath!,"+x");
-            }
-
             string output = string.Empty;
             string stderr = string.Empty;
             try
             {
+#if ANDROID
+                output = await AndroidHelper.GetFlagsStringFSOAsync(fullpath!);
+                if (output == "") return null;
+                return JsonSerializer.Deserialize<FlagsJsonV1>(output);
+#else
+
+                if (KnUtils.IsLinux || KnUtils.IsMacOS)
+                {
+                    KnUtils.Chmod(fullpath!,"+x");
+                }
+
                 using (var cmd = new Process())
                 {
                     cmd.StartInfo.FileName = fullpath;
@@ -433,6 +434,7 @@ namespace Knossos.NET.Models
                     }
                     return JsonSerializer.Deserialize<FlagsJsonV1>(result);
                 }
+#endif
             }
             catch (JsonException exJson)
             {
@@ -455,7 +457,6 @@ namespace Knossos.NET.Models
                 Log.Add(Log.LogSeverity.Error, "FSO EXE OUTPUT ", output);
                 return null;
             }
-#endif
         }
 
         /// <summary>
