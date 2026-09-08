@@ -92,10 +92,6 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal bool isInstalled = false;
         [ObservableProperty]
-        internal bool isPlayingTTS = false;
-        [ObservableProperty]
-        internal bool ttsAvailable = false;
-        [ObservableProperty]
         internal bool hasBanner = false;
         [ObservableProperty]
         internal bool isLocalMod = false;
@@ -182,41 +178,6 @@ namespace Knossos.NET.ViewModels
         }
 
         /// <summary>
-        /// Play description button binding, used due to the delay argument
-        /// </summary>
-        internal void PlayDescriptionCommand()
-        {
-            PlayDescription(0);
-        }
-
-        /// <summary>
-        /// Play mod description using Knossos TTS
-        /// (the same system and voice used by FSO)
-        /// </summary>
-        /// <param name="delay"></param>
-        private async void PlayDescription(int delay = 0)
-        {
-            if(delay > 0)
-            {
-                await Task.Delay(delay).ConfigureAwait(false);
-            }
-            IsPlayingTTS = true;
-            var cleanDescriptionString = Regex.Replace(modVersions[ItemSelectedIndex].description!, @" ?\[.*?\]", string.Empty);
-            cleanDescriptionString = Regex.Replace(cleanDescriptionString, @" ?\<.*?\>", string.Empty);
-            Knossos.Tts(cleanDescriptionString, null, null, null, CompletedCallback);
-        }
-
-        /// <summary>
-        /// When the TTS playback is over, change the button back to normal
-        /// </summary>
-        /// <returns></returns>
-        private bool CompletedCallback()
-        {
-            IsPlayingTTS = false;
-            return true;
-        }
-
-        /// <summary>
         /// Load Current version in the array to UI
         /// </summary>
         /// <param name="index"></param>
@@ -237,11 +198,6 @@ namespace Knossos.NET.ViewModels
                         var html = BBCode.ConvertToHtml(modVersions[index].description!, BBCode.BasicRules);
                         Description = "<body style='overflow: hidden;white-space: pre-line;color:white;text-align: left;'>" + html + "</body>";
                         //Log.WriteToConsole(html);
-
-                        if(Knossos.globalSettings.ttsDescription && Knossos.globalSettings.enableTts)
-                        {
-                            TtsAvailable = true;
-                        }
                     }
                     if (modVersions[index].owners != null && modVersions[index].owners!.Any()) 
                     {
@@ -492,11 +448,6 @@ namespace Knossos.NET.ViewModels
         }
 
         /* Button Commands */
-        internal void StopTts()
-        {
-            IsPlayingTTS = false;
-            Knossos.Tts(string.Empty);
-        }
 
         internal void ButtonCommandPlay()
         {

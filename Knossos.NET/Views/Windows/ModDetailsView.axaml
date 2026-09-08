@@ -74,12 +74,6 @@
 			
 		</StackPanel>
 
-		<!--TTS Panel-->
-		<WrapPanel Grid.Row="1" HorizontalAlignment="Center" IsVisible="{Binding TtsAvailable}">
-			<Button IsVisible="{Binding IsPlayingTTS}" Command="{Binding StopTts}">Stop</Button>
-			<Button IsVisible="{Binding !IsPlayingTTS}" Margin="5,0,0,0" Command="{Binding PlayDescriptionCommand}">Read Description</Button>
-		</WrapPanel>
-
 		<!--Description-->
 		<ScrollViewer MinHeight="200" Grid.Row="2" Margin="20">
 			<HtmlRenderer:HtmlPanel Text="{Binding Description}" Background="Transparent" Margin="10"/>
