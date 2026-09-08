@@ -271,7 +271,7 @@ namespace Knossos.NET
                 Log.Add(Log.LogSeverity.Information, "Knossos.StartUp()", "The selected decompressor type is set to " + globalSettings.decompressor.ToString());
 
                 //Check for updates
-                if (globalSettings.checkUpdate && !isQuickLaunch && !KnUtils.IsAndroid && !KnUtils.IsBrowser)
+                if (globalSettings.checkUpdate && !isQuickLaunch && !KnUtils.IsBrowser)
                 {
                     await CheckKnetUpdates().ConfigureAwait(false);
                     //Check for .old files and delete them
@@ -571,7 +571,15 @@ namespace Knossos.NET
                             GitHubReleaseAsset? releaseAsset = null;
                             foreach (GitHubReleaseAsset a in latest.assets)
                             {
-                                if (KnUtils.IsAppImage)
+                                if (KnUtils.IsAndroid)
+                                {
+                                    if (a.name != null && a.name.EndsWith(".apk", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        releaseAsset = a;
+                                        break;
+                                    }
+                                }
+                                else if (KnUtils.IsAppImage)
                                 {
                                     if (a.name != null)
                                     {
@@ -637,7 +645,10 @@ namespace Knossos.NET
                                 {
                                     MessageBox.MessageBoxResult result = MessageBox.MessageBoxResult.Cancel;
                                     await Dispatcher.UIThread.Invoke(async () => {
-                                        result = await MessageBox.Show(null, "Knossos.NET " + latest.tag_name + ":\n" + latest.body + "\n\n\nIf you continue Knossos.NET will be re-started after download.", "An update is available", MessageBox.MessageBoxButtons.ContinueCancelSkipVersion);
+                                        var updateAction = KnUtils.IsAndroid
+                                            ? "If you continue, the APK will be downloaded and Android will ask you to install it."
+                                            : "If you continue Knossos.NET will be re-started after download.";
+                                        result = await MessageBox.Show(null, "Knossos.NET " + latest.tag_name + ":\n" + latest.body + "\n\n\n" + updateAction, "An update is available", MessageBox.MessageBoxButtons.ContinueCancelSkipVersion);
                                     }).ConfigureAwait(false);
                                     if(result == MessageBox.MessageBoxResult.SkipVersion)
                                     {
@@ -661,15 +672,24 @@ namespace Knossos.NET
                                 {
                                     extension = ".tar.gz";
                                 }
-                                var download = await Dispatcher.UIThread.InvokeAsync(async () => await TaskViewModel.Instance!.AddFileDownloadTask(releaseAsset.browser_download_url, KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update"+ extension, "Downloading "+latest.tag_name+" "+releaseAsset.name, true, "This is a Knossos.NET update"), DispatcherPriority.Background).ConfigureAwait(false);
+                                var updateFilePath = KnUtils.IsAndroid
+                                    ? AndroidHelper.GetUpdateApkPath()
+                                    : KnUtils.GetKnossosDataFolderPath() + Path.DirectorySeparatorChar + "update" + extension;
+                                var download = await Dispatcher.UIThread.InvokeAsync(async () => await TaskViewModel.Instance!.AddFileDownloadTask(releaseAsset.browser_download_url, updateFilePath, "Downloading "+latest.tag_name+" "+releaseAsset.name, true, "This is a Knossos.NET update"), DispatcherPriority.Background).ConfigureAwait(false);
                                 if (download != null && download == true)
                                 {
-                                    var appDirPath = Path.GetDirectoryName(Environment.ProcessPath);
-                                    var execFullPath = Environment.ProcessPath;
-
                                     //Decompress new files / 2nd phase
                                     try
                                     {
+                                        if (KnUtils.IsAndroid)
+                                        {
+                                            await AndroidHelper.InstallApkAsync(updateFilePath).ConfigureAwait(false);
+                                            return;
+                                        }
+
+                                        var appDirPath = Path.GetDirectoryName(Environment.ProcessPath);
+                                        var execFullPath = Environment.ProcessPath;
+
                                         // no extraction needed for AppImage, just move exec over and restart
                                         // NOTE: exeName is already the full path to the AppImage
                                         if (KnUtils.IsAppImage)

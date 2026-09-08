@@ -22,6 +22,9 @@ namespace Knossos.NET.Android;
     ScreenOrientation = ScreenOrientation.SensorLandscape)]
 public class MainActivity : AvaloniaMainActivity<App>
 {
+    private const string ApkMimeType = "application/vnd.android.package-archive";
+    private static string? pendingApkInstallPath;
+
     public static MainActivity? Instance { get; private set; }
 
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
@@ -66,6 +69,7 @@ public class MainActivity : AvaloniaMainActivity<App>
         AndroidHelper.ShareTextAsyncFunc = ShareTextFileAndroidAsync;
         AndroidHelper.ShareFileAsyncFunc = OpenFileExternalApp;
         AndroidHelper.OpenUrlAsyncFunc = OpenExternalURLAsync;
+        AndroidHelper.InstallApkAsyncFunc = InstallApkAndroidAsync;
         hideSystemUI();
     }
 
@@ -73,6 +77,63 @@ public class MainActivity : AvaloniaMainActivity<App>
     {
         base.OnResume();
         hideSystemUI();
+
+        if (pendingApkInstallPath != null && PackageManager?.CanRequestPackageInstalls() == true)
+        {
+            var apkPath = pendingApkInstallPath;
+            pendingApkInstallPath = null;
+            OpenPackageInstaller(apkPath);
+        }
+    }
+
+    private static async Task InstallApkAndroidAsync(string fullPath)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (!System.IO.File.Exists(fullPath) || Instance == null)
+                return;
+
+            try
+            {
+                if (Instance.PackageManager?.CanRequestPackageInstalls() != true)
+                {
+                    pendingApkInstallPath = fullPath;
+                    var packageUri = AndroidNet.Uri.Parse($"package:{Instance.PackageName}");
+                    var permissionIntent = new Intent(global::Android.Provider.Settings.ActionManageUnknownAppSources, packageUri);
+                    Instance.StartActivity(permissionIntent);
+                    return;
+                }
+
+                OpenPackageInstaller(fullPath);
+            }
+            catch (Exception ex)
+            {
+                pendingApkInstallPath = null;
+                Log.Add(Log.LogSeverity.Error, "MainActivity.InstallApkAndroidAsync", ex);
+            }
+        });
+    }
+
+    private static void OpenPackageInstaller(string fullPath)
+    {
+        if (!System.IO.File.Exists(fullPath) || Instance == null)
+            return;
+
+        try
+        {
+            var javaFile = new Java.IO.File(fullPath);
+            var authority = $"{Instance.PackageName}.fileprovider";
+            var uri = FileProvider.GetUriForFile(Instance, authority, javaFile);
+
+            var intent = new Intent(Intent.ActionView);
+            intent.SetDataAndType(uri, ApkMimeType);
+            intent.AddFlags(ActivityFlags.GrantReadUriPermission);
+            Instance.StartActivity(intent);
+        }
+        catch (Exception ex)
+        {
+            Log.Add(Log.LogSeverity.Error, "MainActivity.OpenPackageInstaller", ex);
+        }
     }
 
     private static async Task ShareTextFileAndroidAsync(string texto)

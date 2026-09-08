@@ -19,6 +19,7 @@ public static class AndroidHelper
     public static Func<string, Task>? ShareTextAsyncFunc { get; set; }
     public static Func<string, string, Task>? ShareFileAsyncFunc { get; set; }
     public static Func<string, Task>? OpenUrlAsyncFunc { get; set; }
+    public static Func<string, Task>? InstallApkAsyncFunc { get; set; }
 
     /// <summary>
     /// Open URL on external android web browser
@@ -53,6 +54,17 @@ public static class AndroidHelper
         if (text.Length == 0 || ShareFileAsyncFunc == null)
             return Task.CompletedTask;
         return ShareFileAsyncFunc.Invoke(text, mimeType);
+    }
+
+    /// <summary>
+    /// Sends an APK to Android's package installer.
+    /// </summary>
+    /// <param name="fullPath">Full path to the downloaded APK.</param>
+    public static Task InstallApkAsync(string fullPath)
+    {
+        if (string.IsNullOrWhiteSpace(fullPath) || InstallApkAsyncFunc == null)
+            return Task.CompletedTask;
+        return InstallApkAsyncFunc.Invoke(fullPath);
     }
 
 #if ANDROID
@@ -114,6 +126,16 @@ public static class AndroidHelper
     public static string GetDefaultFSODataDir()
     {
         return GetInternalAppFilesDir();
+    }
+
+    /// <summary>
+    /// APK update destination. The internal cache is already exposed through the
+    /// app FileProvider and can be cleared safely by Android after installation.
+    /// </summary>
+    public static string GetUpdateApkPath()
+    {
+        var cacheDir = Application.Context.CacheDir?.AbsolutePath ?? GetInternalAppFilesDir();
+        return Path.Combine(cacheDir, "update.apk");
     }
 
     /// <summary>
@@ -261,6 +283,7 @@ public static class AndroidHelper
     public static string GetDefaultKnetDir() => "";
     public static string GetDefaultKnetDataDir() => "";
     public static string GetDefaultFSODataDir() => "";
+    public static string GetUpdateApkPath() => "";
     public static void LaunchFSO(string engineLibPath, string? workingFolder, string cmdline) {  }
     public static async Task<string> GetFlagsStringFSOAsync(string engineLibPath, int timeoutMs = 30000) { await Task.Delay(1); return ""; }
 #endif
