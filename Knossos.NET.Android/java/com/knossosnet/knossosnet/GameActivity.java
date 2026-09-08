@@ -45,6 +45,7 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
     private RadialDpadView dpadControl;
     private Button[] hudButtons = new Button[0];
     private View[] topControls = new View[0];
+    private View[] topBarTouchContainers = new View[0];
     private View[] levelOneControls = new View[0];
     private View[] levelTwoControls = new View[0];
     private View[] levelThreeControls = new View[0];
@@ -454,7 +455,13 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
     }
 
     private void applyHudMode() {
-        setControlGroupVisible(levelOneControls, hudMode >= 1);
+        boolean showTopButtons = hudMode >= 1;
+        for (View container : topBarTouchContainers) {
+            // INVISIBLE keeps both weighted halves in the layout, so the mode
+            // button remains centered without letting empty scrollers eat touch.
+            container.setVisibility(showTopButtons ? View.VISIBLE : View.INVISIBLE);
+        }
+        setControlGroupVisible(levelOneControls, showTopButtons);
         setControlGroupVisible(levelTwoControls, hudMode >= 2);
         setControlGroupVisible(levelThreeControls, hudMode >= 3);
     }
@@ -696,6 +703,9 @@ public class GameActivity extends org.libsdl.app.SDLActivity {
 
         HorizontalScrollView leftScroller = requireOverlayView(
                 overlay, "topBarLeftScroller", HorizontalScrollView.class);
+        HorizontalScrollView rightScroller = requireOverlayView(
+                overlay, "topBarRightScroller", HorizontalScrollView.class);
+        topBarTouchContainers = new View[] { leftScroller, rightScroller };
         btnToggle.setOnClickListener(view -> {
             releaseOverlayInputs();
             hudMode = (hudMode + 1) % 4;
