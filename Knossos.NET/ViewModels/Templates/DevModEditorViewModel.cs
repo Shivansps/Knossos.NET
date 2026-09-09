@@ -33,6 +33,7 @@ namespace Knossos.NET.ViewModels
         internal ObservableCollection<ComboBoxItem> toolItems = new ObservableCollection<ComboBoxItem>();
         [ObservableProperty]
         internal int toolIndex = 0;
+        internal bool ToolsAvailable { get; } = !KnUtils.IsAndroid;
 
         internal int tabIndex = 0;
         internal int TabIndex
@@ -145,7 +146,8 @@ namespace Knossos.NET.ViewModels
                 DetailsView = null;
                 MembersView = null;
                 IsEngineBuild = false;
-                LoadTools();
+                if (ToolsAvailable)
+                    LoadTools();
                 ModImage = new Bitmap(AssetLoader.Open(new Uri("avares://Knossos.NET/Assets/general/NebulaDefault.png")));
                 index = 0;
                 //Get all installed mods with this ID

@@ -34,7 +34,7 @@
 					<Button Command="{Binding OpenModFolder}" Classes="Quaternary" Margin="2" Width="150">Open Folder</Button>
 				</StackPanel>
 				<!--Tools-->
-				<StackPanel IsVisible="true" Margin="20,10,20,10" HorizontalAlignment="Center">
+				<StackPanel IsVisible="{Binding ToolsAvailable}" Margin="20,10,20,10" HorizontalAlignment="Center">
 					<TextBlock HorizontalAlignment="Center" Text="Tools" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" Margin="0,0,0,3"></TextBlock>
 					<ComboBox ItemsSource="{Binding ToolItems}" Width="154" SelectedIndex="{Binding ToolIndex}"></ComboBox>
 					<Button Classes="Quaternary" Command="{Binding OpenTool}" HorizontalAlignment="Center" Margin="2,4,0,0" Width="150">Open</Button>
