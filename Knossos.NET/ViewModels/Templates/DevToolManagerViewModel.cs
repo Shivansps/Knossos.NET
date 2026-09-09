@@ -162,6 +162,7 @@ namespace Knossos.NET.ViewModels
         internal ObservableCollection<ToolItem> tools = new ObservableCollection<ToolItem>();
 
         private bool toolsRepoLoaded = false;
+        private bool toolsLoading = false;
 
         public DevToolManagerViewModel()
         {
@@ -169,14 +170,26 @@ namespace Knossos.NET.ViewModels
 
         public async void LoadTools()
         {
-            if (!toolsRepoLoaded)
+            if (toolsRepoLoaded || toolsLoading)
+                return;
+
+            toolsLoading = true;
+            try
             {
-                foreach (var installedTool in Knossos.GetTools())
+                await Knossos.WaitForInitialLibraryScanAsync().ConfigureAwait(false);
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    InsertInOrder(installedTool);
-                }
+                    foreach (var installedTool in Knossos.GetTools())
+                    {
+                        InsertInOrder(installedTool);
+                    }
+                });
                 await LoadToolRepo().ConfigureAwait(false);
                 toolsRepoLoaded = true;
+            }
+            finally
+            {
+                toolsLoading = false;
             }
         }
 

@@ -25,6 +25,7 @@ namespace Knossos.NET
         private static List<Mod> installedMods = new List<Mod>();
         private static List<FsoBuild> engineBuilds = new List<FsoBuild>();
         private static List<Tool> modTools = new List<Tool>();
+        private static readonly TaskCompletionSource<bool> initialLibraryScanCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         public static GlobalSettings globalSettings = new GlobalSettings();
         public static bool retailFs2RootFound = false;
         public static bool flagDataLoaded = false;
@@ -938,6 +939,7 @@ namespace Knossos.NET
                 MainWindowViewModel.Instance?.tagFilter.Clear();
 
                 await FolderSearchRecursive(globalSettings.basePath, isQuickLaunch).ConfigureAwait(false);
+                initialLibraryScanCompletion.TrySetResult(true);
 
                 Log.Add(Log.LogSeverity.Information, "Knossos.LoadBasePath()", "Loaded: " + installedMods.Count() +" installed mods or tcs and " + engineBuilds.Count() + " engine builds." );
 
@@ -984,6 +986,18 @@ namespace Knossos.NET
 
                 initIsComplete = true;
             }
+            else
+            {
+                initialLibraryScanCompletion.TrySetResult(true);
+            }
+        }
+
+        /// <summary>
+        /// Wait until the initial library scan has discovered locally installed tools.
+        /// </summary>
+        public static Task WaitForInitialLibraryScanAsync()
+        {
+            return initialLibraryScanCompletion.Task;
         }
 
         /// <summary>
