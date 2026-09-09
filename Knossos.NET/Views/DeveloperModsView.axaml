@@ -47,7 +47,7 @@
 				</SplitView>
 			</TabItem>
 
-			<TabItem Header="Modding Tools">
+			<TabItem Header="Modding Tools" IsVisible="{Binding ToolsAvailable}">
 				<Grid>
 					<Button ToolTip.Tip="You want to add your tool to Knossos.NET tool section?" Command="{Binding OpenAddToolGuide}" Margin="0,-50,5,0" VerticalAlignment="Top" HorizontalAlignment="Right" ZIndex="1">How to add or update my tool?</Button>
 					<v:DevToolManagerView Content="{Binding DevToolManager}"/>
