@@ -703,6 +703,12 @@ namespace Knossos.NET.Models
                 }
                 else
                 {
+                    // Apply platform defaults only when no saved configuration exists so an
+                    // existing user's global command line is never changed during an update.
+                    if (KnUtils.IsAndroid)
+                    {
+                        globalCmdLine = "-no_large_shaders";
+                    }
                     Log.Add(Log.LogSeverity.Information, "GlobalSettings.Load()", "File settings.json does not exist.");
                 }
             }
