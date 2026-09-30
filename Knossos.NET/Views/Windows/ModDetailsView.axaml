@@ -40,7 +40,7 @@
 				</WrapPanel>
 				<WrapPanel Grid.Row="1" Grid.Column="0">
 					<Button Command="{Binding ButtonCommandPlayDebug}" IsVisible="{Binding !Build}" IsEnabled="{Binding !Build}" Content="Debug" Grid.Column="0" Classes="Tertiary Rounded" Margin="5" Width="100" ></Button>
-					<Button Command="{Binding ButtonCommandQtFred}" IsVisible="{Binding !Build}" IsEnabled="{Binding !Build}" Content="QtFred" Grid.Column="0" Margin="5" Width="100" Classes="Settings Rounded"></Button>
+					<Button Command="{Binding ButtonCommandQtFred}" IsVisible="{Binding IsQtFredAvailable}" IsEnabled="{Binding IsQtFredAvailable}" Content="QtFred" Grid.Column="0" Margin="5" Width="100" Classes="Settings Rounded"></Button>
 					<Button Command="{Binding ButtonCommandForum}" Content="Forum" IsVisible="{Binding ForumAvailable}" Classes="Settings Rounded" Margin="5" Width="100" ></Button>
 					<Button IsEnabled="{Binding NebulaServices}" IsVisible="{Binding !devMode}" Command="{Binding ButtonCommandDelete}" Content="Delete" Classes="Cancel Rounded" Margin="5" Width="100" ></Button>
 				</WrapPanel>

@@ -71,6 +71,8 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal bool build = false;
         [ObservableProperty]
+        internal bool isQtFredAvailable = false;
+        [ObservableProperty]
         internal string buildVersion = string.Empty;
         [ObservableProperty]
         internal string owners = string.Empty;
@@ -253,6 +255,8 @@ namespace Knossos.NET.ViewModels
                     }
                     Released = modVersions[index].firstRelease;
                     IsInstalled = modVersions[index].installed;
+                    //QtFred depends on the engine build this version resolves to, the buttons are only displayed for installed mods
+                    IsQtFredAvailable = modVersions[index].installed && modVersions[index].type != ModType.engine && modVersions[index].IsQtFredAvailable()[0];
                     if (modVersions[index].releaseThread != null)
                     {
                         ForumAvailable = true;

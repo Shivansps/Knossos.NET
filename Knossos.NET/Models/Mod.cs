@@ -1093,7 +1093,7 @@ namespace Knossos.NET.Models
                 result[0] = true;
             }
 
-            if (exe != null)
+            if (exe2 != null)
             {
                 result[1] = true;
             }

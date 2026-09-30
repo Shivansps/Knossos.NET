@@ -319,6 +319,8 @@ namespace Knossos.NET.ViewModels
                                     Knossos.RemoveMod(delete);
                                     VersionItems.Remove(verDel);
                                     ActiveVersionIndex = 0;
+                                    //The index does not change if the first version was removed
+                                    RefreshQtFredAvailability();
                                 }
                             }
                             else
@@ -529,18 +531,38 @@ namespace Knossos.NET.ViewModels
             }
         }
 
+        /// <summary>
+        /// Updates the QtFred buttons visibility for the active version
+        /// </summary>
         public void RefreshQtFredAvailability()
         {
-            var bools = modVersions[ActiveVersionIndex].IsQtFredAvailable();
+            try
+            {
+                bool[]? bools = null;
+                //ActiveVersionIndex is -1 for a moment while versions are added
+                if (ActiveVersionIndex >= 0 && ActiveVersionIndex < modVersions.Count())
+                {
+                    bools = modVersions[ActiveVersionIndex].IsQtFredAvailable();
+                }
 
-            if (bools == null || bools.Length < 2){
-                IsQtFredAvailable = false;
-                IsQtFredDebugAvailable = false;
-                return;
+                if (bools == null || bools.Length < 2){
+                    IsQtFredAvailable = false;
+                    IsQtFredDebugAvailable = false;
+                    return;
+                }
+
+                IsQtFredAvailable = bools[0];
+                IsQtFredDebugAvailable = bools[1];
             }
+            catch (Exception ex)
+            {
+                Log.Add(Log.LogSeverity.Error, "CustomHomeViewModel.RefreshQtFredAvailability()", ex);
+            }
+        }
 
-            IsQtFredAvailable = bools[0];
-            IsQtFredDebugAvailable = bools[1];
+        partial void OnActiveVersionIndexChanged(int value)
+        {
+            RefreshQtFredAvailability();
         }
     }
 }
