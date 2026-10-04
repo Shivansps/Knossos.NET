@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Knossos.NET.ViewModels
 {
@@ -25,7 +26,11 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty]
         internal string buildType = string.Empty;
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanDownload))]
         internal bool isValid = false;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanDownload))]
+        internal bool hasWriteAccess = false;
         [ObservableProperty]
         internal bool isInstalled = false;
         [ObservableProperty]
@@ -36,6 +41,8 @@ namespace Knossos.NET.ViewModels
         internal bool isDetailsButtonVisible = true;
         [ObservableProperty]
         internal ObservableCollection<CheckBox> buildPkgs = new ObservableCollection<CheckBox>();
+
+        public bool CanDownload => IsValid || HasWriteAccess;
 
         public FsoBuildItemViewModel() 
         {
@@ -111,15 +118,25 @@ namespace Knossos.NET.ViewModels
             }
         }
 
+        private async Task UpdateBuildCompatibility(Mod mod)
+        {
+            await mod.LoadFulLNebulaData().ConfigureAwait(false);
+            var hasWriteAccess = Nebula.userIsLoggedIn &&
+                (await Nebula.GetEditableModIDs().ConfigureAwait(false))?.Contains(mod.id) == true;
+            await Dispatcher.UIThread.InvokeAsync(() => {
+                HasWriteAccess = hasWriteAccess;
+                UpdateDisplayData(new FsoBuild(mod), true);
+            });
+        }
+
         internal async void ViewBuildDetails()
         {
             if (build != null)
             {
                 if (build.modData != null)
                 {
-                    await build.modData.LoadFulLNebulaData().ConfigureAwait(false);
+                    await UpdateBuildCompatibility(build.modData).ConfigureAwait(false);
                     await Dispatcher.UIThread.InvokeAsync(async () => {
-                        UpdateDisplayData(new FsoBuild(build.modData), true);
                         var dialog = new ModDetailsView();
                         dialog.DataContext = new ModDetailsViewModel(build.modData, dialog);
                         await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
@@ -202,32 +219,28 @@ namespace Knossos.NET.ViewModels
                         //Check compatibility
                         if (build.modData != null)
                         {
-                            await build.modData.LoadFulLNebulaData().ConfigureAwait(false);
-                            var tempBuild = new FsoBuild(build.modData);
+                            await UpdateBuildCompatibility(build.modData).ConfigureAwait(false);
                             await Dispatcher.UIThread.InvokeAsync(async() => {
-                                UpdateDisplayData(tempBuild, true);
-                                if (tempBuild != null)
+                                //Write access allows installing builds for editing on any OS or CPU.
+                                if (CanDownload)
                                 {
-                                    if (IsValid)
+                                    IsDownloading = true;
+                                    cancellationTokenSource = new CancellationTokenSource();
+                                    FsoBuild? newBuild = await TaskViewModel.Instance?.InstallBuild(build!, this, build.modData)!;
+                                    if (newBuild != null)
                                     {
-                                        IsDownloading = true;
-                                        cancellationTokenSource = new CancellationTokenSource();
-                                        FsoBuild? newBuild = await TaskViewModel.Instance?.InstallBuild(build!, this, build.modData)!;
-                                        if (newBuild != null)
-                                        {
-                                            //Install completed
-                                            IsInstalled = true;
-                                            build = newBuild;
-                                            UpdateDisplayData(newBuild);
-                                        }
-                                        IsDownloading = false;
-                                        cancellationTokenSource?.Dispose();
-                                        cancellationTokenSource = null;
+                                        //Install completed
+                                        IsInstalled = true;
+                                        build = newBuild;
+                                        UpdateDisplayData(newBuild);
                                     }
-                                    else
-                                    {
-                                        await MessageBox.Show(MainWindow.instance, "This build does not have any executables compatible with your operating system or CPU arch.", "Build is not valid for this computer", MessageBox.MessageBoxButtons.OK);
-                                    }
+                                    IsDownloading = false;
+                                    cancellationTokenSource?.Dispose();
+                                    cancellationTokenSource = null;
+                                }
+                                else
+                                {
+                                    await MessageBox.Show(MainWindow.instance, "This build does not have any executables compatible with your operating system or CPU arch.", "Build is not valid for this computer", MessageBox.MessageBoxButtons.OK);
                                 }
                             }).ConfigureAwait(false);
                         }
