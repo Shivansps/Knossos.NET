@@ -1406,7 +1406,7 @@ namespace Knossos.NET.Models
                 return 0;
             }
 
-            if ((env == FsoExecEnvironment.Windows && !KnUtils.IsWindows) || (env == FsoExecEnvironment.Linux && !KnUtils.IsLinux) || (env == FsoExecEnvironment.MacOSX && !KnUtils.IsMacOS))
+            if ((env == FsoExecEnvironment.Windows && !KnUtils.IsWindows) || (env == FsoExecEnvironment.Linux && !KnUtils.IsLinux) || (env == FsoExecEnvironment.MacOSX && !KnUtils.IsMacOS) || (env == FsoExecEnvironment.Android && !KnUtils.IsAndroid))
             {
                 //Fred2 on Linux over Wine exception
                 //Note: this will only be valid if the exec arch matches the host cpu arch, otherwise DetermineScoreFromArch() will return 0 anyway.
