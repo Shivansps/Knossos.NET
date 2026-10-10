@@ -43,7 +43,7 @@
 				</Button>
 				<Button Width="100" Classes="Cancel" Command="{Binding DeleteBuildCommand}">Delete</Button>
 			</WrapPanel>
-			<Button IsVisible="{Binding !IsInstalled}" Width="100" IsEnabled="{Binding IsValid}" Classes="Accept" Command="{Binding DownloadBuildCommand}">Download</Button>
+			<Button IsVisible="{Binding !IsInstalled}" Width="100" IsEnabled="{Binding CanDownload}" Classes="Accept" Command="{Binding DownloadBuildCommand}">Download</Button>
 		</WrapPanel>
 			
 		<WrapPanel IsVisible="{Binding IsDownloading}" Grid.Column="5" HorizontalAlignment="Right">

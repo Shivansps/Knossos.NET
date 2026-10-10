@@ -158,6 +158,17 @@ namespace Knossos.NET.ViewModels
                             }
                         }
 
+                        if (modifyPkgs == null)
+                        {
+                            //Builds have no developer-mode checkbox: use the logged-in user's write access.
+                            modJson.devMode = Nebula.userIsLoggedIn &&
+                                (await Nebula.GetEditableModIDs())?.Contains(modJson.id) == true;
+                            if (cancellationTokenSource.IsCancellationRequested)
+                            {
+                                throw new TaskCanceledException();
+                            }
+                        }
+
                         List<ModFile> files = new List<ModFile>();
                         string modFolder = modJson.id + "-" + modJson.version;
                         modPath = Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + modFolder;
@@ -206,6 +217,22 @@ namespace Knossos.NET.ViewModels
                                         exec.properties = FsoBuild.FillProperties(pkg.environment!);
                                     }
                                     modJson.packages.Add(pkg);
+                                }
+                            }
+                        }
+                        else if (modJson.devMode)
+                        {
+                            //Keep every platform/architecture package in its own folder for editing and uploading.
+                            foreach (var pkg in modJson.packages)
+                            {
+                                foreach (var file in pkg.files ?? Array.Empty<ModFile>())
+                                {
+                                    file.dest = Path.Combine(pkg.folder ?? string.Empty, file.dest ?? string.Empty);
+                                    files.Add(file);
+                                }
+                                foreach (var exec in pkg.executables ?? new List<ModExecutable>())
+                                {
+                                    exec.properties = FsoBuild.FillProperties(pkg.environment ?? string.Empty);
                                 }
                             }
                         }
