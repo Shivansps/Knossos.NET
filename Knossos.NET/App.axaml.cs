@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -80,6 +81,23 @@ namespace Knossos.NET
             desktop.MainWindow.Show();
         }
 
+        private void OpenMainWindowFromTray()
+        {
+            if (trayIcon != null && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                CreateMainWindow(desktop);
+                desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
+                if (CustomLauncher.IsCustomMode && CustomLauncher.MenuTaskButtonAtTheEnd)
+                {
+                    MainView.instance?.FixMarginButtomTasks();
+                }
+                MainWindow.instance?.SetSize(mainVM?.WindowWidth, mainVM?.WindowHeight);
+                trayIcon.Dispose();
+                trayIcon = null;
+                GC.Collect();
+            }
+        }
+
 
         private async void StartTrayIcon()
         {
@@ -94,25 +112,31 @@ namespace Knossos.NET
 
             while (!Knossos.initIsComplete) { await Task.Delay(10); }
 
+            // TrayIcon.Clicked fires for each click, so use the system double-click interval.
+            var clickTimer = new Stopwatch();
+            trayIcon.Clicked += (s, _) =>
+            {
+                if (s != trayIcon)
+                    return;
+
+                var doubleClickTime = PlatformSettings?.GetDoubleTapTime(PointerType.Mouse) ?? TimeSpan.FromMilliseconds(500);
+                if (clickTimer.IsRunning && clickTimer.Elapsed <= doubleClickTime)
+                {
+                    clickTimer.Reset();
+                    OpenMainWindowFromTray();
+                }
+                else
+                {
+                    clickTimer.Restart();
+                }
+            };
+
             trayIcon.Menu?.Items.Clear();
             
             /*****************************OPEN***********************************/
 
             var open = new NativeMenuItem("Open");
-            open.Click += (s, _) => {
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    CreateMainWindow(desktop);
-                    desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
-                    if (CustomLauncher.IsCustomMode && CustomLauncher.MenuTaskButtonAtTheEnd)
-                    {
-                        MainWindow.instance?.FixMarginButtomTasks();
-                    }
-                    MainWindow.instance?.SetSize(mainVM?.WindowWidth, mainVM?.WindowHeight);
-                    trayIcon?.Dispose();
-                    GC.Collect();
-                }
-            };
+            open.Click += (s, _) => OpenMainWindowFromTray();
             trayIcon.Menu?.Add(open);
             trayIcon.Menu?.Add(new NativeMenuItemSeparator());
 
