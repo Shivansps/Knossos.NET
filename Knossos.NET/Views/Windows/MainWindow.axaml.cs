@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Threading;
 using Knossos.NET.ViewModels;
 
 namespace Knossos.NET.Views
@@ -8,7 +6,6 @@ namespace Knossos.NET.Views
     public partial class MainWindow : Window
     {
         public static MainWindow? instance;
-        private static bool canClose = false;
 
         public MainWindow()
         {
@@ -29,23 +26,16 @@ namespace Knossos.NET.Views
                 this.Height = height.Value;
         }
 
-        protected override async void OnClosing(WindowClosingEventArgs e)
+        protected override void OnClosing(WindowClosingEventArgs e)
         {
-            //Intercept closing, do stuff, then re-call close
-            if (!canClose)
-            {
-                e.Cancel = true;
-
-                await Dispatcher.UIThread.InvokeAsync(() => {
-                    Knossos.Tts(string.Empty);
-                    MainViewModel.Instance?.GlobalSettingsView?.CommitPendingChanges();
-                    Knossos.globalSettings.SaveSettingsOnAppClose();
-                    canClose = true;
-                });
-
-                if (canClose) 
-                    this.Close(); 
-            }
+            // Everything that has to happen before the window goes away is synchronous and
+            // already runs on the UI thread, so do it here and let the close proceed.
+            // Do NOT cancel the close and re-call Close() later: on Linux the X11 session
+            // manager asks the app to close during logout/reboot, and a cancelled first
+            // close is reported back as "the app refused", which cancels the whole logout.
+            Knossos.Tts(string.Empty);
+            MainViewModel.Instance?.GlobalSettingsView?.CommitPendingChanges();
+            Knossos.globalSettings.SaveSettingsOnAppClose();
             base.OnClosing(e);
         }
     }
