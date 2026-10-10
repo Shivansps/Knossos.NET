@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Knossos.NET.ViewModels;
 
@@ -52,7 +53,7 @@ namespace Knossos.NET.Views
             // manager asks the app to close during logout/reboot, and a cancelled first
             // close is reported back as "the app refused", which cancels the whole logout.
             Knossos.Tts(string.Empty);
-            MainViewModel.Instance?.GlobalSettingsView?.CommitPendingChanges();
+            MainWindowViewModel.Instance?.GlobalSettingsView?.CommitPendingChanges();
             Knossos.globalSettings.SaveSettingsOnAppClose();
             base.OnClosing(e);
         }

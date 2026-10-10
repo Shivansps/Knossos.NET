@@ -89,7 +89,7 @@ namespace Knossos.NET
                 desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
                 if (CustomLauncher.IsCustomMode && CustomLauncher.MenuTaskButtonAtTheEnd)
                 {
-                    MainView.instance?.FixMarginButtomTasks();
+                    MainWindow.instance?.FixMarginButtomTasks();
                 }
                 MainWindow.instance?.SetSize(mainVM?.WindowWidth, mainVM?.WindowHeight);
                 trayIcon.Dispose();

@@ -160,6 +160,35 @@ namespace Knossos.NET.ViewModels
                 Knossos.LoadBasePath();
             }
             CustomHomeVM?.CheckBasePath();
+            if (CustomHomeVM != null && CustomHomeVM.ShowBasePathSelector && !CustomLauncher.MenuDisplayHomeEntry)
+            {
+                //The library folder selector is part of the Home view, it has to be displayed even if Home was disabled
+                ShowCustomHomeMenuItem();
+            }
+        }
+
+        /// <summary>
+        /// Adds the Single TC mode Home entry to the menu if it is missing and selects it
+        /// </summary>
+        private void ShowCustomHomeMenuItem()
+        {
+            Dispatcher.UIThread.Invoke(new Action(() => {
+                if (MenuItems == null || CustomHomeVM == null)
+                    return;
+
+                var homeItem = MenuItems.FirstOrDefault(x => x.vm == CustomHomeVM);
+                if (homeItem == null)
+                {
+                    homeItem = CreateCustomHomeMenuItem();
+                    MenuItems.Insert(CustomLauncher.MenuTaskButtonAtTheEnd ? 0 : 1, homeItem);
+                }
+                SelectedMenuItem = homeItem;
+            }));
+        }
+
+        private MainViewMenuItem CreateCustomHomeMenuItem()
+        {
+            return new MainViewMenuItem(CustomHomeVM!, "avares://Knossos.NET/Assets/general/menu_home.png", "Home", "Home");
         }
 
         private void FillMenuItemsCustomMode(int defaultSelectedIndex)
@@ -168,37 +197,39 @@ namespace Knossos.NET.ViewModels
 
                 if (CustomLauncher.MenuTaskButtonAtTheEnd)
                 {
-                    MenuItems = new ObservableCollection<MainViewMenuItem>{
-                        new MainViewMenuItem(CustomHomeVM!, "avares://Knossos.NET/Assets/general/menu_home.png", "Home", "Home")
-                    };
+                    MenuItems = new ObservableCollection<MainViewMenuItem>();
                 }
                 else
                 {
                     MenuItems = new ObservableCollection<MainViewMenuItem>{
-                        new MainViewMenuItem(TaskView, null, "Tasks", "Overview of current running tasks"),
-                        new MainViewMenuItem(CustomHomeVM!, "avares://Knossos.NET/Assets/general/menu_home.png", "Home", "Home")
+                        new MainViewMenuItem(TaskView, null, "Tasks", "Overview of current running tasks")
                     };
+                }
+
+                if (CustomLauncher.MenuDisplayHomeEntry)
+                {
+                    MenuItems.Add(CreateCustomHomeMenuItem());
                 }
 
                 if (CustomLauncher.CustomMenuButtons != null && CustomLauncher.CustomMenuButtons.Any())
                 {
-                    foreach(var button in CustomLauncher.CustomMenuButtons)
+                    foreach (var button in CustomLauncher.CustomMenuButtons)
                     {
                         try
                         {
                             switch (button.Type.ToLower())
                             {
-                                case "htmlcontent" :
+                                case "htmlcontent":
                                     MenuItems.Add(new MainViewMenuItem(new HtmlContentViewModel(button.LinkURL), button.IconPath, button.Name, button.ToolTip));
                                     break;
                                 case "axamlcontent":
                                     MenuItems.Add(new MainViewMenuItem(new AxamlExternalContentViewModel(button.LinkURL, button.Name), button.IconPath, button.Name, button.ToolTip));
                                     break;
                                 default:
-                                    throw new NotImplementedException("button type: "+ button.Type + " is not supported.");
+                                    throw new NotImplementedException("button type: " + button.Type + " is not supported.");
                             }
                         }
-                        catch (Exception ex) 
+                        catch (Exception ex)
                         {
                             Log.Add(Log.LogSeverity.Error, "MainWindowViewModel.FillMenuItemsCustomMode()", ex);
                         }
@@ -210,7 +241,7 @@ namespace Knossos.NET.ViewModels
                     MenuItems.Add(new MainViewMenuItem(FsoBuildsView, "avares://Knossos.NET/Assets/general/menu_engine.png", "Engine", "Download new Freespace Open engine builds"));
                 }
 
-                if(CustomLauncher.MenuDisplayNebulaLoginEntry && NebulaLoginVM != null)
+                if (CustomLauncher.MenuDisplayNebulaLoginEntry && NebulaLoginVM != null)
                 {
                     MenuItems.Add(new MainViewMenuItem(NebulaLoginVM, "avares://Knossos.NET/Assets/general/menu_nebula.png", "Nebula", "Log in with your nebula account"));
                 }
@@ -235,7 +266,8 @@ namespace Knossos.NET.ViewModels
                     MenuItems.Add(new MainViewMenuItem(TaskView, null, "Tasks", "Overview of current running tasks"));
                 }
 
-                if (MenuItems != null && MenuItems.Count() - 1 > defaultSelectedIndex)
+                //Without Home the default entry can be the last one, e.g. Tasks + a single custom button
+                if (MenuItems != null && MenuItems.Count() > defaultSelectedIndex && MenuItems[defaultSelectedIndex].vm != TaskView)
                 {
                     SelectedMenuItem = MenuItems[defaultSelectedIndex];
                 }
@@ -385,6 +417,8 @@ namespace Knossos.NET.ViewModels
         public void RunModStatusChecks()
         {
             InstalledModsView?.RunModStatusChecks();
+            //QtFred availability depends on the installed engine builds
+            CustomHomeVM?.RefreshQtFredAvailability();
         }
 
         /// <summary>
