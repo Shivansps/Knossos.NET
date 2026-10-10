@@ -93,6 +93,10 @@ public partial class CustomHomeView : UserControl
                             ToolTip.SetTip(button, config.ToolTip);
                         if (config.FontSize != null)
                             button.FontSize = config.FontSize.Value;
+                        if (config.Width != null)
+                            button.Width = config.Width.Value;
+                        if (config.Height != null)
+                            button.Height = config.Height.Value;
                         if (config.BackgroundHexColor != null)
                             button.Background = SolidColorBrush.Parse(config.BackgroundHexColor);
                         if (config.ForegroundHexColor != null)

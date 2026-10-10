@@ -28,6 +28,8 @@ namespace Knossos.NET.Models
         public string? DisplayText { get; set; } = null;
         public string? ToolTip { get; set; } = null;
         public int? FontSize { get; set; } = null;
+        public int? Width { get; set; } = null; //Use it if the default button width is not enough for the display text
+        public int? Height { get; set; } = null; //Use it if the default button height is not enough for the font size
         public string? BackgroundHexColor { get; set; } = null; //#CD3632 hex color value
         public string? ForegroundHexColor { get; set; } = null; //#CD3632 hex color value
         public string? BorderHexColor { get; set; } = null; //#CD3632 hex color value
