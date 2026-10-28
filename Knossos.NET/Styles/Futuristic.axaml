@@ -1,0 +1,173 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Opt in with the Futuristic class on a view. Keep shared tokens independent of ModProperties. -->
+  <Styles.Resources>
+    <SolidColorBrush x:Key="FuturisticBackground">#10171D</SolidColorBrush>
+    <SolidColorBrush x:Key="FuturisticSurface">#192229</SolidColorBrush>
+    <SolidColorBrush x:Key="FuturisticBorder">#33424E</SolidColorBrush>
+    <SolidColorBrush x:Key="FuturisticText">#F3F6FA</SolidColorBrush>
+    <SolidColorBrush x:Key="FuturisticMuted">#A9B8C8</SolidColorBrush>
+    <SolidColorBrush x:Key="FuturisticAccent">#28ACFF</SolidColorBrush>
+    <LinearGradientBrush x:Key="FuturisticBackdrop" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Color="#19232B" Offset="0"/>
+      <GradientStop Color="#0D141A" Offset="0.6"/>
+      <GradientStop Color="#15212A" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="FuturisticSelection" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Color="#173654" Offset="0"/>
+      <GradientStop Color="#315781" Offset="1"/>
+    </LinearGradientBrush>
+    <StreamGeometry x:Key="FuturisticInfoIcon">M12,2A10,10 0 1 0 12,22A10,10 0 0 0 12,2 M11,10H13V18H11Z M11,6H13V8H11Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticPackageIcon">M12,2L22,7V17L12,22L2,17V7Z M3,7L12,12L21,7 M12,12V22 M7,4.5L17,9.5</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticDlcIcon">M3,3H9V6A3,3 0 1 0 15,6V3H21V9H18A3,3 0 1 1 18,15H21V21H15V18A3,3 0 1 0 9,18V21H3V15H6A3,3 0 1 0 6,9H3Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticPlayIcon">M7,3L21,12L7,21Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticFolderIcon">M2,5H10L12,7H22V20H2Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticBackIcon">M20,11V13H6L12,19L10.5,20.5L2,12L10.5,3.5L12,5L6,11Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticToolIcon">M22,5L18,9L15,6L19,2A7,7 0 0 0 10,11L2,19L5,22L13,14A7,7 0 0 0 22,5Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticBugIcon">M8,2L10,5H14L16,2L18,3L16,6L18,8H22V10H18V13H22V15H18V17H22V19H17A6,6 0 0 1 7,19H2V17H6V15H2V13H6V10H2V8H6L8,6L6,3Z M9,10H11V12H9Z M13,10H15V12H13Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticSettingsIcon">M10,2H14L15,6L18,7L21,6L23,10L20,13L20,16L22,19L19,22L15,20L12,21L9,23L6,20L7,16L5,13L2,12L3,8L7,8L9,6Z M12,8A4,4 0 1 0 12,16A4,4 0 0 0 12,8</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticFlagIcon">M4,2H6V4H20L17,9L20,14H6V22H4Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticDeleteIcon">M8,2H16V5H22V7H20L19,22H5L4,7H2V5H8Z M8,9V19H10V9Z M14,9V19H16V9Z</StreamGeometry>
+    <StreamGeometry x:Key="FuturisticZoomIcon">M10,2A8,8 0 1 0 15,16L21,22L23,20L17,14A8,8 0 0 0 10,2 M10,5A5,5 0 1 1 10,15A5,5 0 0 1 10,5 M9,7V9H7V11H9V13H11V11H13V9H11V7Z</StreamGeometry>
+  </Styles.Resources>
+
+  <Style Selector="UserControl.Futuristic">
+    <Setter Property="Foreground" Value="{DynamicResource FuturisticText}"/>
+  </Style>
+  <Style Selector=".Futuristic TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource FuturisticMuted}"/>
+  </Style>
+  <Style Selector=".Futuristic TextBlock.heading">
+    <Setter Property="FontSize" Value="30"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+  <Style Selector=".Futuristic Border.surface">
+    <Setter Property="Background" Value="{DynamicResource FuturisticSurface}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource FuturisticBorder}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="6"/>
+  </Style>
+  <Style Selector=".Futuristic Button">
+    <Setter Property="MinHeight" Value="44"/>
+    <Setter Property="Padding" Value="16,10"/>
+    <Setter Property="CornerRadius" Value="5"/>
+    <Setter Property="Background" Value="#303D48"/>
+    <Setter Property="BorderBrush" Value="#526474"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Foreground" Value="{DynamicResource FuturisticText}"/>
+    <Setter Property="FontWeight" Value="Medium"/>
+    <Setter Property="Cursor" Value="Hand"/>
+  </Style>
+  <Style Selector=".Futuristic Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#3C5367"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource FuturisticAccent}"/>
+    <Setter Property="Foreground" Value="White"/>
+  </Style>
+  <Style Selector=".Futuristic Button:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="#18314A"/>
+  </Style>
+  <Style Selector=".Futuristic Button:disabled">
+    <Setter Property="Opacity" Value="0.45"/>
+  </Style>
+  <Style Selector=".Futuristic Button:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="#25313C"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource FuturisticBorder}"/>
+    <Setter Property="Foreground" Value="{DynamicResource FuturisticMuted}"/>
+  </Style>
+  <Style Selector=".Futuristic Button.play">
+    <Setter Property="Background" Value="#28682D"/>
+    <Setter Property="BorderBrush" Value="#489846"/>
+  </Style>
+  <Style Selector=".Futuristic Button.debug">
+    <Setter Property="Background" Value="#795215"/>
+    <Setter Property="BorderBrush" Value="#B48B37"/>
+  </Style>
+  <Style Selector=".Futuristic Button.editor">
+    <Setter Property="Background" Value="#794A2B"/>
+    <Setter Property="BorderBrush" Value="#AF7446"/>
+  </Style>
+  <Style Selector=".Futuristic Button.accent">
+    <Setter Property="Background" Value="#24578B"/>
+    <Setter Property="BorderBrush" Value="#427DB5"/>
+  </Style>
+  <Style Selector=".Futuristic Button.danger">
+    <Setter Property="Background" Value="#792F35"/>
+    <Setter Property="BorderBrush" Value="#AF5057"/>
+  </Style>
+  <Style Selector=".Futuristic Button.navigation">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="MinHeight" Value="58"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Padding" Value="16,12"/>
+    <Setter Property="CornerRadius" Value="0,5,5,0"/>
+  </Style>
+  <Style Selector=".Futuristic Button.navigation.selected">
+    <Setter Property="Background" Value="{DynamicResource FuturisticSelection}"/>
+    <Setter Property="BorderBrush" Value="#4A7EB0"/>
+    <Setter Property="BorderThickness" Value="4,1,1,1"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style Selector=".Futuristic Button.navigation TextBlock">
+    <Setter Property="Margin" Value="14,0,0,0"/>
+  </Style>
+  <Style Selector=".Futuristic Button.navigation /template/ ContentPresenter">
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+  </Style>
+  <Style Selector=".Futuristic Button.navigation:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+  </Style>
+  <Style Selector=".Futuristic PathIcon">
+    <Setter Property="Width" Value="20"/>
+    <Setter Property="Height" Value="20"/>
+    <Setter Property="Foreground" Value="{DynamicResource FuturisticText}"/>
+  </Style>
+  <Style Selector=".Futuristic ComboBox">
+    <Setter Property="MinHeight" Value="40"/>
+    <Setter Property="Background" Value="#121B23"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource FuturisticBorder}"/>
+    <Setter Property="CornerRadius" Value="4"/>
+    <Setter Property="FontWeight" Value="Medium"/>
+  </Style>
+  <Style Selector=".Futuristic Button.mediaTab">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="CornerRadius" Value="0"/>
+    <Setter Property="BorderThickness" Value="0,0,0,2"/>
+  </Style>
+  <Style Selector=".Futuristic Button.mediaTab.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource FuturisticAccent}"/>
+    <Setter Property="Foreground" Value="White"/>
+  </Style>
+  <Style Selector=".Futuristic Button.thumbnail">
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="ClipToBounds" Value="True"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+  </Style>
+  <Style Selector=".Futuristic Grid.compact Button.navigation">
+    <Setter Property="Padding" Value="6,12"/>
+    <Setter Property="FontSize" Value="11"/>
+  </Style>
+  <Style Selector=".Futuristic Grid.compact Button.navigation TextBlock">
+    <Setter Property="Margin" Value="4,0,0,0"/>
+  </Style>
+  <Style Selector=".Futuristic Grid.compact Button.navigation PathIcon">
+    <Setter Property="Width" Value="16"/>
+    <Setter Property="Height" Value="16"/>
+  </Style>
+  <Style Selector=".Futuristic StackPanel.narrow Button">
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="Padding" Value="10,8"/>
+  </Style>
+  <Style Selector=".Futuristic StackPanel.narrow Button PathIcon">
+    <Setter Property="Width" Value="16"/>
+    <Setter Property="Height" Value="16"/>
+  </Style>
+  <Style Selector=".Futuristic StackPanel.narrow Button.thumbnail">
+    <Setter Property="Padding" Value="0"/>
+  </Style>
+</Styles>

@@ -137,9 +137,9 @@ namespace Knossos.NET.ViewModels
                 {
                     await UpdateBuildCompatibility(build.modData).ConfigureAwait(false);
                     await Dispatcher.UIThread.InvokeAsync(async () => {
-                        var dialog = new ModDetailsView();
-                        dialog.DataContext = new ModDetailsViewModel(build.modData, dialog);
-                        await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
+                        var dialog = new ModPropertiesView();
+                        dialog.DataContext = new ModPropertiesViewModel(build.modData, dialog);
+                        await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
                     }).ConfigureAwait(false);
                 }
                 else

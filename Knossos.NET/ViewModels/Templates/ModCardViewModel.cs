@@ -18,8 +18,7 @@ namespace Knossos.NET.ViewModels
     public partial class ModCardViewModel : ViewModelBase, IComparable<ModCardViewModel>
     {
         /* General Mod variables */
-        private ModDetailsView? detailsView = null;
-        private ModSettingsView? settingsView = null;
+        private ModPropertiesView? propertiesView = null;
         private List<Mod> modVersions = new List<Mod>();
         private int activeVersionIndex = 0;
         private bool devMode { get; set; } = false;
@@ -188,9 +187,9 @@ namespace Knossos.NET.ViewModels
             });
         }
 
-        public void SwitchModVersion(int newIndex)
+        public void SwitchModVersion(int newIndex, bool force = false)
         {
-            if (newIndex != activeVersionIndex)
+            if (force || newIndex != activeVersionIndex)
             {
                 Log.Add(Log.LogSeverity.Information, "ModCardViewModel.SwitchModVersion()", "Changing active version for mod id " + ID + " to " + modVersions[newIndex].version);
                 activeVersionIndex = newIndex;
@@ -223,12 +222,12 @@ namespace Knossos.NET.ViewModels
             try
             {
                 //if the details or settings view is open close it
-                Dispatcher.UIThread.Invoke(() => { 
-                    detailsView?.Close();
-                    settingsView?.Close();
+                Dispatcher.UIThread.Invoke(() => {
+                    propertiesView?.Close();
                 });
                 modVersions.Remove(mod);
-                SwitchModVersion(modVersions.Count() - 1);
+                // Removing an entry can change the version at the same numeric index.
+                SwitchModVersion(modVersions.Count() - 1, true);
             }
             catch(Exception ex)
             {
@@ -358,19 +357,21 @@ namespace Knossos.NET.ViewModels
 
         internal async void ButtonCommandDetails()
         {
-            var dialog = new ModDetailsView();
-            dialog.DataContext = new ModDetailsViewModel(modVersions, activeVersionIndex, this, dialog);
-            detailsView = dialog;
-            await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
-            detailsView = null;
+            var dialog = new ModPropertiesView();
+            dialog.DataContext = new ModPropertiesViewModel(modVersions, activeVersionIndex, this, dialog);
+            propertiesView = dialog;
+            await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
+            propertiesView = null;
         }
 
         internal async void ButtonCommandSettings()
         {
-            var dialog = new ModSettingsView();
-            dialog.DataContext = new ModSettingsViewModel(modVersions[activeVersionIndex],this);
-            settingsView = dialog;
-            await dialog.ShowDialog<ModSettingsView?>(MainWindow.instance);
+            var dialog = new ModPropertiesView();
+            dialog.DataContext = new ModPropertiesViewModel(modVersions, activeVersionIndex, this, dialog,
+                ModPropertiesViewModel.MenuPageEntry.Options);
+            propertiesView = dialog;
+            await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
+            propertiesView = null;
         }
 
         private void LoadImage()

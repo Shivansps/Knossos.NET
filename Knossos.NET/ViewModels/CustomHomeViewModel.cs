@@ -231,12 +231,12 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         private async void Details()
         {
-            var dialog = new ModDetailsView();
+            var dialog = new ModPropertiesView();
             var mod = GetActiveInstalledModVersion != null ? GetActiveInstalledModVersion : nebulaModVersions.FirstOrDefault();
             if (mod != null)
             {
-                dialog.DataContext = new ModDetailsViewModel(mod, dialog);
-                await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
+                dialog.DataContext = new ModPropertiesViewModel(mod, dialog);
+                await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
             else
             {
@@ -251,9 +251,9 @@ namespace Knossos.NET.ViewModels
         {
             if (GetActiveInstalledModVersion != null)
             {
-                var dialog = new ModSettingsView();
-                dialog.DataContext = new ModSettingsViewModel(GetActiveInstalledModVersion);
-                await dialog.ShowDialog<ModSettingsView?>(MainWindow.instance);
+                var dialog = new ModPropertiesView();
+                dialog.DataContext = new ModPropertiesViewModel(GetActiveInstalledModVersion, dialog, ModPropertiesViewModel.MenuPageEntry.Options);
+                await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
             else
             {

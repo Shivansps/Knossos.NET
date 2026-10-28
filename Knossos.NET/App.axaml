@@ -16,6 +16,7 @@
 		<StyleInclude Source="/AppStyles.axaml" />
         <FluentTheme />
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="/Styles/Futuristic.axaml" />
     </Application.Styles>
 
     <Application.Resources>

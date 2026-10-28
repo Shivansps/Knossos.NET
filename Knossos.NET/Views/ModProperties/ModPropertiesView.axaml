@@ -1,0 +1,93 @@
+<views:KnossosWindow xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:Knossos.NET.Views" xmlns:vm="using:Knossos.NET.ViewModels"
+    xmlns:c="using:Knossos.NET.Controls"
+    x:Class="Knossos.NET.Views.ModPropertiesView" x:DataType="vm:ModPropertiesViewModel"
+    mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
+    Classes="Futuristic" Icon="/Assets/knossos-icon.ico" Title="{Binding Title}"
+    WindowStartupLocation="CenterOwner" WindowWidth="1440" WindowHeight="900"
+    MinWidth="280" MinHeight="360" CanResize="True">
+  <Design.DataContext><vm:ModPropertiesViewModel/></Design.DataContext>
+  <views:KnossosWindow.DataTemplates>
+    <DataTemplate DataType="vm:ModInformationViewModel"><views:ModInformationView/></DataTemplate>
+    <DataTemplate DataType="vm:ModLaunchOptionsViewModel"><views:ModLaunchOptionsView/></DataTemplate>
+  </views:KnossosWindow.DataTemplates>
+  <Grid Background="{DynamicResource FuturisticBackdrop}">
+    <Grid x:Name="PropertiesLayout" ColumnDefinitions="224,*" IsEnabled="{Binding !IsModalOpen}">
+      <Border Background="#99131C23" BorderBrush="{DynamicResource FuturisticBorder}" BorderThickness="0,0,1,0" Padding="0,12,8,12">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="4">
+            <Button Classes="navigation" Command="{Binding BackCommand}" Margin="0,0,0,12" AutomationProperties.Name="Back to library">
+              <Grid ColumnDefinitions="24,*">
+                <PathIcon Data="{StaticResource FuturisticBackIcon}"/>
+                <TextBlock Grid.Column="1" Text="Back to Library" TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </Grid>
+            </Button>
+            <Button Classes="navigation" Classes.selected="{Binding IsInformationSelected}" Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:ModPropertiesViewModel+MenuPageEntry.Information}">
+              <Grid ColumnDefinitions="24,*">
+                <PathIcon Data="{StaticResource FuturisticInfoIcon}" Foreground="#7EBBFF"/>
+                <TextBlock Grid.Column="1" Text="Information" TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </Grid>
+            </Button>
+            <Button Classes="navigation" IsEnabled="False" ToolTip.Tip="Versions and packages will be added to Mod Properties in a future update.">
+              <Grid ColumnDefinitions="24,*">
+                <PathIcon Data="{StaticResource FuturisticPackageIcon}"/>
+                <TextBlock Grid.Column="1" Text="Versions &amp; Packages" TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </Grid>
+            </Button>
+            <Button Classes="navigation" IsEnabled="False" ToolTip.Tip="DLC management will be added to Mod Properties in a future update.">
+              <Grid ColumnDefinitions="24,*">
+                <PathIcon Data="{StaticResource FuturisticDlcIcon}"/>
+                <TextBlock Grid.Column="1" Text="DLC" TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </Grid>
+            </Button>
+            <Button Classes="navigation" Classes.selected="{Binding IsOptionsSelected}" IsEnabled="{Binding CanConfigure}" Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:ModPropertiesViewModel+MenuPageEntry.Options}">
+              <Grid ColumnDefinitions="24,*">
+                <PathIcon Data="{StaticResource FuturisticPlayIcon}"/>
+                <TextBlock Grid.Column="1" Text="Launch Options" TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </Grid>
+            </Button>
+            <Button Classes="navigation" IsEnabled="False" ToolTip.Tip="Local file management will be added to Mod Properties in a future update.">
+              <Grid ColumnDefinitions="24,*">
+                <PathIcon Data="{StaticResource FuturisticFolderIcon}"/>
+                <TextBlock Grid.Column="1" Text="Local Files" TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </Grid>
+            </Button>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+      <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+    </Grid>
+    <!-- This overlay stays in the properties visual tree on every platform. -->
+    <Grid x:Name="ModalOverlay" IsVisible="{Binding IsModalOpen}" Background="#E6080E14" ZIndex="10">
+      <Border Classes="surface" Margin="16" Padding="20" MaxWidth="1140">
+        <Grid RowDefinitions="Auto,*,Auto">
+          <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <TextBlock Text="{Binding ModalTitle}" FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <Button x:Name="ModalClose" Grid.Column="1" Content="✕" Margin="12,0,0,0" Command="{Binding CloseModalCommand}" IsEnabled="{Binding !IsSubmitting}" ToolTip.Tip="Close (Escape)" AutomationProperties.Name="Close preview"/>
+          </Grid>
+          <Grid Grid.Row="1" RowDefinitions="*,Auto">
+            <c:AnimatedImage IsVisible="{Binding IsMediaModal}" Path="{Binding PreviewPath}" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <TextBlock Text="This preview could not be loaded. Check your connection and retry the information page." IsVisible="{Binding IsPreviewUnavailable}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440"/>
+            <ScrollViewer IsVisible="{Binding !IsMediaModal}" HorizontalScrollBarVisibility="Disabled">
+              <StackPanel Spacing="16">
+                <TextBlock Text="{Binding ModalText}" TextWrapping="Wrap" FontSize="16"/>
+                <TextBox IsVisible="{Binding IsReportModal}" Text="{Binding ReportReason}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="160" MaxLength="4000" Watermark="Describe the problem…" IsEnabled="{Binding !IsSubmitting}"/>
+              </StackPanel>
+            </ScrollViewer>
+            <TextBlock Grid.Row="1" Text="{Binding ModalText}" IsVisible="{Binding IsVideoModal}" TextWrapping="Wrap" Classes="muted" Margin="0,16,0,0"/>
+          </Grid>
+          <WrapPanel Grid.Row="2" HorizontalAlignment="Center" Margin="0,16,0,0">
+            <Button Content="← Previous" IsVisible="{Binding CanBrowseMedia}" Command="{Binding ChangeMediaCommand}" CommandParameter="-1" Margin="4"/>
+            <Button Classes="accent" Content="Play on YouTube ↗" IsVisible="{Binding IsVideoModal}" Command="{Binding PlayVideoCommand}" Margin="4"/>
+            <Button Content="Next →" IsVisible="{Binding CanBrowseMedia}" Command="{Binding ChangeMediaCommand}" CommandParameter="1" Margin="4"/>
+            <Button Classes="accent" Content="{Binding ConfirmLabel}" IsVisible="{Binding IsConfirmationModal}" Command="{Binding ConfirmModalCommand}" IsEnabled="{Binding !IsSubmitting}" Margin="4"/>
+            <ProgressBar IsVisible="{Binding IsSubmitting}" IsIndeterminate="True" Width="120" Height="4" Margin="12"/>
+          </WrapPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</views:KnossosWindow>

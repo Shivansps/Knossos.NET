@@ -160,9 +160,9 @@ namespace Knossos.NET.ViewModels
             {
                 if(modJson != null)
                 {
-                    var dialog = new ModDetailsView();
-                    dialog.DataContext = new ModDetailsViewModel(modJson, dialog);
-                    await dialog.ShowDialog<ModDetailsView?>(MainWindow.instance);
+                    var dialog = new ModPropertiesView();
+                    dialog.DataContext = new ModPropertiesViewModel(modJson, dialog);
+                    await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
                 }
             }
         }
