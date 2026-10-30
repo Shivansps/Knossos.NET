@@ -1039,66 +1039,56 @@ namespace Knossos.NET.Models
         }
 
         /// <summary>
-        /// Check to see if a mod has a qtfred build
-        /// used mainly to see if we should create a qtfred button on the mod tiles
+        /// Returns the executable types present in the build selected by this mod's
+        /// dependencies or custom build settings, using the same precedence as PlayMod.
         /// </summary>
-        public bool[] IsQtFredAvailable()
+        public HashSet<FsoExecType> GetAvailableExecutables()
         {
             FsoBuild? fsoBuild = null;
-
-            /* Resolve Dependencies should be all valid at this point */
-            var dependencyList = GetModDependencyList(false,true);
-            if (dependencyList != null)
+            var dependencyList = GetModDependencyList(false, true);
+            if (dependencyList != null && modSettings.customBuildId == null)
             {
                 foreach (var dep in dependencyList)
                 {
-                    var selectedMod = dep.SelectMod();
-                    if (selectedMod == null)
-                    {
-                        /* 
-                            It has to be the engine dependency ... based on what shivanSPS commented elsewhere - Cyborg
-                        */
-                        if (fsoBuild == null && modSettings.customBuildId == null)
-                        {
-                            fsoBuild = dep.SelectBuild(true);
-                        }
-                    }
+                    if (fsoBuild == null && dep.SelectMod() == null)
+                        fsoBuild = dep.SelectBuild(true);
                 }
             }
 
-            if (fsoBuild == null)
+            if (fsoBuild == null && modSettings.customBuildId != null && modSettings.customBuildVersion != null)
             {
-                if (modSettings.customBuildExec == null)
-                {
-                    fsoBuild = Knossos.GetInstalledBuildsList().FirstOrDefault(builds => builds.id == modSettings.customBuildId && builds.version == modSettings.customBuildVersion);
-                }
-                else
-                {
-                    fsoBuild = new FsoBuild(modSettings.customBuildExec);
-                }            
+                fsoBuild = modSettings.customBuildExec == null
+                    ? Knossos.GetInstalledBuildsList().FirstOrDefault(build =>
+                        build.id == modSettings.customBuildId && build.version == modSettings.customBuildVersion)
+                    : new FsoBuild(modSettings.customBuildExec);
             }
 
-            bool[] result = { false, false };
+            var available = new HashSet<FsoExecType>();
+            if (fsoBuild == null) return available;
 
-            if (fsoBuild == null)
+            if (fsoBuild.directExec != null)
             {
-                return result;
+                // A manually selected file has no per-type manifest. Keep the default
+                // game launch without advertising debug builds or editors we cannot identify.
+                if (File.Exists(fsoBuild.directExec)) available.Add(FsoExecType.Release);
+                return available;
             }
 
-            var exe = fsoBuild.GetExecutable(FsoExecType.QtFred);
-            var exe2 = fsoBuild.GetExecutable(FsoExecType.QtFredDebug);
-            
-            if (exe != null)
+            foreach (var type in Enum.GetValues<FsoExecType>())
             {
-                result[0] = true;
+                var executable = fsoBuild.GetExecutable(type);
+                if (executable != null && File.Exists(fsoBuild.GetExecutablePath(executable)))
+                    available.Add(type);
             }
+            return available;
+        }
 
-            if (exe2 != null)
-            {
-                result[1] = true;
-            }
+        /// <summary>Checks both QtFred variants using the shared executable availability lookup.</summary>
+        public bool[] IsQtFredAvailable()
+        {
+            var available = GetAvailableExecutables();
+            return new[] { available.Contains(FsoExecType.QtFred), available.Contains(FsoExecType.QtFredDebug) };
+        }
 
-            return result;
-        }        
     }
 }

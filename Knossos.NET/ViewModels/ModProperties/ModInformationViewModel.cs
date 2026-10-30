@@ -54,6 +54,10 @@ namespace Knossos.NET.ViewModels
         [ObservableProperty] private string loadError = string.Empty;
         [ObservableProperty] private bool canLaunch;
         [ObservableProperty] private bool canUseEditors;
+        [ObservableProperty] private bool isReleaseAvailable;
+        [ObservableProperty] private bool isDebugAvailable;
+        [ObservableProperty] private bool isFred2Available;
+        [ObservableProperty] private bool isFred2DebugAvailable;
         [ObservableProperty] private bool isQtFredAvailable;
         [ObservableProperty] private bool isQtFredDebugAvailable;
         [ObservableProperty] private bool forumAvailable;
@@ -170,15 +174,21 @@ namespace Knossos.NET.ViewModels
         {
             CanLaunch = mod?.installed == true && mod.type != ModType.engine;
             CanUseEditors = CanLaunch && !KnUtils.IsAndroid && !KnUtils.IsBrowser;
+            IsReleaseAvailable = IsDebugAvailable = false;
+            IsFred2Available = IsFred2DebugAvailable = false;
             IsQtFredAvailable = IsQtFredDebugAvailable = false;
-            if (!CanUseEditors || mod == null) return;
+            if (!CanLaunch || mod == null) return;
             try
             {
-                var available = mod.IsQtFredAvailable();
-                IsQtFredAvailable = available.Length > 0 && available[0];
-                IsQtFredDebugAvailable = available.Length > 1 && available[1];
+                var available = mod.GetAvailableExecutables();
+                IsReleaseAvailable = available.Contains(FsoExecType.Release);
+                IsDebugAvailable = available.Contains(FsoExecType.Debug);
+                IsFred2Available = CanUseEditors && available.Contains(FsoExecType.Fred2);
+                IsFred2DebugAvailable = CanUseEditors && available.Contains(FsoExecType.Fred2Debug);
+                IsQtFredAvailable = CanUseEditors && available.Contains(FsoExecType.QtFred);
+                IsQtFredDebugAvailable = CanUseEditors && available.Contains(FsoExecType.QtFredDebug);
             }
-            catch (Exception ex) { Log.Add(Log.LogSeverity.Warning, "ModInformation.Editors", ex); }
+            catch (Exception ex) { Log.Add(Log.LogSeverity.Warning, "ModInformation.Executables", ex); }
         }
 
         private static string FormatDescription(string? text)
@@ -257,9 +267,22 @@ namespace Knossos.NET.ViewModels
         [RelayCommand]
         private void Launch(string executable)
         {
-            if (mod == null || !CanLaunch || !Enum.TryParse<FsoExecType>(executable, out var type)) return;
+            var vrMode = executable == "ReleaseVR" || executable == "DebugVR";
+            var executableType = vrMode ? executable[..^2] : executable;
+            if (mod == null || !Enum.TryParse<FsoExecType>(executableType, out var type)) return;
             owner.SaveOptions();
-            Knossos.PlayMod(mod, type);
+            RefreshLaunchAvailability();
+            var available = type switch
+            {
+                FsoExecType.Release => IsReleaseAvailable,
+                FsoExecType.Debug => IsDebugAvailable,
+                FsoExecType.Fred2 => IsFred2Available,
+                FsoExecType.Fred2Debug => IsFred2DebugAvailable,
+                FsoExecType.QtFred => IsQtFredAvailable,
+                FsoExecType.QtFredDebug => IsQtFredDebugAvailable,
+                _ => false
+            };
+            if (available) Knossos.PlayMod(mod, type, vrMode: vrMode);
         }
 
         [RelayCommand]

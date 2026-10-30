@@ -24,12 +24,30 @@
         </Grid>
       </Border>
       <WrapPanel IsVisible="{Binding Properties.IsInstalled}">
-        <Button Classes="play" Command="{Binding LaunchCommand}" CommandParameter="Release" IsEnabled="{Binding CanLaunch}" Margin="0,0,8,8" ToolTip.Tip="Launch Play"><StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticPlayIcon}"/><TextBlock Text="Play" VerticalAlignment="Center"/></StackPanel></Button>
-<Button Classes="debug" Command="{Binding LaunchCommand}" CommandParameter="Debug" IsEnabled="{Binding CanLaunch}" Margin="0,0,8,8" ToolTip.Tip="Launch Debug"><StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticBugIcon}"/><TextBlock Text="Debug" VerticalAlignment="Center"/></StackPanel></Button>
-<Button Classes="editor" Command="{Binding LaunchCommand}" CommandParameter="Fred2" IsEnabled="{Binding CanUseEditors}" Margin="0,0,8,8" ToolTip.Tip="Launch Fred2"><StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticToolIcon}"/><TextBlock Text="Fred2" VerticalAlignment="Center"/></StackPanel></Button>
-<Button Classes="editor" Command="{Binding LaunchCommand}" CommandParameter="Fred2Debug" IsEnabled="{Binding CanUseEditors}" Margin="0,0,8,8" ToolTip.Tip="Launch Fred2 Debug"><StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticBugIcon}"/><TextBlock Text="Fred2 Debug" VerticalAlignment="Center"/></StackPanel></Button>
-<Button Classes="" Command="{Binding LaunchCommand}" CommandParameter="QtFred" IsEnabled="{Binding IsQtFredAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch QtFred"><StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticToolIcon}"/><TextBlock Text="QtFred" VerticalAlignment="Center"/></StackPanel></Button>
-<Button Classes="" Command="{Binding LaunchCommand}" CommandParameter="QtFredDebug" IsEnabled="{Binding IsQtFredDebugAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch QtFred Debug"><StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticBugIcon}"/><TextBlock Text="QtFred Debug" VerticalAlignment="Center"/></StackPanel></Button>
+        <Button Classes="play" Command="{Binding LaunchCommand}" CommandParameter="Release" IsVisible="{Binding IsReleaseAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch Play">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticPlayIcon}"/><TextBlock Text="Play" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+        <Button Classes="debug" Command="{Binding LaunchCommand}" CommandParameter="Debug" IsVisible="{Binding IsDebugAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch Debug">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticBugIcon}"/><TextBlock Text="Debug" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+        <Button Classes="play" Command="{Binding LaunchCommand}" CommandParameter="ReleaseVR" IsVisible="{Binding IsReleaseAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch Play in VR">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticVrIcon}"/><TextBlock Text="Play in VR" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+        <Button Classes="debug" Command="{Binding LaunchCommand}" CommandParameter="DebugVR" IsVisible="{Binding IsDebugAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch VR Debug">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticVrIcon}"/><TextBlock Text="VR Debug" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+        <Button Classes="editor" Command="{Binding LaunchCommand}" CommandParameter="Fred2" IsVisible="{Binding IsFred2Available}" Margin="0,0,8,8" ToolTip.Tip="Launch Fred2">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticToolIcon}"/><TextBlock Text="Fred2" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+        <Button Classes="editor" Command="{Binding LaunchCommand}" CommandParameter="Fred2Debug" IsVisible="{Binding IsFred2DebugAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch Fred2 Debug">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticBugIcon}"/><TextBlock Text="Fred2 Debug" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+        <Button Command="{Binding LaunchCommand}" CommandParameter="QtFred" IsVisible="{Binding IsQtFredAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch QtFred">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticToolIcon}"/><TextBlock Text="QtFred" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+        <Button Command="{Binding LaunchCommand}" CommandParameter="QtFredDebug" IsVisible="{Binding IsQtFredDebugAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch QtFred Debug">
+          <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticBugIcon}"/><TextBlock Text="QtFred Debug" VerticalAlignment="Center"/></StackPanel>
+        </Button>
         <Button Classes="accent" Command="{Binding Properties.NavigateCommand}" CommandParameter="{x:Static vm:ModPropertiesViewModel+MenuPageEntry.Options}" IsEnabled="{Binding Properties.CanConfigure}" Margin="0,0,8,8">
           <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticSettingsIcon}"/><TextBlock Text="Settings" VerticalAlignment="Center"/></StackPanel>
         </Button>
