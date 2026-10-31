@@ -12,6 +12,7 @@
   <Design.DataContext><vm:ModPropertiesViewModel/></Design.DataContext>
   <views:KnossosWindow.DataTemplates>
     <DataTemplate DataType="vm:ModInformationViewModel"><views:ModInformationView/></DataTemplate>
+    <DataTemplate DataType="vm:ModVersionsViewModel"><views:ModVersionsView/></DataTemplate>
     <DataTemplate DataType="vm:ModLaunchOptionsViewModel"><views:ModLaunchOptionsView/></DataTemplate>
   </views:KnossosWindow.DataTemplates>
   <Grid Background="{DynamicResource FuturisticBackdrop}">
@@ -31,7 +32,7 @@
                 <TextBlock Grid.Column="1" Text="Information" TextWrapping="Wrap" VerticalAlignment="Center"/>
               </Grid>
             </Button>
-            <Button Classes="navigation" IsEnabled="False" ToolTip.Tip="Versions and packages will be added to Mod Properties in a future update.">
+            <Button Classes="navigation" Classes.selected="{Binding IsVersionsSelected}" IsEnabled="{Binding CanManageVersions}" Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:ModPropertiesViewModel+MenuPageEntry.Versions}">
               <Grid ColumnDefinitions="24,*">
                 <PathIcon Data="{StaticResource FuturisticPackageIcon}"/>
                 <TextBlock Grid.Column="1" Text="Versions &amp; Packages" TextWrapping="Wrap" VerticalAlignment="Center"/>

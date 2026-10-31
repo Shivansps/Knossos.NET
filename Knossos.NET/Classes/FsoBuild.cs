@@ -609,6 +609,17 @@ namespace Knossos.NET.Models
             return properties;
         }
 
+        /// <summary>Returns the same single platform package used by the normal build installer.</summary>
+        public static ModPackage? SelectBestPackage(IEnumerable<ModPackage> packages)
+            => packages.Where(p => IsEnviromentStringValidInstall(p.environment)).MaxBy(GetPackageScore);
+
+        public static int GetPackageScore(ModPackage package)
+        {
+            if (package.executables?.Count == 0 || package.executables == null) return 0;
+            var arch = GetExecArch(FillProperties(package.environment ?? string.Empty));
+            return DetermineScoreFromArch(arch, KnUtils.CpuArch == "X86" || KnUtils.CpuArch == "X64");
+        }
+
         /// <summary>
         /// Determines if the current environment string is valid to download for the current system
         /// Used to determine witch packages to install for each build

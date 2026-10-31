@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Knossos.NET.ViewModels" xmlns:views="using:Knossos.NET.Views"
+    x:Class="Knossos.NET.Views.ModVersionsView" x:DataType="vm:ModVersionsViewModel">
+  <UserControl.Styles>
+    <Style Selector="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+    <Style Selector="TreeViewItem" x:DataType="vm:ModPackageTreeItem">
+      <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="MinHeight" Value="32"/>
+    </Style>
+    <Style Selector="CheckBox"><Setter Property="MinHeight" Value="40"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
+    <Style Selector="TextBlock.packageName"><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="TextWrapping" Value="Wrap"/></Style>
+    <Style Selector="Border.packageRow"><Setter Property="BorderBrush" Value="#35434E"/><Setter Property="BorderThickness" Value="0,0,0,1"/><Setter Property="Padding" Value="0,1"/></Style>
+  </UserControl.Styles>
+  <ScrollViewer x:Name="PageScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+    <Grid x:Name="PageLayout" RowDefinitions="Auto,*,Auto" Margin="24,20" RowSpacing="14">
+      <StackPanel Spacing="12">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="heading" Text="{Binding Name}"/>
+          <TextBlock Classes="muted" Text="Manage versions, packages and dependencies" FontSize="16" TextWrapping="Wrap"/>
+        </StackPanel>
+        <WrapPanel>
+          <StackPanel x:Name="VersionPicker" Margin="0,0,18,8" Spacing="4" Width="230">
+            <TextBlock Text="Select Version" Classes="muted"/>
+            <ComboBox ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion, Mode=TwoWay}" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Stretch" AutomationProperties.Name="Version to install or modify">
+              <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:ModVersionChoice"><TextBlock Text="{Binding Label}" Foreground="{Binding Color}" TextWrapping="Wrap"/></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Text="{Binding VisibilityLabel}" Foreground="{Binding VisibilityColor}"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,24,8" Spacing="8"><TextBlock Classes="muted" Text="Release Date"/><TextBlock Text="{Binding ReleaseDate}" FontSize="16"/></StackPanel>
+          <StackPanel Margin="0,0,24,8" Spacing="8"><TextBlock Classes="muted" Text="Download Size (estimated)"/><TextBlock Text="{Binding DownloadSize}" FontSize="16"/></StackPanel>
+          <StackPanel Margin="0,0,24,8" Spacing="8"><TextBlock Classes="muted" Text="Free Space in Library"/><TextBlock Text="{Binding FreeSpace}" FontSize="16"/></StackPanel>
+        </WrapPanel>
+        <TextBlock Text="{Binding Status}" Foreground="#8DE38A" TextWrapping="Wrap"/>
+        <ProgressBar IsVisible="{Binding IsLoading}" IsIndeterminate="True" Height="3"/>
+        <ProgressBar IsVisible="{Binding IsUpdatingDependencies}" IsIndeterminate="True" Height="3"/>
+        <ProgressBar IsVisible="{Binding IsApplying}" IsIndeterminate="True" Height="3"/>
+        <StackPanel IsVisible="{Binding HasError}" Spacing="6">
+          <TextBlock Text="{Binding Error}" Foreground="#FFBD86" TextWrapping="Wrap"/>
+          <Button Content="Retry" Command="{Binding RetryCommand}" IsEnabled="{Binding !IsApplying}"/>
+        </StackPanel>
+      </StackPanel>
+      <Grid x:Name="PackagePanels" Grid.Row="1" ColumnDefinitions="*,*" RowDefinitions="*" ColumnSpacing="12" IsEnabled="{Binding CanEdit}">
+        <Border x:Name="OwnPanel" Classes="surface" Padding="12">
+          <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
+            <StackPanel Spacing="6">
+              <WrapPanel>
+                <PathIcon Data="{StaticResource FuturisticPackageIcon}" Foreground="#79B8F5" Width="28" Height="28" Margin="0,0,10,8"/>
+                <TextBlock Text="Mod Packages" FontSize="20" FontWeight="Bold" Margin="0,0,12,8"/>
+                <Button Content="ⓘ Show Info" Command="{Binding PackageInfoCommand}" Padding="10,5" MinHeight="32" Margin="0,0,0,8"/>
+              </WrapPanel>
+              <TextBlock Text="{Binding PackageHint}" Classes="muted" TextWrapping="Wrap"/>
+              <TextBlock Text="{Binding Root.Mod.title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+            </StackPanel>
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding Root.Packages}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ModPackageSelectionViewModel">
+                    <Border Classes="packageRow"><views:ModPackageRowView/></Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+            <TextBlock Grid.Row="2" Text="{Binding PackageSummary}" Classes="muted" TextWrapping="Wrap" HorizontalAlignment="Right"/>
+          </Grid>
+        </Border>
+        <Border x:Name="DependencyPanel" Grid.Column="1" Classes="surface" Padding="12">
+          <Grid RowDefinitions="Auto,*" RowSpacing="10">
+            <StackPanel Spacing="6">
+              <WrapPanel>
+                <PathIcon Data="{StaticResource FuturisticSettingsIcon}" Width="28" Height="28" Margin="0,0,10,8"/>
+                <TextBlock Text="Dependencies" FontSize="20" FontWeight="Bold" Margin="0,0,12,8"/>
+                <Button Content="ⓘ Show Info" Command="{Binding DependencyInfoCommand}" Padding="10,5" MinHeight="32" Margin="0,0,0,8"/>
+              </WrapPanel>
+              <TextBlock Text="Required by the selected packages. Expand each mod to see its own dependencies." Classes="muted" TextWrapping="Wrap"/>
+            </StackPanel>
+            <Grid Grid.Row="1">
+              <TextBlock IsVisible="{Binding !HasDependencies}" Text="No additional dependencies are needed for the selected packages." Classes="muted" TextWrapping="Wrap" Margin="4,12"/>
+              <TreeView ItemsSource="{Binding Dependencies}" Background="Transparent" IsVisible="{Binding HasDependencies}" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <TreeView.ItemTemplate>
+                  <TreeDataTemplate DataType="vm:ModPackageTreeItem" ItemsSource="{Binding Children}">
+                    <StackPanel Margin="0,1" HorizontalAlignment="Left" MaxWidth="{Binding $parent[views:ModVersionsView].TreeTextWidth}">
+                      <StackPanel IsVisible="{Binding IsGroup}" Spacing="2" Margin="0,3">
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Subtitle}" Classes="muted" FontSize="12" TextWrapping="Wrap"/>
+                      </StackPanel>
+                      <Panel IsVisible="{Binding IsPackage}"><views:ModPackageRowView DataContext="{Binding Selection}"/></Panel>
+                    </StackPanel>
+                  </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+              </TreeView>
+            </Grid>
+          </Grid>
+        </Border>
+      </Grid>
+      <StackPanel Grid.Row="2" Spacing="8">
+        <StackPanel IsVisible="{Binding IsApplying}" Spacing="4">
+          <TextBlock Text="You can close Properties; the operation will continue. Reopen this mod to see its progress." Classes="muted" TextWrapping="Wrap" FontSize="12"/>
+          <TextBlock Text="{Binding ActiveTask.Name}" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ActiveTask.Info}" Classes="muted" TextWrapping="Wrap" FontSize="12"/>
+          <ProgressBar Minimum="0" Maximum="{Binding ActiveTask.ProgressBarMax}" Value="{Binding ActiveTask.ProgressCurrent}" Height="6"/>
+        </StackPanel>
+        <WrapPanel x:Name="OptionsPanel">
+          <Button Classes="play" Content="{Binding ApplyLabel}" Command="{Binding ApplyCommand}" Margin="0,0,10,8"/>
+          <Button Classes="danger" Content="Cancel" Command="{Binding CancelOperationCommand}" IsVisible="{Binding IsApplying}" Margin="0,0,10,8"/>
+          <Button Classes="danger" Content="Delete version" Command="{Binding DeleteCommand}" IsVisible="{Binding IsInstalled}" Margin="0,0,10,8"/>
+          <Button IsVisible="{Binding !IsEngine}" Classes="accent" Content="✓ Verify &amp; Repair" Command="{Binding VerifyCommand}" Margin="0,0,16,8"/>
+          <CheckBox IsVisible="{Binding ShowRemoveOldVersions}" IsChecked="{Binding RemoveOldVersions}" IsEnabled="{Binding CanEdit}" Margin="0,0,16,8"><TextBlock Text="Remove older versions after install" TextWrapping="Wrap"/></CheckBox>
+          <CheckBox IsVisible="{Binding CanCleanReinstall}" IsChecked="{Binding CleanReinstall}" IsEnabled="{Binding CanEdit}" Margin="0,0,16,8"><TextBlock Text="Reinstall current version (clean)" TextWrapping="Wrap"/></CheckBox>
+          <CheckBox IsVisible="{Binding ShowDeveloper}" IsChecked="{Binding Developer}" IsEnabled="{Binding CanChooseDeveloper}" Margin="0,0,16,8"><TextBlock Text="Install in developer mode" TextWrapping="Wrap"/></CheckBox>
+          <CheckBox IsVisible="{Binding ShowCompression}" IsChecked="{Binding Compress}" IsEnabled="{Binding CanCompress}" Margin="0,0,0,8"><TextBlock Text="Compress on install" TextWrapping="Wrap"/></CheckBox>
+        </WrapPanel>
+        <TextBlock Text="{Binding VerifyHint}" IsVisible="{Binding ShowVerifyHint}" Classes="muted" TextWrapping="Wrap" FontSize="12"/>
+        <TextBlock Text="Compression is unavailable in developer mode." IsVisible="{Binding Developer}" Classes="muted" TextWrapping="Wrap" FontSize="12"/>
+      </StackPanel>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

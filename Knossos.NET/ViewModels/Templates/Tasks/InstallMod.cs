@@ -17,10 +17,29 @@ namespace Knossos.NET.ViewModels
 {
     public partial class TaskItemViewModel : ViewModelBase
     {
-        public async Task<bool> InstallMod(Mod mod, CancellationTokenSource cancelSource, List<ModPackage>? reinstallPkgs = null, bool manualCompress = false, bool cleanupOldVersions = false, bool cleanInstall = false, bool allowHardlinks = true)
+        public async Task<bool> InstallMod(Mod mod, CancellationTokenSource cancelSource, List<ModPackage>? reinstallPkgs = null, bool manualCompress = false, bool cleanupOldVersions = false, bool cleanInstall = false, bool allowHardlinks = true, bool reinstallCurrentVersion = false, Action<string>? reportError = null, bool addOnly = false, IReadOnlyDictionary<string, bool>? packageActivation = null, IReadOnlyCollection<string>? removePackages = null)
         {
             string? modPath = null;
             Mod? installed = null;
+            Dictionary<string, bool>? developerActivation = null;
+            ModReinstallBackup? reinstallBackup = null;
+            // Capture removal authorization before waiting. Later installs may add other packages.
+            var initial = Knossos.GetInstalledMod(mod.id, mod.version);
+            var preserveExisting = addOnly || initial == null;
+            var removals = new HashSet<string>(!preserveExisting && reinstallPkgs == null
+                ? initial!.packages.Where(p => removePackages?.Contains(p.name) ?? mod.packages.Any(m => m.name == p.name && !m.isSelected)).Select(p => p.name)
+                : Array.Empty<string>());
+            var requestedPackages = mod.packages.Where(p => p.isSelected).Select(p => p.name).ToHashSet();
+            void ApplyActivation(Mod target)
+            {
+                if (!target.devMode) return;
+                foreach (var pkg in target.packages)
+                {
+                    if (preserveExisting && requestedPackages.Contains(pkg.name)) pkg.isEnabled = true;
+                    else if (!preserveExisting && packageActivation?.TryGetValue(pkg.name, out var enabled) == true) pkg.isEnabled = enabled;
+                }
+                target.SaveJson();
+            }
 
             try
             {
@@ -57,6 +76,8 @@ namespace Knossos.NET.ViewModels
                         }
                     }
 
+                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
+
                     if (!mod.devMode) //Do not compress dev mode mods
                     {
                         compressMod = manualCompress;
@@ -84,9 +105,14 @@ namespace Knossos.NET.ViewModels
                         Check if its installed, even on install task it could have been installed by another task that was in the queue
                     */
                     installed = Knossos.GetInstalledMod(mod.id, mod.version);
+                    if (preserveExisting) mod.packages.RemoveAll(p => !p.isSelected);
                     if (installed != null)
                     {
                         installed.ReLoadJson();
+                        installed.modSettings.Load(installed.fullPath);
+                        mod.modSettings = installed.modSettings;
+                        mod.devMode = installed.devMode;
+                        if (installed.devMode) developerActivation = installed.packages.ToDictionary(p => p.name, p => p.isEnabled);
                         Name = "Modify " + mod.ToString();
                         compressMod = installed.modSettings.isCompressed;
                     }
@@ -150,9 +176,23 @@ namespace Knossos.NET.ViewModels
 
                     modPath = Knossos.GetKnossosLibraryPath() + Path.DirectorySeparatorChar + rootPack + Path.DirectorySeparatorChar + modFolder;
 
+                    if (reinstallCurrentVersion)
+                    {
+                        if (installed == null || installed.devMode || mod.devMode) throw new InvalidOperationException("Clean reinstall is only available for installed normal mods.");
+                        // Preserve packages added after the user's plan was prepared, including during a queued wait.
+                        foreach (var pkg in installed.packages.Where(p => !removals.Contains(p.name)))
+                        {
+                            var requested = mod.packages.FirstOrDefault(p => p.name == pkg.name);
+                            if (requested != null) requested.isSelected = true;
+                            else { pkg.isSelected = true; mod.packages.Add(pkg); }
+                        }
+                        reinstallBackup = new ModReinstallBackup(Knossos.GetKnossosLibraryPath()!, modPath, installed.fullPath);
+                        reinstallPkgs = mod.packages.Where(p => p.isSelected).ToList();
+                    }
+
                     /* Metadata update */
                     bool metaUpdate = false;
-                    if (installed != null && Mod.IsMetaUpdate(mod, installed))
+                    if (installed != null && !preserveExisting && Mod.IsMetaUpdate(mod, installed))
                     {
                         metaUpdate = true;
                         installed.lastUpdate = mod.lastUpdate;
@@ -179,13 +219,13 @@ namespace Knossos.NET.ViewModels
                     }
 
                     /* Delete pkgs */
-                    if (installed != null)
+                    if (installed != null && !installed.devMode && !reinstallCurrentVersion)
                     {
                         bool save = false;
                         foreach (var modpkg in mod.packages.ToList())
                         {
                             var installedPkg = installed.packages.FirstOrDefault(p => p.name == modpkg.name);
-                            if (modpkg.filelist != null && !modpkg.isSelected && installedPkg != null)
+                            if (removals.Contains(modpkg.name) && installedPkg != null)
                             {
                                 int delCount = 0;
                                 var newTask = new TaskItemViewModel();
@@ -195,11 +235,11 @@ namespace Knossos.NET.ViewModels
                                     newTask.ShowMsg("Deleting pkg: " + modpkg.name, null, Brushes.Red);
                                     TaskList.Add(newTask);
                                 });
-                                foreach (var file in modpkg.filelist)
+                                foreach (var file in installedPkg.filelist ?? Array.Empty<ModFilelist>())
                                 {
                                     try
                                     {
-                                        if (File.Exists(installed.fullPath + Path.DirectorySeparatorChar + file.filename))
+                                        if (file.filename != null && KnUtils.IsSubPath(installed.fullPath, file.filename) && File.Exists(Path.Combine(installed.fullPath, file.filename)))
                                         {
                                             File.Delete(installed.fullPath + Path.DirectorySeparatorChar + file.filename);
                                             delCount++;
@@ -266,15 +306,12 @@ namespace Knossos.NET.ViewModels
 
 
                     /* Is there is nothing new to install just end the task */
-                    if (files.Count == 0 && !metaUpdate)
+                    if (installed != null && mod.packages.Count == 0 && files.Count == 0 && !metaUpdate && !reinstallCurrentVersion)
                     {
+                        if (installed != null) ApplyActivation(installed);
                         Info = string.Empty;
                         IsCompleted = true;
                         CancelButtonVisible = false;
-                        if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
-                        {
-                            TaskViewModel.Instance!.taskQueue.Dequeue();
-                        }
                         return true;
                     }
 
@@ -287,8 +324,7 @@ namespace Knossos.NET.ViewModels
                             if (!KnUtils.IsSubPath(modPath, file.dest))
                             {
                                 Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.InstallMod()", $"Unsafe dest path in mod '{mod.id}': {file.dest}");
-                                CancelTaskCommand();
-                                return false;
+                                throw new InvalidOperationException("Unsafe installation destination: " + file.dest);
                             }
                             Directory.CreateDirectory(modPath + Path.DirectorySeparatorChar + file.dest);
                         }
@@ -321,6 +357,7 @@ namespace Knossos.NET.ViewModels
 
                     //Do not load old versions if it is a clean install
                     var oldVersions = cleanInstall ? new List<Mod>() : Knossos.GetInstalledModList(mod.id);
+                    if (reinstallCurrentVersion) oldVersions.RemoveAll(m => m.version == mod.version);
                     //Reload checksum data, because by default it is unloaded after parsing
                     foreach (var oldVer in oldVersions)
                     {
@@ -578,12 +615,17 @@ namespace Knossos.NET.ViewModels
                     else
                     {
                         installed.ReLoadJson();
-                        if (reinstallPkgs == null)
+                        if (reinstallCurrentVersion)
+                        {
+                            installed.packages = mod.packages;
+                        }
+                        else if (reinstallPkgs == null)
                         {
                             installed.packages.AddRange(mod.packages);
                         }
                         //mark all pkgs as enabled
-                        mod.packages?.ForEach(pkg => pkg.isEnabled = true);
+                        installed.packages?.ForEach(pkg => pkg.isEnabled = developerActivation?.GetValueOrDefault(pkg.name, true) ?? true);
+                        ApplyActivation(installed);
                         installed.SaveJson();
                         mod.ClearUnusedData();
                     }
@@ -603,7 +645,8 @@ namespace Knossos.NET.ViewModels
                         {
                             TaskList.Insert(0, cpTask);
                         });
-                        await cpTask.CompressMod(mod, cancellationTokenSource, true);
+                        var compressionSucceeded = await cpTask.CompressMod(mod, cancellationTokenSource, true);
+                        if (reinstallCurrentVersion && !compressionSucceeded) throw new InvalidOperationException("Compression did not complete; restoring the previous installation.");
                         ProgressCurrent++;
                         Info = "Tasks: " + ProgressCurrent + "/" + ProgressBarMax;
                     }
@@ -670,8 +713,8 @@ namespace Knossos.NET.ViewModels
                                         //Check if it is inferior to the one we just installed
                                         if (SemanticVersion.Compare(mod.version, version.version) >= 1)
                                         {
-                                            bool inUse = false;
-                                            string inUseMods = "";
+                                            bool inUse = ModInstallOperation.IsVersionPending(version.id, version.version);
+                                            string inUseMods = inUse ? "a pending installation, " : "";
                                             foreach (var m in Knossos.GetInstalledModList(null))
                                             {
                                                 if (m != null && m.id != mod.id)
@@ -735,14 +778,9 @@ namespace Knossos.NET.ViewModels
                         }
                     }
 
-                    /*
-                        Always Dequeue, always check for check size and verify that the first is this TaskItemViewModel object
-                    */
-                    if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
-                    {
-                        TaskViewModel.Instance!.taskQueue.Dequeue();
-                    }
+                    // The queue slot is released in finally after all cleanup has finished.
 
+                    reinstallBackup?.Commit();
                     Info = string.Empty;
                     IsCompleted = true;
                     CancelButtonVisible = false;
@@ -754,7 +792,7 @@ namespace Knossos.NET.ViewModels
                     throw new Exception("The task is already set, it cant be changed or re-assigned.");
                 }
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 /*
                     Task cancel requested by user
@@ -763,14 +801,6 @@ namespace Knossos.NET.ViewModels
                 IsCancelled = true;
                 CancelButtonVisible = false;
                 Info = "Cancel Requested";
-                while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
-                {
-                    await Task.Delay(500);
-                }
-                if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
-                {
-                    TaskViewModel.Instance!.taskQueue.Dequeue();
-                }
                 await Task.Delay(2000); //give time for child tasks to cancel first
                 Info = "Task Cancelled";
                 try
@@ -803,16 +833,9 @@ namespace Knossos.NET.ViewModels
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     //Messagebox is not thread safe!
-                    await MessageBox.Show(MainWindow.instance, "An error was ocurred during the download of the mod: " + mod.ToString() + ". Error: " + ex.Message, "Error", MessageBox.MessageBoxButtons.OK);
+                    if (reportError != null) reportError(mod + ": " + ex.Message);
+                    else await MessageBox.Show(MainWindow.instance, "An error was ocurred during the download of the mod: " + mod.ToString() + ". Error: " + ex.Message, "Error", MessageBox.MessageBoxButtons.OK);
                 });
-                while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
-                {
-                    await Task.Delay(500);
-                }
-                if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
-                {
-                    TaskViewModel.Instance!.taskQueue.Dequeue();
-                }
 
                 await Task.Delay(2000); //give time for child tasks to cancel first
                 Info = "Task Failed";
@@ -833,6 +856,19 @@ namespace Knossos.NET.ViewModels
                 }
                 Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.InstallMod()", ex);
                 return false;
+            }
+            finally
+            {
+                try
+                {
+                    if (reinstallBackup != null)
+                    {
+                        reinstallBackup.Dispose();
+                        installed?.ReLoadJson();
+                        if (installed != null) installed.modSettings.Load(installed.fullPath);
+                    }
+                }
+                finally { TaskViewModel.Instance?.CompleteQueuedTask(this); }
             }
         }
     }

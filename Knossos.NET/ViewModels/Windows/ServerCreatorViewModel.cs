@@ -214,7 +214,7 @@ namespace Knossos.NET.ViewModels
         internal async void OpenModSettings()
         {
             var dialog = new ModPropertiesView();
-            dialog.DataContext = new ModPropertiesViewModel(ListOfMods[ModIndex], dialog, ModPropertiesViewModel.MenuPageEntry.Options);
+            dialog.DataContext = ModPropertiesViewModel.GetOrCreate(ListOfMods[ModIndex], dialog, ModPropertiesViewModel.MenuPageEntry.Options);
             await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
         }
     }

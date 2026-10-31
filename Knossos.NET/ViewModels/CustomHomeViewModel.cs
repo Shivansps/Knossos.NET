@@ -182,9 +182,9 @@ namespace Knossos.NET.ViewModels
         {
             if (nebulaModVersions.Any() && CustomLauncher.UseNebulaServices)
             {
-                var dialog = new ModInstallView();
-                dialog.DataContext = new ModInstallViewModel(nebulaModVersions.First(), dialog);
-                await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+                var dialog = new ModPropertiesView();
+                dialog.DataContext = ModPropertiesViewModel.GetOrCreate(nebulaModVersions.First(), dialog, ModPropertiesViewModel.MenuPageEntry.Versions);
+                await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
             else
             {
@@ -199,9 +199,9 @@ namespace Knossos.NET.ViewModels
         {
             if (GetActiveInstalledModVersion != null && CustomLauncher.UseNebulaServices)
             {
-                var dialog = new ModInstallView();
-                dialog.DataContext = new ModInstallViewModel(GetActiveInstalledModVersion, dialog, GetActiveInstalledModVersion.version);
-                await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+                var dialog = new ModPropertiesView();
+                dialog.DataContext = ModPropertiesViewModel.GetOrCreate(GetActiveInstalledModVersion, dialog, ModPropertiesViewModel.MenuPageEntry.Versions);
+                await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
             else
             {
@@ -216,9 +216,9 @@ namespace Knossos.NET.ViewModels
         {
             if (GetActiveInstalledModVersion != null && CustomLauncher.UseNebulaServices)
             {
-                var dialog = new ModInstallView();
-                dialog.DataContext = new ModInstallViewModel(GetActiveInstalledModVersion, dialog);
-                await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+                var dialog = new ModPropertiesView();
+                dialog.DataContext = ModPropertiesViewModel.GetOrCreate(GetActiveInstalledModVersion, dialog, ModPropertiesViewModel.MenuPageEntry.Versions);
+                await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
             else
             {
@@ -235,7 +235,7 @@ namespace Knossos.NET.ViewModels
             var mod = GetActiveInstalledModVersion != null ? GetActiveInstalledModVersion : nebulaModVersions.FirstOrDefault();
             if (mod != null)
             {
-                dialog.DataContext = new ModPropertiesViewModel(mod, dialog);
+                dialog.DataContext = ModPropertiesViewModel.GetOrCreate(mod, dialog);
                 await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
             else
@@ -252,7 +252,7 @@ namespace Knossos.NET.ViewModels
             if (GetActiveInstalledModVersion != null)
             {
                 var dialog = new ModPropertiesView();
-                dialog.DataContext = new ModPropertiesViewModel(GetActiveInstalledModVersion, dialog, ModPropertiesViewModel.MenuPageEntry.Options);
+                dialog.DataContext = ModPropertiesViewModel.GetOrCreate(GetActiveInstalledModVersion, dialog, ModPropertiesViewModel.MenuPageEntry.Options);
                 await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
             else
@@ -285,6 +285,20 @@ namespace Knossos.NET.ViewModels
             {
                 MessageBox.Show(MainWindow.instance, "Log File " + Path.Combine(KnUtils.GetFSODataFolderPath(), "data", "fs2_open.log") + " not found.", "File not found", MessageBox.MessageBoxButtons.OK);
             }
+        }
+
+        /// <summary>Refreshes the launcher after a version has already been removed from disk.</summary>
+        public void InstalledVersionRemoved(Mod mod)
+        {
+            if (CustomLauncher.ModID != mod.id) return;
+            var active = GetActiveInstalledModVersion?.version;
+            modVersions.RemoveAll(m => m.id == mod.id && m.version == mod.version);
+            VersionItems.Clear();
+            foreach (var remaining in modVersions) VersionItems.Add(remaining.version);
+            Installed = modVersions.Count > 0;
+            ActiveVersionIndex = -1;
+            ActiveVersionIndex = Math.Max(0, modVersions.FindIndex(m => m.version == active));
+            RefreshQtFredAvailability();
         }
 
         /// <summary>

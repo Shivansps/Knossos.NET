@@ -2,6 +2,7 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Knossos.NET.Models;
+using Knossos.NET.Classes;
 using Knossos.NET.Views;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace Knossos.NET.ViewModels
         public FsoBuild? build;
         public CancellationTokenSource? cancellationTokenSource = null;
         private bool buildPkgsLoaded = false;
+        private readonly HashSet<ModInstallOperation> queuedOperations = new();
         [ObservableProperty]
         public string title = string.Empty;
         [ObservableProperty]
@@ -138,7 +140,7 @@ namespace Knossos.NET.ViewModels
                     await UpdateBuildCompatibility(build.modData).ConfigureAwait(false);
                     await Dispatcher.UIThread.InvokeAsync(async () => {
                         var dialog = new ModPropertiesView();
-                        dialog.DataContext = new ModPropertiesViewModel(build.modData, dialog);
+                        dialog.DataContext = ModPropertiesViewModel.GetOrCreate(build.modData, dialog);
                         await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
                     }).ConfigureAwait(false);
                 }
@@ -174,29 +176,58 @@ namespace Knossos.NET.ViewModels
         internal void CancelDownloadCommand()
         {
             cancellationTokenSource?.Cancel();
+            foreach (var operation in queuedOperations.ToArray()) operation.Cancel();
             IsDownloading = false;
         }
 
-        public async void DownloadBuildExternal(Mod  mod, bool cleanupOldVersions = false)
+        public async void DownloadBuildExternal(Mod mod, bool cleanupOldVersions = false)
+            => await DownloadBuildExternalAsync(mod, cleanupOldVersions);
+
+        public async Task<bool> DownloadBuildExternalAsync(Mod mod, bool cleanupOldVersions = false, Action<string>? reportError = null, ModInstallOperation? operation = null)
         {
-            if (!IsDownloading && !IsInstalled)
+            if (operation != null) return await DownloadQueuedBuildAsync(mod, cleanupOldVersions, reportError, operation);
+            if (IsInstalled) return true;
+            if (IsDownloading || build == null || TaskViewModel.Instance == null) return false;
+            IsDownloading = true;
+            cancellationTokenSource = new CancellationTokenSource();
+            try
             {
-                IsDownloading = true;
-                cancellationTokenSource = new CancellationTokenSource();
-                await mod.LoadFulLNebulaData().ConfigureAwait(false);
-                await Dispatcher.UIThread.InvokeAsync(async () => { 
-                    FsoBuild? newBuild = await TaskViewModel.Instance?.InstallBuild(build!, this, mod, null, cleanupOldVersions)!;
-                    if (newBuild != null)
-                    {
-                        //Install completed
-                        IsInstalled = true;
-                        build = newBuild;
-                        UpdateDisplayData(newBuild, true);
-                    }
-                    IsDownloading = false;
-                    cancellationTokenSource?.Dispose();
-                    cancellationTokenSource = null;
-                }).ConfigureAwait(false);
+                if (!await mod.LoadFulLNebulaData()) return false;
+                var installedBuild = await TaskViewModel.Instance.InstallBuild(build, this, mod, null, cleanupOldVersions, reportError: reportError);
+                if (installedBuild == null) return false;
+                IsInstalled = true;
+                build = installedBuild;
+                UpdateDisplayData(installedBuild, true);
+                return true;
+            }
+            finally
+            {
+                IsDownloading = queuedOperations.Count > 0;
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = null;
+            }
+        }
+
+        private async Task<bool> DownloadQueuedBuildAsync(Mod mod, bool cleanupOldVersions, Action<string>? reportError, ModInstallOperation operation)
+        {
+            if (build == null || TaskViewModel.Instance == null) return false;
+            operation.Token.ThrowIfCancellationRequested();
+            queuedOperations.Add(operation);
+            IsDownloading = true;
+            try
+            {
+                if (!await mod.LoadFulLNebulaData()) return false;
+                var result = await TaskViewModel.Instance.InstallBuild(build, this, mod, cleanupOldVersions: cleanupOldVersions,
+                    reportError: reportError, operation: operation);
+                if (result == null) return false;
+                build = result;
+                UpdateDisplayData(result, true);
+                return true;
+            }
+            finally
+            {
+                queuedOperations.Remove(operation);
+                IsDownloading = queuedOperations.Count > 0 || cancellationTokenSource != null;
             }
         }
 

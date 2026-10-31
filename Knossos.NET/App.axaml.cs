@@ -282,7 +282,7 @@ namespace Knossos.NET
             var settings = new NativeMenuItem("Settings");
             settings.Click += (s, e) => {
                 var dialog = new ModPropertiesView();
-                dialog.DataContext = new ModPropertiesViewModel(mod, dialog, ModPropertiesViewModel.MenuPageEntry.Options);
+                dialog.DataContext = ModPropertiesViewModel.GetOrCreate(mod, dialog, ModPropertiesViewModel.MenuPageEntry.Options);
                 dialog.Show();
             };
             modItem.Menu.Add(settings);

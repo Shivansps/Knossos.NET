@@ -91,7 +91,7 @@ namespace Knossos.NET.ViewModels
             }     
         }
 
-        public async Task<FsoBuild?> InstallBuild(FsoBuild build, FsoBuildItemViewModel sender, CancellationTokenSource? cancelSource = null, Mod? modJson = null, List<ModPackage>? modifyPkgs = null, bool cleanupOldVersions = false, bool installInDevMode = false)
+        public async Task<FsoBuild?> InstallBuild(FsoBuild build, FsoBuildItemViewModel sender, CancellationTokenSource? cancelSource = null, Mod? modJson = null, List<ModPackage>? modifyPkgs = null, bool cleanupOldVersions = false, bool installInDevMode = false, Action<string>? reportError = null)
         {
             string? modPath = null;
             bool installed = false;
@@ -100,6 +100,8 @@ namespace Knossos.NET.ViewModels
                 if (!TaskIsSet)
                 {
                     TaskIsSet = true;
+                    installID = build.id;
+                    installVersion = build.version;
                     if (cancelSource != null)
                     {
                         cancellationTokenSource = cancelSource;
@@ -128,6 +130,17 @@ namespace Knossos.NET.ViewModels
                         }
                     }
 
+                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    // Recheck when this request reaches the head of the queue.
+                    var existing = Knossos.GetInstalledBuild(build.id, build.version);
+                    if (modifyPkgs == null && existing?.IsValidBuild() == true &&
+                        existing.executables.Any(e => e.isValid && File.Exists(Path.Combine(existing.folderPath, e.filename))))
+                    {
+                        IsCompleted = true;
+                        CancelButtonVisible = false;
+                        Info = "Already installed";
+                        return existing;
+                    }
                     Info = "Starting";
 
                     //parse repo to get the data we need
@@ -265,37 +278,15 @@ namespace Knossos.NET.ViewModels
                         }
                         else
                         {
-                            //New Install
-                            for (int i = modJson.packages.Count - 1; i >= 0; i--)
+                            var bestPackage = FsoBuild.SelectBestPackage(modJson.packages);
+                            if (bestPackage == null) throw new InvalidOperationException("This build has no compatible platform package.");
+                            modJson.packages = new List<ModPackage> { bestPackage };
+                            files.AddRange(bestPackage.files ?? Array.Empty<ModFile>());
+                            bestPackage.buildScore = FsoBuild.GetPackageScore(bestPackage);
+                            foreach (var executable in bestPackage.executables ?? new List<ModExecutable>())
                             {
-                                if (FsoBuild.IsEnviromentStringValidInstall(modJson.packages[i].environment))
-                                {
-                                    files.AddRange(modJson.packages[i].files!);
-                                    foreach (ModExecutable exec in modJson.packages[i].executables!)
-                                    {
-                                        exec.properties = FsoBuild.FillProperties(modJson.packages[i].environment!);
-                                        var arch = FsoBuild.GetExecArch(exec.properties);
-                                        exec.score = FsoBuild.DetermineScoreFromArch(arch, KnUtils.CpuArch == "X86" || KnUtils.CpuArch == "X64" ? true : false);
-                                    }
-                                    var bestExec = modJson.packages[i].executables!.MaxBy(exec => exec.score);
-                                    if (bestExec != null)
-                                    {
-                                        modJson.packages[i].buildScore = bestExec.score;
-                                    }
-                                }
-                                else
-                                {
-                                    modJson.packages.RemoveAt(i);
-                                }
-                            }
-
-                            var bestpkg = modJson.packages!.MaxBy(pkg => pkg.buildScore);
-                            if (bestpkg != null && bestpkg.files != null)
-                            {
-                                files.Clear();
-                                modJson.packages.Clear();
-                                files.AddRange(bestpkg.files);
-                                modJson.packages.Add(bestpkg);
+                                executable.properties = FsoBuild.FillProperties(bestPackage.environment ?? string.Empty);
+                                executable.score = bestPackage.buildScore;
                             }
                         }
 
@@ -572,7 +563,9 @@ namespace Knossos.NET.ViewModels
                         FsoBuild newBuild = new FsoBuild(modJson);
                         if (modifyPkgs == null)
                         {
-                            //New Build
+                            // Replace any stale registration left by a previous failed request.
+                            var previous = Knossos.GetInstalledBuild(newBuild.id, newBuild.version);
+                            if (previous != null) Knossos.RemoveBuild(previous);
                             Knossos.AddBuild(newBuild);
                             DeveloperModsViewModel.Instance?.UpdateListedFsoBuildVersionsInEditor();
                         }
@@ -648,8 +641,8 @@ namespace Knossos.NET.ViewModels
                                             //Check if it is inferior to the one we just installed
                                             if (SemanticVersion.Compare(build.version, version.version) >= 1)
                                             {
-                                                bool inUse = false;
-                                                string inUseMods = "";
+                                                bool inUse = ModInstallOperation.IsVersionPending(version.id, version.version);
+                                                string inUseMods = inUse ? "a pending installation, " : "";
                                                 foreach (var m in Knossos.GetInstalledModList(null))
                                                 {
                                                     if (m != null && m.id != build.id)
@@ -727,13 +720,7 @@ namespace Knossos.NET.ViewModels
                             }
                         }
 
-                        /*
-                            Always Dequeue, always check for check size and verify that the first is this TaskItemViewModel object
-                        */
-                        if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
-                        {
-                            TaskViewModel.Instance!.taskQueue.Dequeue();
-                        }
+                        // The queue slot is released in finally after all cleanup has finished.
                         /*
                             If flag data wasnt loaded, load it now
                         */
@@ -755,7 +742,7 @@ namespace Knossos.NET.ViewModels
                     throw new Exception("The task is already set, it cant be changed or re-assigned.");
                 }
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 /*
                     Task cancel requested by user
@@ -764,14 +751,6 @@ namespace Knossos.NET.ViewModels
                 CancelButtonVisible = false;
                 IsCancelled = true;
                 Info = "Cancel Requested";
-                while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
-                {
-                    await Task.Delay(500);
-                }
-                if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
-                {
-                    TaskViewModel.Instance!.taskQueue.Dequeue();
-                }
                 await Task.Delay(2000); //give time for child tasks to cancel first
                 Info = "Task Cancelled";
                 try
@@ -802,16 +781,9 @@ namespace Knossos.NET.ViewModels
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     //Messagebox is not thread safe!
-                    await MessageBox.Show(MainWindow.instance, "An error was ocurred during the download of the mod: " + build.ToString() + ". Error: " + ex.Message, "Error", MessageBox.MessageBoxButtons.OK);
+                    if (reportError != null) reportError(build + ": " + ex.Message);
+                    else await MessageBox.Show(MainWindow.instance, "An error was ocurred during the download of the mod: " + build.ToString() + ". Error: " + ex.Message, "Error", MessageBox.MessageBoxButtons.OK);
                 });
-                while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
-                {
-                    await Task.Delay(500);
-                }
-                if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
-                {
-                    TaskViewModel.Instance!.taskQueue.Dequeue();
-                }
 
                 await Task.Delay(2000); //give time for child tasks to cancel first
                 Info = "Task Failed";
@@ -831,6 +803,7 @@ namespace Knossos.NET.ViewModels
                 Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.InstallBuild()", ex);
                 return null;
             }
+            finally { TaskViewModel.Instance?.CompleteQueuedTask(this); }
         }
     }
 }

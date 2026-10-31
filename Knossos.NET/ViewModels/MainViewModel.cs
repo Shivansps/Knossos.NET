@@ -509,7 +509,7 @@ namespace Knossos.NET.ViewModels
         public void RemoveInstalledModVersion(Mod mod)
         {
             InstalledModsView?.RemoveModVersion(mod);
-            CustomHomeVM?.RemoveInstalledModVersion(mod);
+            CustomHomeVM?.InstalledVersionRemoved(mod);
         }
 
         /// <summary>

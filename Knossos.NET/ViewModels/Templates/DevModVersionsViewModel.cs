@@ -163,9 +163,9 @@ namespace Knossos.NET.ViewModels
             {
                 if (editor != null)
                 {
-                    var dialog = new ModInstallView();
-                    dialog.DataContext = new ModInstallViewModel(editor.ActiveVersion, dialog, editor.ActiveVersion.version, true);
-                    await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+                    var dialog = new ModPropertiesView();
+                    dialog.DataContext = ModPropertiesViewModel.GetOrCreate(editor.ActiveVersion, dialog, ModPropertiesViewModel.MenuPageEntry.Versions, forceDeveloper: true);
+                    await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
                 }
             }
             catch(Exception ex)

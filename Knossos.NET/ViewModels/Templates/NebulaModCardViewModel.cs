@@ -121,9 +121,9 @@ namespace Knossos.NET.ViewModels
         {
             if (modJson != null)
             {
-                var dialog = new ModInstallView();
-                dialog.DataContext = new ModInstallViewModel(modJson, dialog);
-                await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+                var dialog = new ModPropertiesView();
+                dialog.DataContext = ModPropertiesViewModel.GetOrCreate(modJson, dialog, ModPropertiesViewModel.MenuPageEntry.Versions);
+                await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
             }
         }
 
@@ -161,7 +161,7 @@ namespace Knossos.NET.ViewModels
                 if(modJson != null)
                 {
                     var dialog = new ModPropertiesView();
-                    dialog.DataContext = new ModPropertiesViewModel(modJson, dialog);
+                    dialog.DataContext = ModPropertiesViewModel.GetOrCreate(modJson, dialog);
                     await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
                 }
             }

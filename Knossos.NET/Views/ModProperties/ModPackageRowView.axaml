@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Knossos.NET.ViewModels"
+    x:Class="Knossos.NET.Views.ModPackageRowView" x:DataType="vm:ModPackageSelectionViewModel">
+  <UserControl.Styles>
+    <Style Selector="ToggleButton.packageDisclosure:checked /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+  </UserControl.Styles>
+  <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="24,*" HorizontalAlignment="Stretch">
+    <ToggleButton Classes="packageDisclosure" IsChecked="{Binding IsDetailsExpanded, Mode=TwoWay}"
+        Width="24" MinHeight="32" Padding="4" Background="Transparent" BorderThickness="0"
+        VerticalAlignment="Top" ToolTip.Tip="Show package details" AutomationProperties.Name="{Binding DetailsLabel}">
+      <Panel>
+        <PathIcon Data="M8,4L16,12L8,20L6,18L12,12L6,6Z" Width="10" Height="10" IsVisible="{Binding !IsDetailsExpanded}"/>
+        <PathIcon Data="M4,8L12,16L20,8L18,6L12,12L6,6Z" Width="10" Height="10" IsVisible="{Binding IsDetailsExpanded}"/>
+      </Panel>
+    </ToggleButton>
+    <CheckBox Grid.Column="1" IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanToggle}"
+        MinHeight="32" Margin="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+        ToolTip.Tip="{Binding RequiredBy}" AutomationProperties.Name="{Binding Name}">
+      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{Binding Color}" TextWrapping="Wrap"/>
+    </CheckBox>
+    <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="54,2,4,8" Spacing="4" IsVisible="{Binding IsDetailsExpanded}">
+      <TextBlock Text="{Binding Notes}" IsVisible="{Binding HasNotes}" Classes="muted" TextWrapping="Wrap"/>
+      <WrapPanel>
+        <TextBlock Text="{Binding Kind}" Foreground="{Binding Color}" FontSize="12" Margin="0,0,10,0"/>
+        <TextBlock Text="{Binding Size}" Classes="muted" FontSize="12" Margin="0,0,10,0"/>
+        <TextBlock Text="{Binding Action}" Classes="muted" FontSize="12" TextWrapping="Wrap"/>
+      </WrapPanel>
+      <TextBlock Text="{Binding History}" IsVisible="{Binding HasHistory}" Foreground="{Binding HistoryColor}" FontSize="12" TextWrapping="Wrap"/>
+      <TextBlock Text="{Binding RequiredBy}" IsVisible="{Binding HasRequiredBy}" Foreground="#FFB65B" FontSize="12" TextWrapping="Wrap"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

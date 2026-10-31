@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Knossos.NET.Classes;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Knossos.NET.Models;
 using Knossos.NET.Views;
 using Knossos.NET.Views.Windows;
@@ -53,6 +54,16 @@ namespace Knossos.NET.ViewModels
         /// Used to start engine build installs when a build is referenced as a dependency of a mod
         /// </summary>
         /// <param name="mod"></param>
+        public async Task<bool> InstallDependencyAsync(Mod mod, Action<string>? reportError = null, ModInstallOperation? operation = null)
+        {
+            var stability = FsoBuild.GetFsoStability(mod.stability, mod.id);
+            if (stability == FsoStability.Nightly && !AllNightliesLoaded) LoadAllNightlies();
+            var list = stability switch { FsoStability.Stable => StableItems, FsoStability.RC => RcItems,
+                FsoStability.Nightly => NightlyItems, _ => CustomItems };
+            var item = list.FirstOrDefault(b => b.CompareIdAndVersionToMod(mod));
+            return item != null && await item.DownloadBuildExternalAsync(mod, reportError: reportError, operation: operation);
+        }
+
         public void RelayInstallBuild(Mod mod)
         {
             var buildStability = FsoBuild.GetFsoStability(mod.stability, mod.id);

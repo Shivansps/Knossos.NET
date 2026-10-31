@@ -84,9 +84,9 @@ namespace Knossos.NET.ViewModels
                         await MessageBox.Show(MainWindow.instance, "You cannot install a different mod ID than the defined Total Conversion ID while in Custom Launcher mode.", "Different mod or Total Conversion", MessageBox.MessageBoxButtons.OK);
                         return;
                     }
-                    var dialog = new ModInstallView();
-                    dialog.DataContext = new ModInstallViewModel(mod, dialog, mod.version);
-                    await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+                    var dialog = new ModPropertiesView();
+                    dialog.DataContext = ModPropertiesViewModel.GetOrCreate(mod, dialog, ModPropertiesViewModel.MenuPageEntry.Versions);
+                    await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
                 }
             }
             else

@@ -19,7 +19,7 @@ namespace Knossos.NET.Views
             InitializeComponent();
             DataContextChanged += (_, _) =>
             {
-                if (model != null) model.PropertyChanged -= OnModelChanged;
+                if (model != null) { model.PropertyChanged -= OnModelChanged; model.DetachView(this); }
                 model = DataContext as ModPropertiesViewModel;
                 if (model != null)
                 {
@@ -31,7 +31,11 @@ namespace Knossos.NET.Views
             KeyDown += OnKeyDown;
             Closed += (_, _) =>
             {
-                if (model != null) { model.PropertyChanged -= OnModelChanged; model.Dispose(); }
+                var closedModel = model;
+                model = null;
+                previousFocus = null;
+                DataContext = null;
+                if (closedModel != null) { closedModel.PropertyChanged -= OnModelChanged; closedModel.DetachView(this); }
             };
         }
 

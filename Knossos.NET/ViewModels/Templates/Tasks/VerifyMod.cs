@@ -1,5 +1,6 @@
 ﻿using Avalonia.Threading;
 using Knossos.NET.Models;
+using Knossos.NET.Classes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +13,7 @@ namespace Knossos.NET.ViewModels
 {
     public partial class TaskItemViewModel : ViewModelBase
     {
-        public async Task<bool> VerifyMod(Mod mod, CancellationTokenSource cancelSource)
+        public async Task<bool> VerifyMod(Mod mod, CancellationTokenSource cancelSource, bool awaitRepairs = false, Action<string>? reportError = null, ModInstallOperation? operation = null)
         {
             try
             {
@@ -45,6 +46,16 @@ namespace Knossos.NET.ViewModels
                         }
                     }
 
+                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    mod.ReLoadJson();
+                    mod.modSettings.Load(mod.fullPath);
+                    if (mod.modSettings.isCompressed)
+                    {
+                        IsCancelled = true;
+                        CancelButtonVisible = false;
+                        Info = "Verification is unavailable because this installation is compressed.";
+                        return false;
+                    }
                     Info = "Starting";
 
                     ProgressCurrent = 0;
@@ -59,6 +70,7 @@ namespace Knossos.NET.ViewModels
 
                     Log.Add(Log.LogSeverity.Information, "TaskItemViewModel.VerifyMod()", "Start verify for :" + mod);
                     mod.ReLoadJson();
+                    bool repairSucceeded = true;
                     List<ModPackage> reinstall = new List<ModPackage>();
                     List<string> fileArray = Directory.GetFiles(mod.fullPath, "*.*", SearchOption.AllDirectories).ToList();
                     for (int i = fileArray.Count() - 1; i >= 0; i--)
@@ -159,7 +171,8 @@ namespace Knossos.NET.ViewModels
                     {
                         Info = "FAIL";
                         mod.packages?.ForEach(p => p.isSelected = true); //mark all installed pkgs as selected so they are not deleted!
-                        TaskViewModel.Instance?.InstallMod(mod, reinstall);
+                        if (awaitRepairs) repairSucceeded = await TaskViewModel.Instance!.InstallModAsync(ModPackageCatalog.Copy(mod), reinstall, reportError: reportError, addOnly: true, operation: operation);
+                        else TaskViewModel.Instance?.InstallMod(mod, reinstall);
                     }
 
                     if (fileArray.Any())
@@ -171,14 +184,14 @@ namespace Knossos.NET.ViewModels
                         Info += " - " + fileArray.Count() + " Unknown files detected, check log or debug console";
                     }
 
-                    return true;
+                    return repairSucceeded;
                 }
                 else
                 {
                     throw new Exception("The task is already set, it cant be changed or re-assigned.");
                 }
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 /*
                     Task cancel requested by user
@@ -187,10 +200,6 @@ namespace Knossos.NET.ViewModels
                 IsCancelled = true;
                 CancelButtonVisible = false;
                 Info = "Cancel Requested";
-                while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
-                {
-                    await Task.Delay(500);
-                }
                 if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
                 {
                     TaskViewModel.Instance!.taskQueue.Dequeue();
@@ -215,10 +224,6 @@ namespace Knossos.NET.ViewModels
                 CancelButtonVisible = false;
                 cancellationTokenSource?.Cancel();
                 Info = "Cancel Requested";
-                while (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() != this)
-                {
-                    await Task.Delay(500);
-                }
                 if (TaskViewModel.Instance!.taskQueue.Count > 0 && TaskViewModel.Instance!.taskQueue.Peek() == this)
                 {
                     TaskViewModel.Instance!.taskQueue.Dequeue();
@@ -235,6 +240,7 @@ namespace Knossos.NET.ViewModels
                 Log.Add(Log.LogSeverity.Error, "TaskItemViewModel.VerifyMod()", ex);
                 return false;
             }
+            finally { TaskViewModel.Instance?.CompleteQueuedTask(this); }
         }
     }
 }

@@ -23,6 +23,7 @@
           <c:AnimatedImage Path="{Binding Banner}" IsVisible="{Binding HasBanner}" Stretch="UniformToFill" Playing="{Binding !Properties.IsModalOpen}"/>
         </Grid>
       </Border>
+      <Button Classes="play" Content="Download &amp; Install" IsVisible="{Binding Properties.CanDownload}" Command="{Binding Properties.NavigateCommand}" CommandParameter="{x:Static vm:ModPropertiesViewModel+MenuPageEntry.Versions}"/>
       <WrapPanel IsVisible="{Binding Properties.IsInstalled}">
         <Button Classes="play" Command="{Binding LaunchCommand}" CommandParameter="Release" IsVisible="{Binding IsReleaseAvailable}" Margin="0,0,8,8" ToolTip.Tip="Launch Play">
           <StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Data="{StaticResource FuturisticPlayIcon}"/><TextBlock Text="Play" VerticalAlignment="Center"/></StackPanel>
@@ -62,7 +63,7 @@
         <WrapPanel x:Name="MetadataPanel" ItemWidth="215">
           <StackPanel Margin="0,0,16,6" Spacing="4">
             <TextBlock Text="Version" Classes="muted"/>
-            <ComboBox ItemsSource="{Binding Properties.VersionItems}" SelectedIndex="{Binding Properties.SelectedVersionIndex, Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Mod version"/>
+            <ComboBox IsEnabled="{Binding Properties.CanChangeInformationVersion}" ItemsSource="{Binding Properties.VersionItems}" SelectedIndex="{Binding Properties.SelectedVersionIndex, Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Mod version"/>
           </StackPanel>
           <StackPanel Margin="0,0,16,6" Spacing="8">
             <TextBlock Text="Released" Classes="muted"/>
@@ -89,7 +90,7 @@
         <StackPanel x:Name="DescriptionPanel" Margin="0,0,24,0" Spacing="14">
           <Border Height="1" Background="{DynamicResource FuturisticBorder}"/>
           <html:HtmlPanel Text="{Binding Description}" Background="Transparent" HorizontalAlignment="Stretch"/>
-          <Button Content="Visit release thread ↗" Command="{Binding ForumCommand}" IsVisible="{Binding ForumAvailable}"/>
+          <Panel IsVisible="{Binding Properties.IsInstalled}"><Button Content="Visit release thread ↗" Command="{Binding ForumCommand}" IsVisible="{Binding ForumAvailable}"/></Panel>
         </StackPanel>
         <Border x:Name="GalleryPanel" Grid.Column="1" Classes="surface" Padding="12" VerticalAlignment="Top">
           <StackPanel Spacing="12">

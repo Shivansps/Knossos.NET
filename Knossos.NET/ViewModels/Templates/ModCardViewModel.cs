@@ -18,13 +18,12 @@ namespace Knossos.NET.ViewModels
     public partial class ModCardViewModel : ViewModelBase, IComparable<ModCardViewModel>
     {
         /* General Mod variables */
-        private ModPropertiesView? propertiesView = null;
         private List<Mod> modVersions = new List<Mod>();
         private int activeVersionIndex = 0;
         private bool devMode { get; set; } = false;
         public string ID { get; set; }
 
-        public Mod? ActiveVersion 
+        public Mod? ActiveVersion
         {
             get
             {
@@ -102,7 +101,7 @@ namespace Knossos.NET.ViewModels
             modVersions.Add(modJson);
             Name = modJson.title;
             ModVersion = modJson.version;
-            if(modJson.modSource == ModSource.local)
+            if (modJson.modSource == ModSource.local)
             {
                 isLocalMod = true;
             }
@@ -194,7 +193,7 @@ namespace Knossos.NET.ViewModels
                 Log.Add(Log.LogSeverity.Information, "ModCardViewModel.SwitchModVersion()", "Changing active version for mod id " + ID + " to " + modVersions[newIndex].version);
                 activeVersionIndex = newIndex;
                 Name = modVersions[newIndex].title;
-                if(modVersions.Count() > 1)
+                if (modVersions.Count() > 1)
                     ModVersion = modVersions[newIndex].version + " (+" + (modVersions.Count - 1) + ")";
                 else
                     ModVersion = modVersions[newIndex].version;
@@ -221,15 +220,11 @@ namespace Knossos.NET.ViewModels
         {
             try
             {
-                //if the details or settings view is open close it
-                Dispatcher.UIThread.Invoke(() => {
-                    propertiesView?.Close();
-                });
                 modVersions.Remove(mod);
                 // Removing an entry can change the version at the same numeric index.
                 SwitchModVersion(modVersions.Count() - 1, true);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Add(Log.LogSeverity.Error, "ModCardViewModel.DeleteModVersion()", ex);
             }
@@ -247,7 +242,7 @@ namespace Knossos.NET.ViewModels
         public void UpdateIsAvailable(bool value)
         {
             UpdateAvailable = value;
-            if(value)
+            if (value)
             {
                 BorderColor = KnUtils.GetResourceColor("ModCardBorderUpdate");
             }
@@ -266,7 +261,8 @@ namespace Knossos.NET.ViewModels
         {
             var bools = modVersions[activeVersionIndex].IsQtFredAvailable();
 
-            if (bools == null || bools.Length < 2){
+            if (bools == null || bools.Length < 2)
+            {
                 IsQtFredAvailable = false;
                 IsQtFredDebugAvailable = false;
                 return;
@@ -306,18 +302,24 @@ namespace Knossos.NET.ViewModels
             }
         }
 
+        public void SelectVersion(string version)
+        {
+            var index = modVersions.FindIndex(m => m.version == version);
+            if (index >= 0) SwitchModVersion(index);
+        }
+
         internal async void ButtonCommandUpdate()
         {
-            var dialog = new ModInstallView();
-            dialog.DataContext = new ModInstallViewModel(modVersions[activeVersionIndex], dialog);
-            await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+            var dialog = new ModPropertiesView();
+            dialog.DataContext = ModPropertiesViewModel.GetOrCreate(modVersions, activeVersionIndex, this, dialog, ModPropertiesViewModel.MenuPageEntry.Versions);
+            await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
         }
 
         internal async void ButtonCommandModify()
         {
-            var dialog = new ModInstallView();
-            dialog.DataContext = new ModInstallViewModel(modVersions[activeVersionIndex], dialog, modVersions[activeVersionIndex].version);
-            await dialog.ShowDialog<ModInstallView?>(MainWindow.instance);
+            var dialog = new ModPropertiesView();
+            dialog.DataContext = ModPropertiesViewModel.GetOrCreate(modVersions, activeVersionIndex, this, dialog, ModPropertiesViewModel.MenuPageEntry.Versions);
+            await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
         }
 
         internal async void ButtonCommandDelete()
@@ -358,20 +360,16 @@ namespace Knossos.NET.ViewModels
         internal async void ButtonCommandDetails()
         {
             var dialog = new ModPropertiesView();
-            dialog.DataContext = new ModPropertiesViewModel(modVersions, activeVersionIndex, this, dialog);
-            propertiesView = dialog;
+            dialog.DataContext = ModPropertiesViewModel.GetOrCreate(modVersions, activeVersionIndex, this, dialog);
             await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
-            propertiesView = null;
         }
 
         internal async void ButtonCommandSettings()
         {
             var dialog = new ModPropertiesView();
-            dialog.DataContext = new ModPropertiesViewModel(modVersions, activeVersionIndex, this, dialog,
+            dialog.DataContext = ModPropertiesViewModel.GetOrCreate(modVersions, activeVersionIndex, this, dialog,
                 ModPropertiesViewModel.MenuPageEntry.Options);
-            propertiesView = dialog;
             await dialog.ShowDialog<ModPropertiesView?>(MainWindow.instance);
-            propertiesView = null;
         }
 
         private void LoadImage()
@@ -393,10 +391,10 @@ namespace Knossos.NET.ViewModels
                         {
                             using (var fs = await KnUtils.GetRemoteResourceStream(tile))
                             {
-                                if(fs != null)
+                                if (fs != null)
                                     tileModBitmap = new Bitmap(fs);
                             }
-                        }); 
+                        });
                     }
                     if (tileModBitmap != null)
                     {
