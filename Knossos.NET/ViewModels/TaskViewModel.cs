@@ -264,7 +264,7 @@ namespace Knossos.NET.ViewModels
         /// <param name="modJson"></param>
         /// <param name="installInDevMode">Opt in to developer mode for a new install; requires write access.</param>
         /// <returns>FsoBuild class of the installed build or null if failed or cancelled</returns>
-        public async Task<FsoBuild?> InstallBuild(FsoBuild build, FsoBuildItemViewModel sender, Mod? modJson=null, List<ModPackage>? modifyPkgs = null, bool cleanupOldVersions = false, bool installInDevMode = false, Action<string>? reportError = null, ModInstallOperation? operation = null)
+        public async Task<FsoBuild?> InstallBuild(FsoBuild build, FsoBuildItemViewModel? sender, Mod? modJson=null, List<ModPackage>? modifyPkgs = null, bool cleanupOldVersions = false, bool installInDevMode = false, Action<string>? reportError = null, ModInstallOperation? operation = null)
         {
             if(Knossos.GetKnossosLibraryPath() == null)
             {
@@ -274,7 +274,9 @@ namespace Knossos.NET.ViewModels
                 });
                 return null;
             }
-            using var scopedCancellation = operation == null ? null : CancellationTokenSource.CreateLinkedTokenSource(operation.Token);
+            using var scopedCancellation = operation != null
+                ? CancellationTokenSource.CreateLinkedTokenSource(operation.Token)
+                : sender?.cancellationTokenSource == null ? new CancellationTokenSource() : null;
             var newTask = new TaskItemViewModel();
             operation?.Track(newTask);
             Dispatcher.UIThread.Invoke(() =>
@@ -282,7 +284,7 @@ namespace Knossos.NET.ViewModels
                 TaskList.Add(newTask);
                 taskQueue.Enqueue(newTask);
             });
-            var res = await newTask.InstallBuild(build, sender,scopedCancellation ?? sender.cancellationTokenSource,modJson, modifyPkgs, cleanupOldVersions, installInDevMode, reportError).ConfigureAwait(false);
+            var res = await newTask.InstallBuild(build, sender,scopedCancellation ?? sender?.cancellationTokenSource,modJson, modifyPkgs, cleanupOldVersions, installInDevMode, reportError).ConfigureAwait(false);
             if (res != null && Knossos.inSingleTCMode)
             {
                 try
@@ -327,11 +329,10 @@ namespace Knossos.NET.ViewModels
                     {
                         return await FsoBuildsViewModel.Instance.InstallDependencyAsync(mod, reportError, operation);
                     }
-                    else if (Knossos.GetInstalledBuild(mod.id, mod.version) == null)
-                    {
-                        //Custom launchers can hide the engine tab, but still need engine dependencies.
-                        await InstallBuild(new FsoBuild(mod), null, mod).ConfigureAwait(false);
-                    }
+                    // Custom launchers can hide the engine tab. Keep the same operation scope and
+                    // let the queued installer recheck whether another request already installed this build.
+                    return await InstallBuild(new FsoBuild(mod), null, mod, cleanupOldVersions: cleanupOldVersions,
+                        reportError: reportError, operation: operation).ConfigureAwait(false) != null;
                 }
                 else
                 {

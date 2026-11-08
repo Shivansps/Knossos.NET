@@ -90,8 +90,8 @@ namespace Knossos.NET.ViewModels
                 throw new Exception("Error while downloading file: " + fileUrl);
             }     
         }
-		
-        public async Task<FsoBuild?> InstallBuild(FsoBuild build, FsoBuildItemViewModel sender, CancellationTokenSource? cancelSource = null, Mod? modJson = null, List<ModPackage>? modifyPkgs = null, bool cleanupOldVersions = false, bool installInDevMode = false, Action<string>? reportError = null)
+
+        public async Task<FsoBuild?> InstallBuild(FsoBuild build, FsoBuildItemViewModel? sender, CancellationTokenSource? cancelSource = null, Mod? modJson = null, List<ModPackage>? modifyPkgs = null, bool cleanupOldVersions = false, bool installInDevMode = false, Action<string>? reportError = null)
         {
             string? modPath = null;
             bool installed = false;

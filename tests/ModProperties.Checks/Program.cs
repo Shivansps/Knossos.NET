@@ -730,6 +730,69 @@ static class Program
         Check(retainBuild.Result && File.Exists(Path.Combine(installed.fullPath, "fixture.exe")), "remaining FSO request completes and keeps the installed executable");
     }
 
+    static void HiddenEngineChecks(string output)
+    {
+        var previousBuilds = FsoBuildsViewModel.Instance;
+        FsoBuildsViewModel.Instance = null;
+        try
+        {
+            var library = Path.Combine(output, "hidden-engine-library");
+            Knossos.NET.Knossos.globalSettings.basePath = library;
+            var tasks = new TaskViewModel();
+            var queue = (Queue<TaskItemViewModel>)typeof(TaskViewModel).GetProperty("taskQueue",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(tasks)!;
+            var environment = (KnUtils.IsWindows ? "windows" : KnUtils.IsLinux ? "linux" : "macosx") + " && " +
+                (KnUtils.CpuArch == "X64" ? "X86_64" : KnUtils.CpuArch == "Arm64" ? "ARM64" : "X86");
+            var package = Pkg("platform-data", "required");
+            package.environment = environment;
+            package.files = Array.Empty<ModFile>();
+            var mod = Make("hidden-engine", "1.0.0", package); mod.type = ModType.engine;
+            var install = tasks.InstallModAsync(Copy(mod)); Pump(install);
+            var installed = Knossos.NET.Knossos.GetInstalledBuild(mod.id, mod.version);
+            Check(install.Result && installed?.modData != null && File.Exists(Path.Combine(installed.folderPath, "mod.json")) &&
+                queue.Count == 0 && tasks.IsSafeState(),
+                "engine installation without a tab or operation returns success and releases the queue");
+
+            var existing = Knossos.NET.Knossos.GetInstalledBuild("FSO", "99.0.0")!;
+            var request = Copy(existing.modData!); request.installed = false; request.fullPath = "";
+            var reuse = tasks.InstallModAsync(Copy(request)); Pump(reuse);
+            Check(reuse.Result && queue.Count == 0 && tasks.IsSafeState(), "hidden engine tab returns success for an already installed compatible build");
+            var blocker = new TaskItemViewModel(); queue.Enqueue(blocker);
+            TaskItemViewModel? firstTask = null, secondTask = null;
+            using var first = new ModInstallOperation(t => firstTask = t);
+            using var second = new ModInstallOperation(t => secondTask = t);
+            var firstInstall = tasks.InstallModAsync(Copy(request), operation: first); Pump();
+            var secondInstall = tasks.InstallModAsync(Copy(request), operation: second); Pump();
+            Check(firstTask != null && secondTask != null && !ReferenceEquals(firstTask, secondTask) &&
+                firstTask.Name.StartsWith("Downloading") && secondTask.Info == "In Queue",
+                "engine installs without a tab report live tasks to their own Properties operations");
+            firstTask!.ProgressBarMax = 100; firstTask.ProgressCurrent = 41;
+            Check(firstTask.ProgressCurrent == 41 && secondTask!.ProgressCurrent == 0,
+                "hidden engine requests expose independent progress objects");
+            first.Cancel(); Pump(firstInstall);
+            Check(!firstInstall.Result && !secondInstall.IsCompleted && secondTask!.IsCancelled == false &&
+                queue.Peek() == blocker && queue.Count == 2,
+                "cancelling a hidden-tab engine request stops only that operation and removes its queued task");
+            queue.Dequeue(); Pump(secondInstall);
+            Check(secondInstall.Result && secondTask!.Info == "Already installed" && queue.Count == 0 && tasks.IsSafeState(),
+                "another hidden-tab request finishes after cancellation without an orphaned queue entry");
+
+            package = Pkg("unsupported", "required");
+            package.environment = KnUtils.IsWindows ? "macosx && ARM64" : "windows && ARM64";
+            package.files = Array.Empty<ModFile>();
+            var incompatible = Make("hidden-engine-failure", "1.0.0", package); incompatible.type = ModType.engine;
+            TaskItemViewModel? failedTask = null;
+            using var failedOperation = new ModInstallOperation(t => failedTask = t);
+            string? error = null;
+            var failure = tasks.InstallModAsync(incompatible, reportError: message => error = message, operation: failedOperation);
+            Pump(failure);
+            Check(!failure.Result && !string.IsNullOrWhiteSpace(error) && failedTask?.IsCancelled == true &&
+                queue.Count == 0 && tasks.IsSafeState(),
+                "hidden-tab engine failure reaches the Properties error callback and releases the queue");
+        }
+        finally { FsoBuildsViewModel.Instance = previousBuilds; }
+    }
+
     static void ViewChecks(string output)
     {
         Knossos.NET.Knossos.globalSettings.modCompression = CompressionSettings.Always;
@@ -816,7 +879,7 @@ static class Program
         AppBuilder.Configure<CheckApplication>().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).UseSkia().WithInterFont().SetupWithoutStarting();
         var output = Path.GetFullPath(Path.Combine("artifacts", "mod-versions-checks", Guid.NewGuid().ToString("N")));
         Directory.CreateDirectory(output);
-        PlannerChecks(); EnginePackageChecks(); IncrementalChecks(output); BackupChecks(output); TaskChecks(output); SessionChecks(output); DeletionChecks(output); QueueChecks(output); SharedBuildChecks(output); ViewChecks(output);
+        PlannerChecks(); EnginePackageChecks(); IncrementalChecks(output); BackupChecks(output); TaskChecks(output); SessionChecks(output); DeletionChecks(output); QueueChecks(output); SharedBuildChecks(output); HiddenEngineChecks(output); ViewChecks(output);
         Console.WriteLine("All " + assertions + " checks passed. Preview images: " + output);
     }
 }

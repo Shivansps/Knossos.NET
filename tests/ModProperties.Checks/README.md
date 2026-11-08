@@ -11,3 +11,5 @@ The headless runner checks selected-package dependency traversal, shared require
 It uses an in-memory catalog and a disposable library under artifacts/mod-versions-checks/<run-id>. No Nebula requests, downloads, or installed user mods are involved. Each run also saves desktop and phone preview images there.
 
 Queue checks cover multiple Properties requests, shared-package unions, stale new-install selections, independent progress and cancellation, developer activation, FSO reuse after waiting, cleanup ordering after failure, and old-version reservations for pending dependencies. Empty local packages keep these checks independent of network access.
+
+Hidden-engine-tab checks cover successful and repeated engine installs without a sender, per-operation progress, independent cancellation, error callbacks, and queue cleanup.
