@@ -3,10 +3,10 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Knossos.NET.Classes;
 using Knossos.NET.Classes.Inno;
 using Knossos.NET.Models;
 using Knossos.NET.Views;
-using SharpCompress.Archives;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -45,9 +45,16 @@ namespace Knossos.NET.ViewModels
         };
 
         private List<IStorageFile> filePaths = new List<IStorageFile>();
+        private IStorageFile? compressedFile;
+        private HashSet<string> compressedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanSelectSource))]
         internal bool isInstalling = false;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanSelectSource))]
+        internal bool isSelectingSource = false;
+        public bool CanSelectSource => !IsInstalling && !IsSelectingSource;
         [ObservableProperty]
         internal bool canInstall = false;
         [ObservableProperty]
@@ -58,7 +65,6 @@ namespace Knossos.NET.ViewModels
         internal string installText = string.Empty;
         private string? gogExe = null;
         private KnossosWindow? window;
-        private int reqFilesFound = 0;
         // GOG installer sources. Desktop: a real path. Sandboxed (Android/iOS): storage
         // handles for the .exe and its .bin slice(s), accessed as streams (no file paths).
         private IStorageFile? gogExeFile = null;
@@ -79,12 +85,15 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void InstallFS2Command()
         {
+            if (!CanSelectSource || !CanInstall)
+                return;
             if(Knossos.GetKnossosLibraryPath() == null)
             {
                 await MessageBox.Show(MainWindow.instance, "The KnossosNET library path is not set, first set the library path in the settings tab before installing FS2 Retail.", "Library path is null", MessageBox.MessageBoxButtons.OK);
                 return;
             }
             
+            IsInstalling = true;
             await Task.Run(async () => { 
                 var createdFiles = new List<string>();
                 bool installationComplete = false;
@@ -99,7 +108,6 @@ namespace Knossos.NET.ViewModels
 
                 try
                 {
-                    IsInstalling = true;
                     Dispatcher.UIThread.Invoke(new Action(() => { ProgressCurrent = 0; }));
                     var fs2Path = Path.Combine(Knossos.GetKnossosLibraryPath()!, "FS2");
                     var moviesPath = Path.Combine(fs2Path, "data", "movies");
@@ -151,6 +159,21 @@ namespace Knossos.NET.ViewModels
                             cleanup();
                             archive.Dispose();
                         }
+                    }
+
+                    if (compressedFile != null)
+                    {
+                        using var source = await OpenCompressedStreamAsync(compressedFile);
+                        var extracted = Fs2RetailArchive.ReadFiles(source, compressedFiles, (name, data) =>
+                        {
+                            Dispatcher.UIThread.Invoke(() => { InstallText = $"Extracting: {name}"; });
+                            var dir = RouteDir(name, fs2Path, playersPath, moviesPath);
+                            using (var destination = CreateInstallFile(Path.Combine(dir, name)))
+                                data.CopyTo(destination);
+                            Dispatcher.UIThread.Invoke(() => { ProgressCurrent++; });
+                        });
+                        if (!extracted.SetEquals(compressedFiles))
+                            throw new InvalidDataException("The compressed file has changed. Select it again before installing.");
                     }
 
                     //Folder Copy
@@ -292,6 +315,8 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void LoadGoGExeCommand()
         {
+            if (!CanSelectSource)
+                return;
             var top = KnUtils.GetTopLevel();
             // Sandboxed platforms (Android/Browser) have no usable file paths, so we
             // pick the FOLDER (which grants access to both the .exe and its .bin siblings).
@@ -299,10 +324,9 @@ namespace Knossos.NET.ViewModels
             bool sandboxed = KnUtils.IsAndroid || KnUtils.IsBrowser;
             try
             {
-                CanInstall = false;
-                gogExe = null;
-                gogExeFile = null;
-                gogBins.Clear();
+                IsSelectingSource = true;
+                ResetSource();
+                InstallText = "Checking GOG installer...";
 
                 if (!sandboxed)
                 {
@@ -365,6 +389,7 @@ namespace Knossos.NET.ViewModels
                     return;
                 }
                 ProgressMax = total;
+                InstallText = string.Empty;
                 CanInstall = true;
             }
             catch (Exception ex)
@@ -373,6 +398,106 @@ namespace Knossos.NET.ViewModels
                 gogExe = null;
                 gogExeFile = null;
                 gogBins.Clear();
+            }
+            finally
+            {
+                IsSelectingSource = false;
+            }
+        }
+
+        private void ResetSource()
+        {
+            CanInstall = false;
+            filePaths.Clear();
+            gogExe = null;
+            gogExeFile = null;
+            gogBins.Clear();
+            compressedFile = null;
+            compressedFiles.Clear();
+            ProgressCurrent = 0;
+            InstallText = string.Empty;
+        }
+
+        /// <summary>
+        /// Select and validate any archive format supported by SharpCompress.
+        /// Detection uses the contents rather than restricting file extensions.
+        /// </summary>
+        internal async void LoadCompressedFileCommand()
+        {
+            if (!CanSelectSource)
+                return;
+            try
+            {
+                IsSelectingSource = true;
+                var result = await KnUtils.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    AllowMultiple = false,
+                    Title = "Select a compressed file containing FreeSpace 2 retail data"
+                });
+                if (result == null || result.Count == 0)
+                    return;
+
+                ResetSource();
+                InstallText = "Checking compressed file...";
+                var selected = result[0];
+                var found = await Task.Run(async () =>
+                {
+                    using var source = await OpenCompressedStreamAsync(selected);
+                    return Fs2RetailArchive.ReadFiles(source, required.Concat(optional));
+                });
+                var missing = required.Where(name => !found.Contains(name)).ToArray();
+                if (missing.Length > 0)
+                {
+                    await MessageBox.Show(MainWindow.instance,
+                        $"Unable to find all the required FreeSpace 2 files in this archive. Missing: {string.Join(", ", missing)}",
+                        "Files not found", MessageBox.MessageBoxButtons.OK);
+                    return;
+                }
+                compressedFile = selected;
+                compressedFiles = found;
+                ProgressMax = found.Count;
+                CanInstall = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Add(Log.LogSeverity.Error, "Fs2InstallerViewModel.LoadCompressedFileCommand()", ex);
+                ResetSource();
+                await MessageBox.Show(MainWindow.instance,
+                    $"Unable to read the compressed file. It may be damaged, encrypted, or use an unsupported format or compression method. {ex.Message}",
+                    "Cannot open compressed file", MessageBox.MessageBoxButtons.OK);
+            }
+            finally
+            {
+                InstallText = string.Empty;
+                IsSelectingSource = false;
+            }
+        }
+
+        private static async Task<Stream> OpenCompressedStreamAsync(IStorageFile file)
+        {
+            var source = await file.OpenReadAsync();
+            if (source.CanSeek)
+                return source;
+
+            // Storage providers can return forward-only streams. Use a temporary
+            // file rather than buffering a multi-gigabyte archive in memory.
+            FileStream? buffered = null;
+            try
+            {
+                buffered = new FileStream(Path.Combine(Path.GetTempPath(), $"knossos-retail-{Guid.NewGuid():N}.tmp"),
+                    FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
+                await source.CopyToAsync(buffered);
+                buffered.Position = 0;
+                return buffered;
+            }
+            catch
+            {
+                buffered?.Dispose();
+                throw;
+            }
+            finally
+            {
+                source.Dispose();
             }
         }
 
@@ -455,17 +580,39 @@ namespace Knossos.NET.ViewModels
         /// </summary>
         internal async void LoadFolderCommand()
         {
-            FolderPickerOpenOptions options = new FolderPickerOpenOptions();
-            options.AllowMultiple = false;
-            options.Title = "Select your Freespace 2 retail folder";
-            var topmostWindow = KnUtils.GetTopLevel();
-            var result = await topmostWindow.StorageProvider.OpenFolderPickerAsync(options);
-
-            if (result != null && result.Count > 0)
+            if (!CanSelectSource)
+                return;
+            try
             {
-                CanInstall = false;
-                gogExe = null;
-                ProcessFolder(result[0]);
+                IsSelectingSource = true;
+                var result = await KnUtils.GetTopLevel().StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    AllowMultiple = false,
+                    Title = "Select your Freespace 2 retail folder"
+                });
+                if (result == null || result.Count == 0)
+                    return;
+
+                ResetSource();
+                InstallText = "Checking retail folder...";
+                await ProcessFolder(result[0]);
+                if (!required.All(name => filePaths.Any(file => string.Equals(file.Name, name, StringComparison.OrdinalIgnoreCase))))
+                {
+                    await MessageBox.Show(MainWindow.instance, "Unable to find all the required Freespace 2 files in this directory.", "Files not found", MessageBox.MessageBoxButtons.OK);
+                    return;
+                }
+                ProgressMax = filePaths.Count;
+                CanInstall = true;
+            }
+            catch (Exception ex)
+            {
+                ResetSource();
+                Log.Add(Log.LogSeverity.Error, "Fs2InstallerViewModel.LoadFolderCommand()", ex);
+            }
+            finally
+            {
+                InstallText = string.Empty;
+                IsSelectingSource = false;
             }
         }
 
@@ -473,56 +620,20 @@ namespace Knossos.NET.ViewModels
         /// Search the folder to find all files
         /// </summary>
         /// <param name="path"></param>
-        private async void ProcessFolder(IStorageFolder? path, bool topLevel = true)
+        private async Task ProcessFolder(IStorageFolder path)
         {
-            try
+            await foreach (var item in path.GetItemsAsync())
             {
-                if(path == null)
-                    throw new ArgumentNullException(nameof(path));
-                if (topLevel)
+                if (item is IStorageFile file)
                 {
-                    reqFilesFound = 0;
-                    filePaths.Clear();
+                    if (required.Concat(optional).Contains(file.Name, StringComparer.OrdinalIgnoreCase)
+                        && !filePaths.Any(existing => string.Equals(existing.Name, file.Name, StringComparison.OrdinalIgnoreCase)))
+                        filePaths.Add(file);
                 }
-
-                var items = path.GetItemsAsync();
-                await foreach (var item in items)
+                else if (item is IStorageFolder subfolder)
                 {
-                    if (item is IStorageFile file)
-                    {
-                        var isImportant = required.FirstOrDefault(x=> x.ToLower() == file.Name.ToLower());
-                        if(isImportant != null)
-                        {
-                            reqFilesFound ++;
-                            filePaths.Add(file);
-                        }
-                        var isOptional = optional.FirstOrDefault(x => x.ToLower() == file.Name.ToLower());
-                        if (isOptional != null)
-                        {
-                            filePaths.Add(file);
-                        }
-                    }
-                    else if (item is IStorageFolder subfolder)
-                    {
-                        ProcessFolder(subfolder, false);
-                    }
+                    await ProcessFolder(subfolder);
                 }
-
-                if(topLevel)
-                {
-                    if (reqFilesFound < 9)
-                    {
-                        //Missing files
-                        await MessageBox.Show(MainWindow.instance, "Unable to find all the required Freespace 2 files in this directory.", "Files not found", MessageBox.MessageBoxButtons.OK);
-                        return;
-                    }
-                    CanInstall = true;
-                    ProgressMax = filePaths.Count();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Add(Log.LogSeverity.Error, "Fs2InstallerViewModel.ProcessFolder()", ex);
             }
         }
     }

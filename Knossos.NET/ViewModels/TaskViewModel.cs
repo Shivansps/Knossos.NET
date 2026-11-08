@@ -260,7 +260,7 @@ namespace Knossos.NET.ViewModels
         /// Downloads a new FSO build from Nebula
         /// </summary>
         /// <param name="build"></param>
-        /// <param name="sender"></param>
+        /// <param name="sender">Optional engine tab item; dependency installs can run without the tab.</param>
         /// <param name="modJson"></param>
         /// <param name="installInDevMode">Opt in to developer mode for a new install; requires write access.</param>
         /// <returns>FsoBuild class of the installed build or null if failed or cancelled</returns>
@@ -323,8 +323,15 @@ namespace Knossos.NET.ViewModels
 
                 if (mod.type == ModType.engine)
                 {
-                    //If this is an engine build then call the UI element to do the build install process instead
-                    return FsoBuildsViewModel.Instance != null && await FsoBuildsViewModel.Instance.InstallDependencyAsync(mod, reportError, operation);
+                    if (FsoBuildsViewModel.Instance != null)
+                    {
+                        return await FsoBuildsViewModel.Instance.InstallDependencyAsync(mod, reportError, operation);
+                    }
+                    else if (Knossos.GetInstalledBuild(mod.id, mod.version) == null)
+                    {
+                        //Custom launchers can hide the engine tab, but still need engine dependencies.
+                        await InstallBuild(new FsoBuild(mod), null, mod).ConfigureAwait(false);
+                    }
                 }
                 else
                 {

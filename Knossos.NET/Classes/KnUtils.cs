@@ -287,7 +287,7 @@ namespace Knossos.NET
         }
 
         /// <summary>
-        /// Executes a Chmod command in MacOSX and Linux
+        /// Executes chmod directly in MacOSX and Linux, logging failures without showing a dialog.
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="permissions"></param>
@@ -297,22 +297,41 @@ namespace Knossos.NET
         {
             if (IsWindows)
                 return false;
-            string cmd;
-            if (recursive)
-                cmd = $"chmod -R {permissions} '{filePath}'";
-            else
-                cmd = $"chmod {permissions} '{filePath}'";
 
             try
             {
-                using (Process proc = Process.Start("/bin/bash", $"-c \"{cmd}\""))
+                // Resolve chmod through PATH without depending on /bin/bash (e.g. on NixOS).
+                // TODO (.NET 10 migration): use File.GetUnixFileMode / File.SetUnixFileMode,
+                // preserving existing mode bits for +x and supporting recursive changes.
+                using (var proc = new Process())
                 {
+                    proc.StartInfo.FileName = "chmod";
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.RedirectStandardError = true;
+                    if (recursive)
+                        proc.StartInfo.ArgumentList.Add("-R");
+                    proc.StartInfo.ArgumentList.Add("--");
+                    proc.StartInfo.ArgumentList.Add(permissions);
+                    proc.StartInfo.ArgumentList.Add(filePath);
+
+                    proc.Start();
+                    // Drain stderr before waiting, including for recursive changes with many errors.
+                    var stderr = proc.StandardError.ReadToEnd();
                     proc.WaitForExit();
-                    return proc.ExitCode == 0;
+                    if (proc.ExitCode == 0)
+                        return true;
+
+                    Log.Add(Log.LogSeverity.Error, "KnUtils.Chmod()",
+                        $"Failed to set permissions '{permissions}' on '{filePath}' (recursive: {recursive}). " +
+                        $"chmod exited with code {proc.ExitCode}. Stderr: {stderr.Trim()}");
+                    return false;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Add(Log.LogSeverity.Error, "KnUtils.Chmod()",
+                    $"Failed to set permissions '{permissions}' on '{filePath}' (recursive: {recursive}): {ex}");
                 return false;
             }
         }

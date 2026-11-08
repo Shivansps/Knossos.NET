@@ -24,8 +24,12 @@
 			<Border Grid.Row="0" BorderBrush="AliceBlue" BorderThickness="2" CornerRadius="2">
 				<StackPanel>
 					<Label Margin="5" FontWeight="Black" FontSize="18">Freespace 2 is already installed?</Label>
-					<Label Margin="5">GoG, Steam, and the original 3 CDs version install folder is supported.</Label>
-					<Button Classes="Quaternary" IsEnabled="{Binding !IsInstalling}" Margin="10" Command="{Binding LoadFolderCommand}">Browse Folder</Button>
+					<Label Margin="5">Select a GoG, Steam, or original 3 CDs install folder, or an archive containing the game files.</Label>
+					<WrapPanel>
+						<Button Classes="Quaternary" IsEnabled="{Binding CanSelectSource}" Margin="10" Command="{Binding LoadFolderCommand}">Browse Folder</Button>
+						<Button Classes="Quaternary" IsEnabled="{Binding CanSelectSource}" Margin="10" Command="{Binding LoadCompressedFileCommand}">Open compressed file</Button>
+					</WrapPanel>
+					<TextBlock Margin="10,0" Text="{Binding InstallText}" IsVisible="{Binding IsSelectingSource}" TextWrapping="Wrap"/>
 					<Label Margin="5" FontWeight="Bold">Required File List:</Label>
 					<TextBlock Margin="10,0,0,0" Text="root_fs2.vp, smarty_fs2.vp, sparky_fs2.vp, sparky_hi_fs2.vp, stu_fs2.vp, tango1_fs2.vp, tango2_fs2.vp, tango3_fs2.vp, warble_fs2.vp" TextWrapping="Wrap"></TextBlock>
 					<Label Margin="5" FontWeight="Bold">After copying the files to the KnossosNET library, the original installation is not longer needed.</Label>
@@ -36,14 +40,14 @@
 				<StackPanel>
 					<Label Margin="5" FontWeight="Black" FontSize="18">Freespace 2 GoG install file</Label>
 					<Label Margin="5">You do not have Freespace 2 installed, but you have the GoG Freespace 2 install file?</Label>
-					<Button Classes="Secondary" IsEnabled="{Binding !IsInstalling}" Margin="10" Command="{Binding LoadGoGExeCommand}">Select GoG Executable</Button>
+					<Button Classes="Secondary" IsEnabled="{Binding CanSelectSource}" Margin="10" Command="{Binding LoadGoGExeCommand}">Select GoG Executable</Button>
 				</StackPanel>
 			</Border>
 			
 			<Border IsVisible="{Binding CanInstall}" Margin="0,5,0,0" Grid.Row="2" BorderBrush="AliceBlue" BorderThickness="2" CornerRadius="2">
 				<StackPanel>
 					<Label HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" Margin="5" Foreground="Green">Freespace 2 files detected! You can proceed to install</Label>
-					<Button Classes="Accept" IsEnabled="{Binding !IsInstalling}" Command="{Binding InstallFS2Command}" HorizontalAlignment="Center" Margin="10">Install FS2 Retail</Button>
+					<Button Classes="Accept" IsEnabled="{Binding CanSelectSource}" Command="{Binding InstallFS2Command}" HorizontalAlignment="Center" Margin="10">Install FS2 Retail</Button>
 					<ProgressBar Margin="10" Height="20" ShowProgressText="False" Minimum="0" Maximum="{Binding ProgressMax}" Value="{Binding ProgressCurrent}" IsVisible="{Binding IsInstalling}"></ProgressBar>
 					<TextBlock Margin="5" TextWrapping="Wrap" HorizontalAlignment="Center" Text="{Binding InstallText}"></TextBlock>
 				</StackPanel>

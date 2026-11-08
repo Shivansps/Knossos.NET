@@ -111,6 +111,11 @@ namespace Knossos.NET.ViewModels
                 //Apply customization for Single TC Mode
                 Knossos.globalSettings.mainMenuOpen = CustomLauncher.MenuOpenFirstTime;
                 CustomHomeVM = new CustomHomeViewModel();
+                if (CustomLauncher.MenuDisplayPlayEntry)
+                {
+                    placeholderTileImage = new Bitmap(AssetLoader.Open(new Uri("avares://Knossos.NET/Assets/general/NebulaDefault.png")));
+                    InstalledModsView = new ModListViewModel();
+                }
                 if (CustomLauncher.MenuDisplayEngineEntry)
                     FsoBuildsView = new FsoBuildsViewModel();
                 if (CustomLauncher.MenuDisplayGlobalSettingsEntry)
@@ -190,6 +195,11 @@ namespace Knossos.NET.ViewModels
                 if (CustomLauncher.MenuDisplayHomeEntry)
                 {
                     MenuItems.Add(CreateCustomHomeMenuItem());
+                }
+
+                if (CustomLauncher.MenuDisplayPlayEntry && InstalledModsView != null)
+                {
+                    MenuItems.Add(new MainViewMenuItem(InstalledModsView, "avares://Knossos.NET/Assets/general/menu_play.png", "Play", "View and run installed Freespace Open games and modifications"));
                 }
 
                 if (CustomLauncher.CustomMenuButtons != null && CustomLauncher.CustomMenuButtons.Any())

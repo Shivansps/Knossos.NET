@@ -142,6 +142,12 @@ namespace Knossos.NET.Models
         public static bool MenuDisplayHomeEntry { get; private set; } = true;
 
         /// <summary>
+        /// Add the regular Knet Play view (installed mods list) to the menu, placed after Home
+        /// It can be displayed together with Home
+        /// </summary>
+        public static bool MenuDisplayPlayEntry { get; private set; } = false;
+
+        /// <summary>
         /// Add the regular FSO engine view to the menu
         /// </summary>
         public static bool MenuDisplayEngineEntry { get; private set; } = true;
@@ -329,6 +335,9 @@ namespace Knossos.NET.Models
                     if (customData.MenuDisplayHomeEntry.HasValue)
                         MenuDisplayHomeEntry = customData.MenuDisplayHomeEntry.Value;
 
+                    if (customData.MenuDisplayPlayEntry.HasValue)
+                        MenuDisplayPlayEntry = customData.MenuDisplayPlayEntry.Value;
+
                     if (customData.MenuDisplayEngineEntry.HasValue)
                         MenuDisplayEngineEntry = customData.MenuDisplayEngineEntry.Value;
 
@@ -398,6 +407,7 @@ namespace Knossos.NET.Models
             public bool? MenuTaskButtonAtTheEnd { get; set; }
             public bool? MenuOpenFirstTime { get; set; }
             public bool? MenuDisplayHomeEntry { get; set; }
+            public bool? MenuDisplayPlayEntry { get; set; }
             public bool? MenuDisplayEngineEntry { get; set; }
             public bool? MenuDisplayDebugEntry { get; set; }
             public bool? MenuDisplayNebulaLoginEntry { get; set; }
