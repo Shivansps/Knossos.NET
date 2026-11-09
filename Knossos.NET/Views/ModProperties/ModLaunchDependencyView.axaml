@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Knossos.NET.ViewModels" x:Class="Knossos.NET.Views.ModLaunchDependencyView" x:DataType="vm:LaunchDependencyViewModel">
+  <Border BorderBrush="{DynamicResource FuturisticBorder}" BorderThickness="0,0,0,1" Padding="0,7">
+    <Grid x:Name="RowLayout" ColumnDefinitions="Auto,*,180" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+      <StackPanel Orientation="Horizontal" Spacing="3">
+        <Button Content="↑" Command="{Binding MoveUpCommand}" Width="32" MinHeight="36" Padding="4" ToolTip.Tip="Move dependency up"/>
+        <Button Content="↓" Command="{Binding MoveDownCommand}" Width="32" MinHeight="36" Padding="4" ToolTip.Tip="Move dependency down"/>
+        <Button Content="×" Classes="danger" Command="{Binding RemoveCommand}" IsVisible="{Binding !IsRoot}" Width="32" MinHeight="36" Padding="4" ToolTip.Tip="Remove dependency override"/>
+      </StackPanel>
+      <ComboBox Grid.Column="1" ItemsSource="{Binding IdChoices}" SelectedItem="{Binding SelectedId, Mode=TwoWay}" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Stretch" MinWidth="0" AutomationProperties.Name="Dependency mod"/>
+      <ComboBox x:Name="VersionPicker" Grid.Column="2" ItemsSource="{Binding VersionChoices}" SelectedItem="{Binding SelectedVersion, Mode=TwoWay}" IsEnabled="{Binding CanEdit}" IsVisible="{Binding !IsRoot}" HorizontalAlignment="Stretch" MinWidth="0" AutomationProperties.Name="Dependency version constraint"/>
+    </Grid>
+  </Border>
+</UserControl>

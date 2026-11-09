@@ -1,0 +1,31 @@
+<views:KnossosWindow xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:Knossos.NET.Views" xmlns:vm="using:Knossos.NET.ViewModels"
+    x:Class="Knossos.NET.Views.TextEditorView" x:DataType="vm:TextEditorViewModel"
+    Classes="Futuristic" Title="{Binding Title}" WindowWidth="1000" WindowHeight="720" MinWidth="260" MinHeight="320">
+  <Grid Background="{DynamicResource FuturisticBackdrop}">
+    <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12">
+      <StackPanel Spacing="4"><TextBlock Text="{Binding Title}" FontSize="22" FontWeight="Bold"/>
+        <TextBlock Text="{Binding FilePath}" Classes="muted" TextWrapping="Wrap"/>
+        <TextBlock Text="{Binding EncodingLabel}" Classes="muted" FontSize="12"/>
+      </StackPanel>
+      <TextBox Grid.Row="1" Text="{Binding Text, Mode=TwoWay}" IsEnabled="{Binding CanEdit}" AcceptsReturn="True" AcceptsTab="True"
+        TextWrapping="NoWrap" FontFamily="monospace" FontSize="14" VerticalContentAlignment="Top"
+        ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+      <StackPanel Grid.Row="2" Spacing="8">
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" Height="3"/>
+        <TextBlock Text="{Binding Error}" Foreground="#FFBD86" TextWrapping="Wrap"/>
+        <WrapPanel><Button Content="Save Changes" Classes="accent" Command="{Binding SaveCommand}" Margin="0,0,10,4"/>
+          <Button Content="Close without saving" Command="{Binding DiscardAndCloseCommand}" IsEnabled="{Binding !IsSaving}" Margin="0,0,0,4"/></WrapPanel>
+      </StackPanel>
+    </Grid>
+    <Border IsVisible="{Binding IsDiscardPromptOpen}" Background="#D9091119" Padding="16">
+      <Border Classes="surface" Padding="20" MaxWidth="420" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="12"><TextBlock Text="Discard unsaved changes?" FontSize="20" FontWeight="Bold" TextWrapping="Wrap"/>
+          <TextBlock Text="The file will keep its last saved contents." TextWrapping="Wrap"/>
+          <WrapPanel><Button Content="Keep editing" Command="{Binding KeepEditingCommand}" Margin="0,0,10,6"/>
+            <Button Content="Discard &amp; Close" Classes="danger" Command="{Binding DiscardAndCloseCommand}" Margin="0,0,0,6"/></WrapPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Grid>
+</views:KnossosWindow>

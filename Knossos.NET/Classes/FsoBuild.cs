@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using Knossos.NET.Classes;
 using Knossos.NET.Views;
 using System;
@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Knossos.NET.Models
@@ -328,7 +329,10 @@ namespace Knossos.NET.Models
         /// Get FSO flags structure of this build using the JSON format V1
         /// </summary>
         /// <returns>A FlagsJsonV1 structure or null if failed</returns>
-        public async Task<FlagsJsonV1?> GetFlagsV1Async()
+        public Task<FlagsJsonV1?> GetFlagsV1Async() => GetFlagsV1Async(CancellationToken.None);
+
+        private static readonly SemaphoreSlim androidFlagsGate = new(1, 1);
+        public async Task<FlagsJsonV1?> GetFlagsV1Async(CancellationToken cancellationToken, bool showErrors = true)
         {
             var executable = GetExecutable(FsoExecType.Flags);
             var fullpath = GetExecutablePath(executable);
@@ -354,9 +358,15 @@ namespace Knossos.NET.Models
             try
             {
 #if ANDROID
-                output = await AndroidHelper.GetFlagsStringFSOAsync(fullpath!);
-                if (output == "") return null;
-                return JsonSerializer.Deserialize<FlagsJsonV1>(output);
+                await androidFlagsGate.WaitAsync(cancellationToken);
+                try
+                {
+                    output = await AndroidHelper.GetFlagsStringFSOAsync(fullpath!);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (output == "") return null;
+                    return JsonSerializer.Deserialize<FlagsJsonV1>(output);
+                }
+                finally { androidFlagsGate.Release(); }
 #else
 
                 if (KnUtils.IsLinux || KnUtils.IsMacOS)
@@ -386,16 +396,25 @@ namespace Knossos.NET.Models
                         cmd.StartInfo.EnvironmentVariables.Add("FSO_PREFERENCES_PATH", prefPath);
                     }
 
+                    cancellationToken.ThrowIfCancellationRequested();
                     cmd.Start();
+                    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                    using var registration = timeout.Token.Register(() =>
+                    {
+                        try { if (!cmd.HasExited) cmd.Kill(true); }
+                        catch (InvalidOperationException) { }
+                        catch (System.ComponentModel.Win32Exception) { }
+                    });
                     // Read stdout and stderr concurrently to prevent pipe deadlock.
                     // Sequential reads deadlock if stderr output exceeds the pipe buffer (~4 KB).
                     var stdoutTask = cmd.StandardOutput.ReadToEndAsync();
                     var stderrTask = cmd.StandardError.ReadToEndAsync();
-                    await Task.WhenAll(stdoutTask, stderrTask).ConfigureAwait(false);
+                    await Task.WhenAll(stdoutTask, stderrTask).WaitAsync(timeout.Token).ConfigureAwait(false);
                     string result = stdoutTask.Result;
                     stderr = stderrTask.Result;
                     output = result;
-                    await cmd.WaitForExitAsync().ConfigureAwait(false);
+                    await cmd.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
 
                     if (KnUtils.IsLinux && !result.Contains("{"))
                     {
@@ -410,7 +429,7 @@ namespace Knossos.NET.Models
                                 "Fedora: sudo dnf install fuse\n" +
                                 "Arch: sudo pacman -S fuse2";
                             Log.Add(Log.LogSeverity.Error, "FsoBuild.GetFlagsV1()", libfuseError);
-                            if (!_flagErrorOneWarn)
+                            if (!_flagErrorOneWarn && showErrors)
                             {
                                 _flagErrorOneWarn = true;
                                 await Dispatcher.UIThread.InvokeAsync(async () => { await MessageBox.Show(MainWindow.instance, libfuseError, "Unable to run FSO", MessageBox.MessageBoxButtons.OK); });
@@ -436,6 +455,7 @@ namespace Knossos.NET.Models
                 }
 #endif
             }
+            catch (OperationCanceledException) { return null; }
             catch (JsonException exJson)
             {
                 //json failed try to see if it exported a binary

@@ -30,6 +30,45 @@
     <StreamGeometry x:Key="FuturisticDeleteIcon">M8,2H16V5H22V7H20L19,22H5L4,7H2V5H8Z M8,9V19H10V9Z M14,9V19H16V9Z</StreamGeometry>
     <StreamGeometry x:Key="FuturisticZoomIcon">M10,2A8,8 0 1 0 15,16L21,22L23,20L17,14A8,8 0 0 0 10,2 M10,5A5,5 0 1 1 10,15A5,5 0 0 1 10,5 M9,7V9H7V11H9V13H11V11H13V9H11V7Z</StreamGeometry>
     <StreamGeometry x:Key="FuturisticVrIcon">M3,5H21L23,7V17L21,19H16L12,15L8,19H3L1,17V7Z M6,8A4,4 0 1 0 6,16A4,4 0 0 0 6,8 M18,8A4,4 0 1 0 18,16A4,4 0 0 0 18,8</StreamGeometry>
+    <ControlTheme x:Key="FuturisticExpander" TargetType="Expander">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid RowDefinitions="Auto,Auto">
+            <ToggleButton x:Name="PART_Toggle" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                Background="#14212B" BorderBrush="{DynamicResource FuturisticBorder}" BorderThickness="1" CornerRadius="4"
+                Padding="12" MinHeight="44" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                Foreground="{DynamicResource FuturisticText}">
+              <ToggleButton.Template>
+                <ControlTemplate>
+                  <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Stretch"/>
+                  </Border>
+                </ControlTemplate>
+              </ToggleButton.Template>
+              <Grid ColumnDefinitions="*,16" ColumnSpacing="8">
+                <ContentPresenter Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"/>
+                <PathIcon x:Name="Chevron" Grid.Column="1" Width="12" Height="12" VerticalAlignment="Center"
+                    Data="M2,4L8,10L14,4L12,2L8,6L4,2Z" Foreground="{DynamicResource FuturisticMuted}"/>
+              </Grid>
+            </ToggleButton>
+            <Border Grid.Row="1" IsVisible="{TemplateBinding IsExpanded}" Padding="12"
+                Background="{DynamicResource FuturisticSurface}" BorderBrush="{DynamicResource FuturisticBorder}" BorderThickness="1,0,1,1" CornerRadius="0,0,4,4">
+              <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                  HorizontalContentAlignment="Stretch"/>
+            </Border>
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:expanded /template/ PathIcon#Chevron">
+        <Setter Property="RenderTransform"><RotateTransform Angle="180"/></Setter>
+      </Style>
+      <Style Selector="^ /template/ ToggleButton#PART_Toggle:checked">
+        <Setter Property="Background" Value="#14212B"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource FuturisticBorder}"/>
+        <Setter Property="Foreground" Value="{DynamicResource FuturisticText}"/>
+      </Style>
+    </ControlTheme>
   </Styles.Resources>
 
   <Style Selector="UserControl.Futuristic">

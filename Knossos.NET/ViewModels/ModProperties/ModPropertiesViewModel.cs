@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Knossos.NET.Classes;
@@ -33,6 +34,7 @@ namespace Knossos.NET.ViewModels
 
         [ObservableProperty] private string title = string.Empty;
         [ObservableProperty] private bool isInstalled;
+        [ObservableProperty] private bool userHidden;
         [ObservableProperty] private ViewModelBase? currentPage;
         [ObservableProperty] private MenuPageEntry selectedPage;
         [ObservableProperty] private bool isModalOpen;
@@ -96,6 +98,7 @@ namespace Knossos.NET.ViewModels
             if (attachedViews.Count != 0) return;
             releaseWhenIdle = true;
             modCard = null;
+            options?.Dispose();
             options = null;
             Knossos.Tts(string.Empty);
             ResetModal();
@@ -127,6 +130,7 @@ namespace Knossos.NET.ViewModels
             {
                 if (value < 0 || value >= versions.Count || value == selectedVersionIndex || Versions.IsApplying || IsSubmitting) return;
                 SaveOptions();
+                options?.Dispose();
                 options = null;
                 SetProperty(ref selectedVersionIndex, value);
                 modCard?.SelectVersion(versions[value].version);
@@ -149,6 +153,7 @@ namespace Knossos.NET.ViewModels
             selectedVersionIndex = Math.Clamp(selectedIndex, 0, versions.Count - 1);
             if (propertiesView != null) AttachView(propertiesView);
             modCard = card;
+            userHidden = ModTags.IsFilterPresentInModID(ActiveVersion.id, "Hidden");
             foreach (var mod in versions) VersionItems.Add(mod.version);
             Information = new ModInformationViewModel(this);
             Versions = new ModVersionsViewModel(this, forceDeveloper, catalog);
@@ -182,7 +187,7 @@ namespace Knossos.NET.ViewModels
             }
             else if (page == MenuPageEntry.Options && CanConfigure && !Versions.IsApplying)
             {
-                options ??= new ModLaunchOptionsViewModel(ActiveVersion, modCard);
+                options ??= new ModLaunchOptionsViewModel(ActiveVersion, modCard, this);
                 CurrentPage = options;
                 SelectedPage = MenuPageEntry.Options;
             }
@@ -197,14 +202,33 @@ namespace Knossos.NET.ViewModels
             OnPropertyChanged(nameof(IsVersionsSelected));
         }
 
+        public Window? GetDialogOwner() => view == null ? MainWindow.instance : TopLevel.GetTopLevel(view) as Window ?? MainWindow.instance;
+        partial void OnUserHiddenChanged(bool value)
+        {
+            if (disposed || !ActiveVersion.installed) return;
+            if (value)
+            {
+                ModTags.AddModFilter(ActiveVersion.id, "Hidden");
+                if (!Knossos.globalSettings.hiddenModIds.Contains(ActiveVersion.id)) Knossos.globalSettings.hiddenModIds.Add(ActiveVersion.id);
+            }
+            else
+            {
+                ModTags.RemoveModFilter(ActiveVersion.id, "Hidden");
+                Knossos.globalSettings.hiddenModIds.Remove(ActiveVersion.id);
+            }
+            MainViewModel.Instance?.InstalledModsView?.ResetFilters();
+            Knossos.globalSettings.Save();
+        }
+
         public void SaveOptions()
         {
-            if (options != null && ReferenceEquals(CurrentPage, options)) options.SaveSettingsCommand();
+            if (options != null && ReferenceEquals(CurrentPage, options)) options.SaveSettings();
         }
 
         public void InstalledVersionChanged(Mod installed)
         {
             SaveOptions();
+            options?.Dispose();
             options = null;
             versions.Clear();
             versions.AddRange(Knossos.GetInstalledModList(installed.id));
@@ -333,6 +357,7 @@ namespace Knossos.NET.ViewModels
             try
             {
                 SaveOptions();
+                options?.Dispose();
                 options = null;
                 if (selected.type == ModType.engine)
                 {
@@ -434,6 +459,8 @@ namespace Knossos.NET.ViewModels
             if (attachedViews.Count > 0) Knossos.Tts(string.Empty);
             attachedViews.Clear();
             modCard = null;
+            options?.Dispose();
+            options = null;
             Information.Dispose();
             Versions.Dispose();
             pendingConfirmation?.TrySetResult(false);

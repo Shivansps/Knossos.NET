@@ -1,74 +1,160 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:v="using:Knossos.NET.Views" xmlns:vm="using:Knossos.NET.ViewModels"
-    x:Class="Knossos.NET.Views.ModLaunchOptionsView" x:DataType="vm:ModSettingsViewModel">
-  <Grid Margin="16" RowDefinitions="Auto,*">
-    <StackPanel Margin="4,0,0,16" Spacing="4">
-      <TextBlock Classes="heading" Text="Launch Options"/>
-      <TextBlock Classes="muted" Text="Settings are saved when you leave this page or close Mod Properties." TextWrapping="Wrap"/>
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:Knossos.NET.Views" xmlns:vm="using:Knossos.NET.ViewModels"
+    x:Class="Knossos.NET.Views.ModLaunchOptionsView" x:DataType="vm:ModLaunchOptionsViewModel">
+  <UserControl.Styles>
+    <Style Selector="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+    <Style Selector="TextBlock.sectionTitle"><Setter Property="FontSize" Value="19"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+    <Style Selector="CheckBox"><Setter Property="MinHeight" Value="36"/></Style>
+    <Style Selector="TextBox"><Setter Property="Background" Value="#101920"/><Setter Property="BorderBrush" Value="{DynamicResource FuturisticBorder}"/><Setter Property="MinHeight" Value="40"/></Style>
+  </UserControl.Styles>
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <StackPanel x:Name="LaunchLayout" Margin="24,20" Spacing="12">
+      <StackPanel Spacing="4" Margin="4,0,0,4">
+        <TextBlock Classes="heading" Text="{Binding Name}"/>
+        <TextBlock Classes="muted" Text="Configure how this mod launches in FreeSpace Open" FontSize="16"/>
+      </StackPanel>
+      <Expander x:Name="QuickLaunchSection" Classes="launchSection" Theme="{StaticResource FuturisticExpander}"
+          IsExpanded="{Binding IsQuickLaunchExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch" IsVisible="{Binding ShowQuickLaunch}">
+        <Expander.Header>
+          <Grid ColumnDefinitions="42,*" ColumnSpacing="12">
+            <Border Background="#253747" CornerRadius="6" Padding="9" VerticalAlignment="Top"><PathIcon Data="{StaticResource FuturisticPlayIcon}" Foreground="#89C8FF" Width="24" Height="24"/></Border>
+            <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center"><TextBlock Classes="sectionTitle" Text="Quick Launch"/>
+              <TextBlock Classes="muted" Text="Build a command for a shortcut or a non-Steam game."/>
+            </StackPanel>
+          </Grid>
+        </Expander.Header>
+        <StackPanel Spacing="12">
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="{Binding CanCreateShortcut}" Spacing="3">
+              <Button Content="Create Desktop Shortcut" Command="{Binding CreateShortcutCommand}"/>
+              <TextBlock Text="Uses the command shown below" Classes="muted" FontSize="11" HorizontalAlignment="Center"/>
+            </StackPanel>
+          <WrapPanel>
+            <StackPanel Spacing="5" Margin="0,0,16,8" Width="180"><TextBlock Classes="muted" Text="Mod version"/>
+              <ComboBox ItemsSource="{Binding QuickVersions}" SelectedItem="{Binding SelectedQuickVersion, Mode=TwoWay}" HorizontalAlignment="Stretch"/></StackPanel>
+            <StackPanel Spacing="5" Margin="0,0,0,8" Width="180"><TextBlock Classes="muted" Text="Executable type"/>
+              <ComboBox ItemsSource="{Binding QuickExecutables}" SelectedItem="{Binding SelectedQuickExecutable, Mode=TwoWay}" HorizontalAlignment="Stretch"/></StackPanel>
+          </WrapPanel>
+          <StackPanel Spacing="5"><TextBlock Classes="muted" Text="Extra arguments for this Quick Launch only"/>
+            <TextBox Text="{Binding QuickExtraArguments, Mode=TwoWay}" Watermark="-nomovies -start_mission GD-09.fs2" TextWrapping="Wrap" MinHeight="54"/></StackPanel>
+          <StackPanel Spacing="5"><TextBlock Classes="muted" Text="Launcher command · copy or edit this preview"/>
+            <TextBox Text="{Binding QuickLaunch, Mode=TwoWay}" TextWrapping="Wrap" MinHeight="64" FontFamily="monospace" AutomationProperties.Name="Quick Launch command"/>
+            <Button Content="Copy command" Command="{Binding CopyQuickLaunchCommand}" HorizontalAlignment="Left"/>
+          </StackPanel>
+          <Expander Theme="{StaticResource FuturisticExpander}" Header="See all Quick Launch options" IsExpanded="{Binding IsQuickHelpExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <StackPanel Spacing="9" Margin="0,8,0,0">
+              <TextBlock Text="The first path is Knossos.NET itself. Keep paths and argument values containing spaces inside quotes. These options affect this command or shortcut only." Classes="muted"/>
+              <TextBlock Text="-playmod &lt;ID&gt; — Mod ID to launch, such as goliath-down. This is the ID from mod.json, rather than the displayed title."/>
+              <TextBlock Text="-version &lt;version&gt; — Launch an exact installed version. Omit this argument to always use the newest installed version of that mod."/>
+              <TextBlock Text="-exec &lt;type&gt; — Default or Release starts the game. Debug, Fred2, Fred2Debug, QtFred and QtFredDebug select another executable from the resolved engine build."/>
+              <TextBlock Text="-cmdline &quot;arguments&quot; — Additional FSO command line for this launch. For example: -cmdline &quot;-nomovies -start_mission GD-09.fs2&quot; starts a specific mission."/>
+              <TextBlock Text="-build &lt;ID&gt; — Optionally override the engine build ID for this launch. -build-version &lt;version&gt; selects an exact engine version; newerstable, newerrc and newernightly select the newest installed build of that type."/>
+              <TextBlock Text="Example: Knossos.NET.exe -playmod goliath-down -version 999.0.0-DevEnv -exec Release -cmdline &quot;-nomovies -start_mission GD-09.fs2&quot;" FontFamily="monospace" Foreground="#89C8FF"/>
+            </StackPanel>
+          </Expander>
+        </StackPanel>
+      </Expander>
+      <Expander x:Name="EngineOptionsSection" Classes="launchSection" Theme="{StaticResource FuturisticExpander}"
+          IsExpanded="{Binding IsEngineOptionsExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch">
+        <Expander.Header>
+          <Grid ColumnDefinitions="42,*" ColumnSpacing="12"><Border Background="#253747" CornerRadius="6" Padding="9" VerticalAlignment="Top"><PathIcon Data="{StaticResource FuturisticSettingsIcon}" Foreground="#89C8FF" Width="24" Height="24"/></Border>
+            <StackPanel Grid.Column="1" Spacing="4"><TextBlock Classes="sectionTitle" Text="Engine Option Settings"/><TextBlock Text="Use the mod's in-game engine options file, or use launcher engine settings." Classes="muted"/></StackPanel>
+          </Grid>
+        </Expander.Header>
+        <StackPanel Spacing="10">
+          <CheckBox IsChecked="{Binding NoIngameOptions, Mode=TwoWay}" Content="Disable in-game options" ToolTip.Tip="When disabled, launcher engine settings are used. Requires FSO 24.2.0 or newer."/>
+          <WrapPanel IsVisible="{Binding IngameOptionsFileExist}">
+            <TextBlock Text="Engine options file detected" Foreground="#89C8FF" VerticalAlignment="Center" Margin="0,0,16,8"/>
+            <Button Content="Edit file" Command="{Binding EditEngineOptionsCommand}" Margin="0,0,10,8"/>
+            <Button Content="Delete file" Classes="danger" Command="{Binding DeleteEngineOptionsCommand}" Margin="0,0,0,8"/>
+          </WrapPanel>
+        </StackPanel>
+      </Expander>
+      <Expander x:Name="ExecutableSection" Classes="launchSection" Theme="{StaticResource FuturisticExpander}"
+          IsExpanded="{Binding IsExecutableExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch">
+        <Expander.Header>
+          <Grid ColumnDefinitions="42,*" ColumnSpacing="12"><Border Background="#253747" CornerRadius="6" Padding="9" VerticalAlignment="Top"><PathIcon Data="{StaticResource FuturisticToolIcon}" Foreground="#89C8FF" Width="24" Height="24"/></Border>
+            <StackPanel Grid.Column="1" Spacing="4"><TextBlock Classes="sectionTitle" Text="FSO Executable"/><TextBlock Text="Select which installed engine build to use for this mod." Classes="muted"/></StackPanel>
+          </Grid>
+        </Expander.Header>
+        <StackPanel Spacing="12">
+          <ComboBox ItemsSource="{Binding BuildChoices}" SelectedItem="{Binding SelectedBuild, Mode=TwoWay}" HorizontalAlignment="Stretch" MinWidth="0" AutomationProperties.Name="FSO executable build">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:LaunchBuildChoice"><TextBlock Text="{Binding Label}" Foreground="{Binding Color}"/></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Text="{Binding ResolvedBuildLabel}" Classes="muted" FontSize="12"/>
+          <WrapPanel><CheckBox Content="Hide RC builds" IsChecked="{Binding HideRC, Mode=TwoWay}" Margin="0,0,16,0"/>
+            <CheckBox Content="Hide Nightly builds" IsChecked="{Binding HideNightly, Mode=TwoWay}" Margin="0,0,16,0"/>
+            <CheckBox Content="Hide Custom builds" IsChecked="{Binding HideCustom, Mode=TwoWay}"/></WrapPanel>
+          <StackPanel IsVisible="{Binding ShowDirectExecutable}" Spacing="7">
+            <TextBlock Text="Or use a direct executable path" Classes="muted" FontSize="12"/>
+            <TextBox Text="{Binding DirectPath, Mode=TwoWay}" Watermark="Path to an FSO executable"/>
+            <WrapPanel><Button Content="Browse…" Command="{Binding BrowseExecutableCommand}" Margin="0,0,10,0"/>
+              <Button Content="Use this path" Command="{Binding UseDirectPathCommand}"/></WrapPanel>
+          </StackPanel>
+        </StackPanel>
+      </Expander>
+      <Expander x:Name="CommandLineSection" Classes="launchSection" Theme="{StaticResource FuturisticExpander}"
+          IsExpanded="{Binding IsCommandLineExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch">
+        <Expander.Header>
+          <Grid ColumnDefinitions="42,*" ColumnSpacing="12"><Border Background="#253747" CornerRadius="6" Padding="9" VerticalAlignment="Top"><TextBlock Text="&gt;_" TextWrapping="NoWrap" FontSize="18" FontWeight="Bold" Foreground="#89C8FF"/></Border>
+            <StackPanel Grid.Column="1" Spacing="4"><TextBlock Classes="sectionTitle" Text="Command Line"/><TextBlock Text="Mod launch arguments. Changes are saved when you leave this page or close Properties." Classes="muted"/></StackPanel>
+          </Grid>
+        </Expander.Header>
+        <StackPanel Spacing="10">
+          <TextBox Text="{Binding CmdLine, Mode=TwoWay}" TextWrapping="Wrap" MinHeight="70" FontFamily="monospace" Watermark="Additional FreeSpace Open arguments"/>
+          <CheckBox IsChecked="{Binding IgnoreGlobalCmd, Mode=TwoWay}"><TextBlock Text="Do not apply global settings or global command line"/></CheckBox>
+          <TextBlock Text="{Binding GlobalCommandLine}" FontSize="12" Classes="muted"/>
+        </StackPanel>
+      </Expander>
+      <Expander x:Name="FlagsSection" Classes="launchSection" Theme="{StaticResource FuturisticExpander}"
+          IsExpanded="{Binding IsFlagsExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch">
+        <Expander.Header>
+          <Grid ColumnDefinitions="42,*" ColumnSpacing="12"><Border Background="#253747" CornerRadius="6" Padding="9" VerticalAlignment="Top"><PathIcon Data="{StaticResource FuturisticSettingsIcon}" Foreground="#89C8FF" Width="24" Height="24"/></Border>
+            <StackPanel Grid.Column="1" Spacing="4"><TextBlock Classes="sectionTitle" Text="Launch Settings &amp; Flags"/><TextBlock Text="Options and categories are read from the selected FSO executable when expanded." Classes="muted"/></StackPanel>
+          </Grid>
+        </Expander.Header>
+        <StackPanel Spacing="12">
+          <WrapPanel><Button Content="Reset flags to mod defaults" Command="{Binding ResetFlagsCommand}" Margin="0,0,10,0"/>
+            <Button Content="Reload from executable" Command="{Binding RetryFlagsCommand}" IsEnabled="{Binding !IsLoadingFlags}"/></WrapPanel>
+          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoadingFlags}" Height="3"/>
+          <TextBlock Text="{Binding FlagsError}" IsVisible="{Binding HasFlagsError}" Foreground="#FFBD86"/>
+          <TextBox Text="{Binding FlagSearch, Mode=TwoWay}" Watermark="Search flags, descriptions or categories" IsEnabled="{Binding !IsLoadingFlags}"/>
+          <TextBlock Text="Options marked Global come from your global settings. Disable global settings above to configure this mod independently." Classes="muted" FontSize="12"/>
+          <ItemsControl x:Name="FlagList" ItemsSource="{Binding FlagGroups}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:LaunchFlagGroupViewModel">
+              <Expander Classes="flagCategory" Theme="{StaticResource FuturisticExpander}" IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                  Margin="0,0,10,10" Width="{Binding $parent[views:ModLaunchOptionsView].FlagGroupWidth}" VerticalAlignment="Top">
+                <Expander.Header><TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" Foreground="#A8D3FA"/></Expander.Header>
+                  <ItemsControl ItemsSource="{Binding Items}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:LaunchFlagViewModel">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6" Margin="0,4">
+                      <StackPanel Spacing="2"><CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" IsEnabled="{Binding CanToggle}"><TextBlock Text="{Binding Description}"/></CheckBox>
+                        <TextBlock Text="{Binding Name}" Foreground="#89C8FF" FontSize="12" Margin="28,0,0,0"/>
+                        <TextBlock Text="Global" IsVisible="{Binding IsInherited}" Classes="muted" FontSize="11" Margin="28,0,0,0"/>
+                      </StackPanel>
+                      <Button Grid.Column="1" Content="ⓘ" Command="{Binding HelpCommand}" MinHeight="28" Padding="5" VerticalAlignment="Top" ToolTip.Tip="Open flag documentation"/>
+                    </Grid>
+                  </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+              </Expander>
+            </DataTemplate></ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Expander>
+      <Expander x:Name="DependenciesSection" Classes="launchSection" Theme="{StaticResource FuturisticExpander}"
+          IsExpanded="{Binding IsDependenciesExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch">
+        <Expander.Header>
+          <Grid ColumnDefinitions="42,*" ColumnSpacing="12"><Border Background="#253747" CornerRadius="6" Padding="9" VerticalAlignment="Top"><PathIcon Data="{StaticResource FuturisticPackageIcon}" Foreground="#89C8FF" Width="24" Height="24"/></Border>
+            <StackPanel Grid.Column="1" Spacing="4"><TextBlock Classes="sectionTitle" Text="Dependencies &amp; Overrides"/><TextBlock Text="Choose installed dependency versions and their launch order." Classes="muted"/></StackPanel>
+          </Grid>
+        </Expander.Header>
+        <StackPanel Spacing="10">
+          <CheckBox IsChecked="{Binding CustomDependencies, Mode=TwoWay}"><TextBlock Text="Enable custom mod dependencies"/></CheckBox>
+          <TextBlock Text="Overrides can affect compatibility. Turn this option off to restore the mod's default dependencies and order." Classes="muted" FontSize="12"/>
+          <Button Content="+ Add Custom Dependency" Command="{Binding AddDependencyCommand}" IsVisible="{Binding CustomDependencies}" HorizontalAlignment="Left"/>
+          <ItemsControl ItemsSource="{Binding Dependencies}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:LaunchDependencyViewModel"><views:ModLaunchDependencyView/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+        </StackPanel>
+      </Expander>
+      <TextBlock Text="{Binding Error}" IsVisible="{Binding HasError}" Foreground="#FFBD86"/>
+      <TextBlock Text="{Binding Status}" Foreground="#8DE38A"/>
     </StackPanel>
-    <ContentControl Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-      <Grid Background="Transparent">
-		<Grid RowDefinitions="*,Auto">
-			<ScrollViewer Grid.Row="0" AllowAutoHide="False">
-				<StackPanel>
-					<!--Compression-->
-					<Label Margin="0,5,0,0" FontWeight="Black" FontSize="20">DISK USAGE</Label>
-					<Label Content="{Binding ModSize}"></Label>
-					<Button Margin="5" Classes="Secondary" IsVisible="{Binding CompressionAvailable}" Command="{Binding CompressCommand}">Compress</Button>
-					<Button Margin="5" Classes="Secondary" IsVisible="{Binding Compressed}" Command="{Binding DecompressCommand}">Decompress</Button>
-					<!--Quick Launch-->
-					<Label Margin="0,5,0,0" FontWeight="Black" FontSize="20">QUICK LAUNCH</Label>
-					<TextBox Margin="5" Foreground="White" IsReadOnly="True" Text="{Binding QuickLaunch}"></TextBox>
-					<WrapPanel Margin="5,0,0,0">
-						<Label Foreground="White">Available exec type options: </Label>
-						<Label Foreground="Orange">Default, Release, Debug, Fred2, Fred2Debug, QtFred, QtFredDebug</Label>
-					</WrapPanel>
-					<!--Visibility Settings-->
-					<Label Margin="0,20,0,0" FontWeight="Black" FontSize="20">VISIBILITY SETTINGS</Label>
-					<CheckBox IsChecked="{Binding UserHidden}" Margin="5" ToolTip.Tip="Hide mod from your play menu. Can be displayed again by using the filter option to show hidden mods.">
-						Hidden by default
-					</CheckBox>
-					<!--Mod Engine Settings-->
-					<Label Margin="0,20,0,0" FontWeight="Black" FontSize="20">ENGINE SETTINGS</Label>
-					<CheckBox IsChecked="{Binding NoIngameOptions}" Margin="5" ToolTip.Tip="By disabling in-game options, launcher engine settings will be used instead. Only valid if the mod uses a FSO engine build equal or higher than version 24.2.0">
-						Disable in-game options
-					</CheckBox>
-					<WrapPanel IsVisible="{Binding !NoIngameOptions}">
-						<Label VerticalAlignment="Center" Margin="5" FontWeight="Bold" IsVisible="{Binding IngameOptionsFileExist}" Foreground="Yellow" ToolTip.Tip="This file is used to save in-game FSO engine settings not managed by Knossos.NET">In-game options file detected</Label>
-						<Button Command="{Binding ViewIngameOptions}" IsVisible="{Binding IngameOptionsFileExist}" Margin="5" Classes="Option" ToolTip.Tip="Open the file in a text editor.">View</Button>
-						<Button Command="{Binding DeleteIngameOptions}" IsVisible="{Binding IngameOptionsFileExist}" Margin="5" Classes="Cancel" ToolTip.Tip="By deleting the FSO in-game options file all values will be reseted back to default the next time you launch this mod">Delete</Button>
-					</WrapPanel>
-					<!--Mod Engine Settings END-->
-					<!--FSO Build Settings -->
-					<Label Margin="0,20,0,0" FontWeight="Black" FontSize="20">FSO BUILD</Label>
-					<v:FsoBuildPickerView Content="{Binding FsoPicker}"/>
-					<TextBlock Margin="5,0,0,0" TextWrapping="Wrap" Foreground="Red" Text="{Binding BuildMissingWarning}"/>
-					<Button IsVisible="{Binding !ConfigureBuildOpen}" Command="{Binding ConfigureBuildCommand}" Margin="5" FontWeight="Bold" FontSize="18" Classes="Secondary">Configure</Button>
-					<v:FsoFlagsView Content="{Binding FsoFlags}"/>
-					<CheckBox IsChecked="{Binding IgnoreGlobalCmd}" Margin="5,5,0,0" ToolTip.Tip="This means that global settings and global Command Line is not applied to the mod.">Do not apply global settings or global Command Line on this mod</CheckBox>
-					<!--FSO Build END -->
-					<!--Dependencies Settings-->
-					<StackPanel>
-						<Label Margin="0,20,0,0" FontWeight="Black" FontSize="20">MOD DEPENDENCIES</Label>
-						<CheckBox Command="{Binding CustomDependenciesClick}" IsChecked="{Binding CustomDependencies}" Margin="5,0,0,0" ToolTip.Tip="Changing mod dependencies may cause problems, uncheck this box to reset back to defaults if you encounter problems.">Enable custom mod dependencies</CheckBox>
-						<Button Command="{Binding AddDependencyCommand}" IsVisible="{Binding CustomDependencies}" FontWeight="Bold" FontSize="18" Classes="Secondary" Margin="5">+</Button>
-						<ListBox ItemsSource="{Binding DepItems}">
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<v:DependencyItemView Content="{Binding}"/>
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
-					</StackPanel>
-					<!--Dependencies End-->
-				</StackPanel>
-			</ScrollViewer>
-			<Grid ColumnDefinitions="Auto,Auto" HorizontalAlignment="Center" Grid.Row="1">
-				<Button Command="{Binding ResetSettingsCommand}" Grid.Column="0" FontSize="18" Classes="Cancel" Foreground="White" Margin="5">Reset to defaults</Button>
-			</Grid>
-		</Grid>
-	</Grid>
-    </ContentControl>
-  </Grid>
+  </ScrollViewer>
 </UserControl>

@@ -41,7 +41,7 @@ sealed class Catalog : ModPackageCatalog
     public override Task<bool> CanDevelopAsync(string id) => Task.FromResult(CanDevelop);
 }
 
-static class Program
+static partial class Program
 {
     static int assertions;
     static void Check(bool value, string description)
@@ -874,12 +874,13 @@ static class Program
         Check(!remote.Versions.CanVerify && remote.Versions.VerifyHint.Contains("compressed"), "compressed installation disables verification and explains why");
     }
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
         AppBuilder.Configure<CheckApplication>().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).UseSkia().WithInterFont().SetupWithoutStarting();
         var output = Path.GetFullPath(Path.Combine("artifacts", "mod-versions-checks", Guid.NewGuid().ToString("N")));
         Directory.CreateDirectory(output);
-        PlannerChecks(); EnginePackageChecks(); IncrementalChecks(output); BackupChecks(output); TaskChecks(output); SessionChecks(output); DeletionChecks(output); QueueChecks(output); SharedBuildChecks(output); HiddenEngineChecks(output); ViewChecks(output);
+        if (args.Contains("--launch-options")) { LaunchOptionsChecks(output); LaunchViewChecks(output); }
+        else { PlannerChecks(); EnginePackageChecks(); IncrementalChecks(output); BackupChecks(output); TaskChecks(output); SessionChecks(output); DeletionChecks(output); QueueChecks(output); SharedBuildChecks(output); HiddenEngineChecks(output); ViewChecks(output); LaunchOptionsChecks(output); TextEditorChecks(output); LaunchViewChecks(output); }
         Console.WriteLine("All " + assertions + " checks passed. Preview images: " + output);
     }
 }

@@ -77,6 +77,10 @@
             <TextBlock Text="Owners" Classes="muted"/>
             <TextBlock Text="{Binding Owners}" TextWrapping="Wrap"/>
           </StackPanel>
+          <StackPanel IsVisible="{Binding Properties.IsInstalled}" Margin="12,0,0,6" Spacing="4">
+            <TextBlock Text="Library visibility" Classes="muted"/>
+            <CheckBox IsChecked="{Binding Properties.UserHidden, Mode=TwoWay}" Content="Hide from Play" ToolTip.Tip="Use the hidden-mods filter in your library to show this mod again."/>
+          </StackPanel>
         </WrapPanel>
       </Border>
       <ProgressBar IsVisible="{Binding IsLoading}" IsIndeterminate="True" Height="3"/>
