@@ -12,6 +12,8 @@ internal sealed class FsoOptionsJson
     [JsonPropertyName("version")] public int Version { get; init; }
     [JsonPropertyName("mod")] public string Mod { get; init; } = string.Empty;
     [JsonPropertyName("in_game_options")] public bool IngameOptions { get; init; }
+    [JsonPropertyName("settings_file")] public string? SettingsFile { get; init; }
+    [JsonPropertyName("settings_inherited")] public bool? SettingsInherited { get; init; }
     [JsonPropertyName("options")] public List<FsoOption> Options { get; init; } = null!;
 }
 
@@ -25,12 +27,15 @@ internal sealed class FsoOption
     [JsonPropertyName("values")] public List<FsoOptionChoice>? Choices { get; init; }
     [JsonPropertyName("range")] public FsoOptionRange? Range { get; init; }
     [JsonPropertyName("current")] public JsonElement Current { get; init; }
+    [JsonPropertyName("saved")] public JsonElement Saved { get; init; }
+    [JsonPropertyName("effective")] public JsonElement Effective { get; init; }
     [JsonPropertyName("default")] public JsonElement Default { get; init; }
     [JsonPropertyName("enforced")] public bool Enforced { get; init; }
     [JsonPropertyName("overridden_by")] public string? OverriddenBy { get; init; }
     [JsonPropertyName("override_reason")] public string? OverrideReason { get; init; }
     [JsonPropertyName("requires")] public string? Requires { get; init; }
     [JsonPropertyName("requires_text")] public string? RequiresText { get; init; }
+    [JsonPropertyName("requires_support")] public string? RequiresSupport { get; init; }
     [JsonPropertyName("restart_needed")] public bool RestartNeeded { get; init; }
 }
 
@@ -79,12 +84,19 @@ internal static class FsoOptionsFile
         return dot > 0 && dot < key.Length - 1 && key.IndexOfAny(new[] { '\r', '\n', '[', ']', '=', ';', '#' }) < 0;
     }
 
-    internal static void Save(string path, IReadOnlyDictionary<string, string> changes)
+    internal static void Save(string path, IReadOnlyDictionary<string, string> changes, bool? settingsInherited)
     {
         var directory = Path.GetDirectoryName(path)!;
         var source = path;
-        if (!File.Exists(path) && Path.GetFileName(path) != "fs2_open.ini")
+        var exists = File.Exists(path);
+        if (!exists && settingsInherited != false && Path.GetFileName(path) != "fs2_open.ini")
             source = Path.Combine(Path.GetDirectoryName(directory) ?? directory, "fs2_open.ini");
+        if (exists && settingsInherited == true)
+        {
+            // The game may have materialized the profile since the query. Check that the
+            // file is writable before replacing it, since FSO also inherits from a read-only profile.
+            using var writable = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+        }
         var lines = File.Exists(source) ? File.ReadAllLines(source).ToList() : new List<string>();
 
         foreach (var (key, json) in changes)

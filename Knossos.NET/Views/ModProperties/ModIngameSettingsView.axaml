@@ -64,6 +64,7 @@
                         </StackPanel>
                         <TextBlock Text="{Binding RangeLabel}" Classes="muted" IsVisible="{Binding IsRange}" FontSize="12" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding Status}" IsVisible="{Binding HasStatus}" Foreground="#89C8FF" FontSize="12" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding SavedValueStatus}" IsVisible="{Binding HasSavedValueStatus}" Classes="muted" FontSize="12" TextWrapping="Wrap"/>
                       </StackPanel>
                     </Border>
                   </DataTemplate>

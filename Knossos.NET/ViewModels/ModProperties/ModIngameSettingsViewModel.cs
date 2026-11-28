@@ -15,10 +15,12 @@ namespace Knossos.NET.ViewModels;
 
 public partial class ModIngameSettingsViewModel : ViewModelBase, IDisposable
 {
-    private readonly Dictionary<string, Dictionary<string, string>> pending = new(
+    private readonly Dictionary<string, PendingProfile> pending = new(
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
     private readonly Dictionary<string, bool> expansionChanges = new(StringComparer.Ordinal);
     private CancellationTokenSource? query;
+
+    private sealed record PendingProfile(Dictionary<string, string> Changes, bool? Inherited);
 
     [ObservableProperty] private string buildLabel = string.Empty;
     [ObservableProperty] private bool isLoading;
@@ -78,14 +80,20 @@ public partial class ModIngameSettingsViewModel : ViewModelBase, IDisposable
 
             var result = await build.GetOptionsAsync(executable, workingFolder, args, request.Token);
             request.Token.ThrowIfCancellationRequested();
-            var preferences = Path.GetFullPath(string.IsNullOrWhiteSpace(flags.pref_path)
-                ? KnUtils.GetFSODataFolderPath() : flags.pref_path, workingFolder);
-            var settingsPath = FsoOptionsFile.ResolvePath(preferences, result.Mod);
-            if (!pending.TryGetValue(settingsPath, out var changes))
+            string settingsPath;
+            if (!string.IsNullOrWhiteSpace(result.SettingsFile))
             {
-                changes = new Dictionary<string, string>(StringComparer.Ordinal);
-                pending.Add(settingsPath, changes);
+                settingsPath = Path.GetFullPath(result.SettingsFile, workingFolder);
             }
+            else
+            {
+                var preferences = Path.GetFullPath(string.IsNullOrWhiteSpace(flags.pref_path)
+                    ? KnUtils.GetFSODataFolderPath() : flags.pref_path, workingFolder);
+                settingsPath = FsoOptionsFile.ResolvePath(preferences, result.Mod);
+            }
+            var changes = pending.TryGetValue(settingsPath, out var profile)
+                ? profile.Changes : new Dictionary<string, string>(StringComparer.Ordinal);
+            pending[settingsPath] = new PendingProfile(changes, result.SettingsInherited);
 
             Groups = result.Options.Where(option => FsoOptionsFile.HasValidKey(option.Key) &&
                     (option.Type == "selection" || (option.Type == "range" && option.Range is { } range && range.Min <= range.Max)))
@@ -119,11 +127,11 @@ public partial class ModIngameSettingsViewModel : ViewModelBase, IDisposable
 
     internal void SaveChanges()
     {
-        foreach (var (file, changes) in pending)
+        foreach (var (file, profile) in pending)
         {
-            if (changes.Count == 0) continue;
-            FsoOptionsFile.Save(file, changes);
-            changes.Clear();
+            if (profile.Changes.Count == 0) continue;
+            FsoOptionsFile.Save(file, profile.Changes, profile.Inherited);
+            profile.Changes.Clear();
         }
 
         var categories = Knossos.globalSettings.expandedIngameSettingsCategories;
@@ -184,27 +192,44 @@ public partial class IngameSetting : ObservableObject
     public bool CanRestoreDefault { get; }
     public string? Status { get; }
     public bool HasStatus => !string.IsNullOrEmpty(Status);
+    public string? SavedValueStatus { get; }
+    public bool HasSavedValueStatus => SavedValueStatus != null;
 
     internal IngameSetting(FsoOption option, bool enabled, Dictionary<string, string> pending)
     {
         this.option = option;
         this.pending = pending;
-        original = option.Current.ValueKind == JsonValueKind.Undefined ? option.Default : option.Current;
+        var choices = option.Choices?.Where(choice => choice.Value.ValueKind != JsonValueKind.Undefined).ToList() ?? new();
+        ChoiceCount = choices.Count;
+        var requirementEditable = option.Requires == null || option.RequiresSupport == "supported" ||
+            (option.RequiresSupport == "unknown" && (!IsSelection || ChoiceCount > 1));
+        CanEdit = enabled && !option.Enforced && option.OverriddenBy == null && requirementEditable && (!IsSelection || ChoiceCount > 0);
+
+        if (option.Effective.ValueKind != JsonValueKind.Undefined)
+            original = enabled ? option.Effective : default;
+        else
+            original = option.Current.ValueKind == JsonValueKind.Undefined ? option.Default : option.Current;
+
+        if (enabled && option.Saved.ValueKind is not (JsonValueKind.Undefined or JsonValueKind.Null) && !SameValue(option.Saved, original))
+        {
+            var savedChoice = choices.FirstOrDefault(choice => SameValue(choice.Value, option.Saved));
+            SavedValueStatus = "Saved preference · " + (savedChoice?.Display ?? option.Saved.ToString());
+        }
+
         var shown = original;
-        if (pending.TryGetValue(option.Key, out var draft))
+        if (CanEdit && pending.TryGetValue(option.Key, out var draft))
         {
             using var document = JsonDocument.Parse(draft);
             shown = document.RootElement.Clone();
         }
 
-        var choices = option.Choices?.Where(choice => choice.Value.ValueKind != JsonValueKind.Undefined).ToList() ?? new();
-        ChoiceCount = choices.Count;
         if (IsSelection)
         {
             selectedChoice = choices.FirstOrDefault(choice => SameValue(choice.Value, shown));
             if (selectedChoice == null && shown.ValueKind != JsonValueKind.Undefined)
             {
-                selectedChoice = new FsoOptionChoice { Value = shown, Display = shown.ToString() + " (unavailable)" };
+                var display = shown.ValueKind == JsonValueKind.Null ? "None" : shown.ToString();
+                selectedChoice = new FsoOptionChoice { Value = shown, Display = display + " (unavailable)" };
                 choices.Insert(0, selectedChoice);
             }
         }
@@ -214,7 +239,6 @@ public partial class IngameSetting : ObservableObject
         }
 
         Choices = choices;
-        CanEdit = enabled && !option.Enforced && option.OverriddenBy == null && option.Requires == null && (!IsSelection || ChoiceCount > 0);
         CanRestoreDefault = CanEdit && (IsSelection
             ? choices.Skip(choices.Count - ChoiceCount).Any(choice => SameValue(choice.Value, option.Default))
             : option.Default.ValueKind == JsonValueKind.Number && option.Default.TryGetDecimal(out var defaultValue) && ValidNumber(defaultValue));
@@ -223,7 +247,12 @@ public partial class IngameSetting : ObservableObject
             "cmdline" => "Set by " + (option.OverrideReason ?? "the command line"),
             "mod" => "Set by an active mod",
             not null => option.OverrideReason ?? "Set by FSO",
-            _ => option.Requires != null ? option.RequiresText ?? option.Requires
+            _ => option.Requires != null ? (option.RequiresText ?? option.Requires) + (option.RequiresSupport switch
+                {
+                    "unsupported" => " · Unsupported",
+                    "unknown" => " · Support could not be verified",
+                    _ => string.Empty
+                })
                 : IsSelection && ChoiceCount == 0 ? "No choices available"
                 : option.RestartNeeded ? "Applies on the next launch" : null
         };
