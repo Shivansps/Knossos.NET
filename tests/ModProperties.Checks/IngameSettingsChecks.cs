@@ -60,9 +60,10 @@ static partial class Program
             options = new object[]
             {
                 new { key = "Input.DeadZone", title = "Joystick Dead Zone", category = "Input", type = "range",
+                    description = "How far you can move the joystick before the game responds. Increase the dead zone if the centered stick registers movement on its own.",
                     range = new { min = 0, max = 45, integer = true }, current = 5, @default = 10 },
                 new { key = "Input.Device.Primary", title = "Input Device", category = "Input", type = "selection",
-                    values = new[] { new { value = "default", display = "Default" }, new { value = "Stick#1;Pro", display = "Flight stick" } },
+                    values = new[] { new { value = "default", display = "Default flight stick with throttle, pedals and additional controls from the system" }, new { value = "Stick#1;Pro", display = "Flight stick" } },
                     current = "default", @default = "default" },
                 new { key = "Input.Locked", title = "Locked by Flag", category = "Input", type = "range",
                     range = new { min = 0, max = 10, integer = true }, current = 4, @default = 2,
@@ -77,7 +78,7 @@ static partial class Program
 
         using var model = new ModPropertiesViewModel(mod);
         var view = new ModPropertiesView { DataContext = model };
-        var window = new Window { Width = 920, Height = 760, Content = view };
+        var window = new Window { Width = 1280, Height = 760, Content = view };
         window.Show();
         Pump();
         var navigation = view.GetVisualDescendants().OfType<Button>().Single(button =>
@@ -109,6 +110,15 @@ static partial class Program
         expander.IsExpanded = true;
         Pump();
         Check(group.IsExpanded, "expanding a category updates its preference draft");
+        var optionPanel = expander.GetVisualDescendants().OfType<IngameSettingsPanel>().Single();
+        var cells = optionPanel.Children;
+        Check(cells[0].Bounds.Top == cells[1].Bounds.Top && cells[1].Bounds.Left >= cells[0].Bounds.Right &&
+            cells[2].Bounds.Top >= cells[0].Bounds.Bottom && cells[2].Bounds.Left == cells[0].Bounds.Left,
+            "wide Ingame Settings lays out options left to right in two columns with aligned rows");
+        var longChoiceControls = cells[1].GetVisualDescendants().OfType<Grid>().Single(grid => grid.Classes.Contains("settingControls"));
+        Check(longChoiceControls.Bounds.Right <= cells[1].Bounds.Width &&
+            longChoiceControls.Children.OfType<Button>().Single().Bounds.Right <= longChoiceControls.Bounds.Width,
+            "a long selection fits in its column with the restore button");
         var options = group.Options;
         var range = options.Single(option => option.Title == "Joystick Dead Zone");
         var device = options.Single(option => option.Title == "Input Device");
@@ -131,10 +141,15 @@ static partial class Program
         var preview = window.CaptureRenderedFrame();
         preview?.Save(Path.Combine(output, "ingame-settings.png"));
         preview?.Dispose();
+        window.Width = 920;
+        Pump();
+        Check(cells[0].Bounds.Left == cells[1].Bounds.Left && cells[1].Bounds.Top >= cells[0].Bounds.Bottom &&
+            cells[0].Bounds.Width == optionPanel.Bounds.Width, "resizing to a medium window gives each option the full row");
         window.Width = 430;
         Pump();
-        Check(view.GetVisualDescendants().OfType<StackPanel>().Where(panel => panel.Classes.Contains("settingControls"))
-            .All(panel => panel.Orientation == Avalonia.Layout.Orientation.Vertical), "option controls stack in the compact layout");
+        Check(longChoiceControls.Children.OfType<Button>().Single().Bounds.Top >= longChoiceControls.Children.OfType<Grid>().Single().Bounds.Bottom &&
+            cells[0].Bounds.Left == cells[1].Bounds.Left && cells[1].Bounds.Top >= cells[0].Bounds.Bottom,
+            "on a phone the options stay in one column and the restore button moves below the input");
         var compactPreview = window.CaptureRenderedFrame();
         compactPreview?.Save(Path.Combine(output, "ingame-settings-compact.png"));
         compactPreview?.Dispose();

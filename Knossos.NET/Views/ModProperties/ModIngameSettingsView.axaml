@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:vm="using:Knossos.NET.ViewModels" xmlns:fso="using:Knossos.NET.Classes"
+    xmlns:vm="using:Knossos.NET.ViewModels" xmlns:fso="using:Knossos.NET.Classes" xmlns:views="using:Knossos.NET.Views"
     x:Class="Knossos.NET.Views.ModIngameSettingsView" x:DataType="vm:ModIngameSettingsViewModel">
   <UserControl.Styles>
     <Style Selector="ComboBox, NumericUpDown">
@@ -9,11 +9,23 @@
       <Setter Property="MinWidth" Value="146"/>
       <Setter Property="MaxWidth" Value="420"/>
     </Style>
-    <Style Selector="StackPanel.settingControls">
-      <Setter Property="Orientation" Value="Horizontal"/>
+    <Style Selector="Button.restoreSetting">
+      <Setter Property="Grid.Column" Value="1"/>
     </Style>
-    <Style Selector=".compact StackPanel.settingControls">
-      <Setter Property="Orientation" Value="Vertical"/>
+    <Style Selector="Grid.settingControls">
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+    <Style Selector=".compact Grid.settingControls">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+    <Style Selector=".compact Grid.settingInput">
+      <Setter Property="Grid.ColumnSpan" Value="2"/>
+    </Style>
+    <Style Selector=".compact Button.restoreSetting">
+      <Setter Property="Grid.Column" Value="0"/>
+      <Setter Property="Grid.ColumnSpan" Value="2"/>
+      <Setter Property="Grid.Row" Value="1"/>
+      <Setter Property="Margin" Value="0,8,0,0"/>
     </Style>
     <Style Selector=".compact ComboBox, .compact NumericUpDown">
       <Setter Property="MinWidth" Value="0"/>
@@ -43,25 +55,33 @@
                 </Grid>
               </Expander.Header>
               <ItemsControl ItemsSource="{Binding Options}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><views:IngameSettingsPanel/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:IngameSetting">
                     <Border BorderBrush="{DynamicResource FuturisticBorder}" BorderThickness="0,0,0,1" Padding="2,9,2,12">
                       <StackPanel Spacing="5">
                         <TextBlock Text="{Binding Title}" TextWrapping="Wrap" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" Classes="muted" TextWrapping="Wrap" FontSize="13"/>
-                        <StackPanel Classes="settingControls" Spacing="8" IsEnabled="{Binding CanEdit}">
-                          <ComboBox ItemsSource="{Binding Choices}" SelectedItem="{Binding SelectedChoice, Mode=TwoWay}"
-                              IsVisible="{Binding IsSelection}" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding Title}">
-                            <ComboBox.ItemTemplate>
-                              <DataTemplate x:DataType="fso:FsoOptionChoice"><TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/></DataTemplate>
-                            </ComboBox.ItemTemplate>
-                          </ComboBox>
-                          <NumericUpDown Value="{Binding Number, Mode=TwoWay}" Minimum="{Binding Min}" Maximum="{Binding Max}"
-                              Increment="{Binding Increment}" FormatString="{Binding Format}" ParsingNumberStyle="{Binding NumberStyle}" ClipValueToMinMax="True"
-                              IsVisible="{Binding IsRange}" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding Title}"/>
-                          <Button Content="Restore Default" IsVisible="{Binding CanRestoreDefault}" Command="{Binding RestoreDefaultCommand}"
-                              HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <Grid Classes="settingControls" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto"
+                            ColumnSpacing="8" IsEnabled="{Binding CanEdit}">
+                          <Grid Classes="settingInput">
+                            <ComboBox ItemsSource="{Binding Choices}" SelectedItem="{Binding SelectedChoice, Mode=TwoWay}"
+                                IsVisible="{Binding IsSelection}" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding Title}">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="fso:FsoOptionChoice"><TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/></DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <NumericUpDown Value="{Binding Number, Mode=TwoWay}" Minimum="{Binding Min}" Maximum="{Binding Max}"
+                                Increment="{Binding Increment}" FormatString="{Binding Format}" ParsingNumberStyle="{Binding NumberStyle}" ClipValueToMinMax="True"
+                                IsVisible="{Binding IsRange}" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding Title}"/>
+                          </Grid>
+                          <Button Classes="restoreSetting" IsVisible="{Binding CanRestoreDefault}" Command="{Binding RestoreDefaultCommand}"
+                              HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <TextBlock Text="Restore Default" TextWrapping="Wrap"/>
+                          </Button>
+                        </Grid>
                         <TextBlock Text="{Binding RangeLabel}" Classes="muted" IsVisible="{Binding IsRange}" FontSize="12" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding Status}" IsVisible="{Binding HasStatus}" Foreground="#89C8FF" FontSize="12" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding SavedValueStatus}" IsVisible="{Binding HasSavedValueStatus}" Classes="muted" FontSize="12" TextWrapping="Wrap"/>
